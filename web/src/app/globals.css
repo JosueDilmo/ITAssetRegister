@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+@plugin './plugins/scrollbarHide.js';
+
+@theme {
+
+  --color-*: initial;
+
+  --color-blue: #6F9DE2;
+  --color-blue-500: #2b4a7f;
+  --color-purple: #9871f3;
+  --color-purple-500: #7851a9   ;
+  --color-red: #F05D6C;
+  --color-red-500: #d94f5a;
+
+  --color-orange-500: #ff5c3a;
+  --color-orange-900: #6b2718;
+
+  --color-yellow-500: #ffbf40;
+  --color-yellow-900: #6b501b;
+
+  --color-green-500: #04d361;
+  --color-green-900: #025929;
+
+  --color-gray-50:#eaeaea;
+  --color-gray-100:#bebebf;
+  --color-gray-200:#9e9ea0;
+  --color-gray-300:#727275;
+  --color-gray-400:#56565a;
+  --color-gray-500:#2c2c31;
+  --color-gray-600:#28282d;
+  --color-gray-700:#1f1f23;
+  --color-gray-800:#18181b;
+  --color-gray-900:#121215;
+
+  --font-heading: var(--font-oxanium);
+  --font-sans: var(--font-montserrat);
+
+  --radius-xl: 0.625rem;
+
+}
+
