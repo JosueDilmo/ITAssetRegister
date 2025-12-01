@@ -21,7 +21,17 @@ import { allStaff } from './routes/staff/get/allStaff'
 import { staffDetails } from './routes/staff/patch/staffDetails'
 import { newStaff } from './routes/staff/post/newStaff'
 
-const app = fastify().withTypeProvider<ZodTypeProvider>()
+const app = fastify({
+  logger: {
+    transport: {
+      target: 'pino-pretty',
+      options: {
+        translateTime: 'HH:MM:ss Z',
+        ignore: 'pid,hostname',
+      },
+    },
+  },
+}).withTypeProvider<ZodTypeProvider>()
 
 app.setSerializerCompiler(serializerCompiler)
 app.setValidatorCompiler(validatorCompiler)
