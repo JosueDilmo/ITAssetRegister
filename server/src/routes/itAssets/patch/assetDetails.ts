@@ -9,6 +9,8 @@ export const assetDetails: FastifyPluginAsyncZod = async app => {
     '/assetDetails/:id',
     {
       schema: {
+        tags: ['IT Assets'],
+        description: 'Update IT asset details such as status and note',
         params: z.object({
           id: z.string().uuid(ERROR_MESSAGES.INVALID_ID),
         }),

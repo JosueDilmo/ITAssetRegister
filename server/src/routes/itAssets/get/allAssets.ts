@@ -8,44 +8,42 @@ export const allAssets: FastifyPluginAsyncZod = async app => {
     '/allAssets',
     {
       schema: {
+        tags: ['IT Assets'],
+        description: 'Get all IT assets or a specific asset by ID',
         querystring: z.object({
           id: z.string().uuid(ERROR_MESSAGES.INVALID_ID).optional(),
         }),
         response: {
-          200: z.array(
-            z.object({
-              id: z.string().uuid(),
-              serialNumber: z.string(),
-              name: z.string(),
-              type: z.string(),
-              maker: z.string(),
-              assignedTo: z.string().nullable(),
-              dateAssigned: z.string().nullable(),
-              datePurchased: z.string(),
-              assetNumber: z.string(),
-              status: z.string(),
-              note: z.string().nullable(),
-              createdAt: z.string(),
-              createdBy: z.string(),
-              changeLog: z.array(
-                z.object({
-                  updatedBy: z.string(),
-                  updatedAt: z.string(),
-                  updatedField: z.string(),
-                  previousValue: z.string().nullable(),
-                  newValue: z.string().nullable(),
-                })
-              ),
-            })
-          ),
-          500: z.object({
-            success: z.boolean(),
-            error: z.object({
-              code: z.string(),
-              message: z.string(),
-              details: z.any().optional(),
-            }),
-          }),
+          201: z
+            .array(
+              z.object({
+                id: z.string().uuid(),
+                serialNumber: z.string(),
+                name: z.string(),
+                type: z.string(),
+                maker: z.string(),
+                assignedTo: z.string().nullable(),
+                dateAssigned: z.string().nullable(),
+                datePurchased: z.string(),
+                assetNumber: z.string(),
+                status: z.string(),
+                note: z.string().nullable(),
+                createdAt: z.string(),
+                createdBy: z.string(),
+                changeLog: z.array(
+                  z.object({
+                    updatedBy: z.string(),
+                    updatedAt: z.string(),
+                    updatedField: z.string(),
+                    previousValue: z.string().nullable(),
+                    newValue: z.string().nullable(),
+                  })
+                ),
+              })
+            )
+            .describe('List of IT assets'),
+          404: z.null().describe('Asset not found'),
+          500: z.null().describe('Internal Server Error'),
         },
       },
     },

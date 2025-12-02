@@ -9,6 +9,8 @@ export const staffDetails: FastifyPluginAsyncZod = async app => {
     '/staffDetails/:id',
     {
       schema: {
+        tags: ['Staff'],
+        description: 'Update staff details such as status and note',
         params: z.object({
           id: z.string().uuid(ERROR_MESSAGES.INVALID_ID),
         }),

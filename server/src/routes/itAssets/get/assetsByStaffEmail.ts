@@ -9,6 +9,8 @@ export const assetsByStaffEmail: FastifyPluginAsyncZod = async app => {
     '/assetByStaffEmail',
     {
       schema: {
+        tags: ['IT Assets'],
+        description: 'Get IT assets assigned to a staff member by their email',
         querystring: z.object({
           staffEmail: z.string().email(ERROR_MESSAGES.INVALID_EMAIL),
         }),

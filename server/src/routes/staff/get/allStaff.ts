@@ -8,41 +8,39 @@ export const allStaff: FastifyPluginAsyncZod = async app => {
     '/allStaff',
     {
       schema: {
+        tags: ['Staff'],
+        description: 'Get all staff or a specific staff member by ID',
         querystring: z.object({
           id: z.string().uuid(ERROR_MESSAGES.INVALID_ID).optional(),
         }),
         response: {
-          200: z.array(
-            z.object({
-              id: z.string(),
-              name: z.string(),
-              email: z.string(),
-              department: z.string(),
-              jobTitle: z.string(),
-              status: z.string(),
-              note: z.string().nullable(),
-              assetHistoryList: z.array(z.string()),
-              createdAt: z.string(),
-              createdBy: z.string(),
-              changeLog: z.array(
-                z.object({
-                  updatedBy: z.string(),
-                  updatedAt: z.string(),
-                  updatedField: z.string(),
-                  previousValue: z.string(),
-                  newValue: z.string(),
-                })
-              ),
-            })
-          ),
-          500: z.object({
-            success: z.boolean(),
-            error: z.object({
-              code: z.string(),
-              message: z.string(),
-              details: z.any().optional(),
-            }),
-          }),
+          201: z
+            .array(
+              z.object({
+                id: z.string().uuid(),
+                name: z.string(),
+                email: z.string(),
+                department: z.string(),
+                jobTitle: z.string(),
+                status: z.string(),
+                note: z.string().nullable(),
+                assetHistoryList: z.array(z.string()),
+                createdAt: z.string(),
+                createdBy: z.string(),
+                changeLog: z.array(
+                  z.object({
+                    updatedBy: z.string(),
+                    updatedAt: z.string(),
+                    updatedField: z.string(),
+                    previousValue: z.string(),
+                    newValue: z.string(),
+                  })
+                ),
+              })
+            )
+            .describe('List of staff members'),
+          404: z.null().describe('Staff not found'),
+          500: z.null().describe('Internal Server Error'),
         },
       },
     },
@@ -55,7 +53,7 @@ export const allStaff: FastifyPluginAsyncZod = async app => {
           ? staffList.filter(staff => staff.id === id)
           : staffList
 
-        return reply.status(200).send(
+        return reply.status(201).send(
           filteredStaffList.map(staff => {
             return {
               id: staff.id,

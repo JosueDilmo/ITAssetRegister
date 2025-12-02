@@ -9,6 +9,8 @@ export const newAsset: FastifyPluginAsyncZod = async app => {
     '/newAsset',
     {
       schema: {
+        tags: ['IT Assets'],
+        description: 'Create a new IT asset',
         body: z.object({
           serialNumber: z.string().min(2, ERROR_MESSAGES.INVALID_SERIAL_NUMBER),
           name: z.string().min(2, ERROR_MESSAGES.INVALID_NAME),

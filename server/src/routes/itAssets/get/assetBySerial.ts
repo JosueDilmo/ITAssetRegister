@@ -13,6 +13,8 @@ export const assetBySerial: FastifyPluginAsyncZod = async app => {
     '/assetBySerial',
     {
       schema: {
+        tags: ['IT Assets'],
+        description: 'Get an IT asset by its serial number',
         querystring: z.object({
           serialNumber: z.string().min(2, ERROR_MESSAGES.INVALID_SERIAL_NUMBER),
         }),

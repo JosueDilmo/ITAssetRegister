@@ -9,6 +9,8 @@ export const assetById: FastifyPluginAsyncZod = async app => {
     '/assetBy/:id',
     {
       schema: {
+        tags: ['IT Assets'],
+        description: 'Delete an asset by its ID',
         params: z.object({
           id: z.string().uuid(ERROR_MESSAGES.INVALID_ID),
         }),

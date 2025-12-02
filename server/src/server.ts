@@ -44,21 +44,23 @@ app.register(fastifyCors, {
   methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
 })
 
-// Documentation
-app.register(fastifySwagger, {
-  openapi: {
-    info: {
-      title: 'IT Platform',
-      version: '0.0.1',
+if (process.env.NODE_ENV === 'development') {
+  // Documentation
+  app.register(fastifySwagger, {
+    openapi: {
+      info: {
+        title: 'IT Platform',
+        version: '0.0.1',
+      },
     },
-  },
-  transform: jsonSchemaTransform,
-})
+    transform: jsonSchemaTransform,
+  })
 
-// Register routes
-app.register(fastifySwaggerUi, {
-  routePrefix: '/docs',
-})
+  // Register routes
+  app.register(fastifySwaggerUi, {
+    routePrefix: '/docs',
+  })
+}
 
 app.register(newAsset) // post route to add a new asset
 app.register(newStaff) // post route to add a new staff

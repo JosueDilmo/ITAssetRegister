@@ -9,6 +9,8 @@ export const newStaff: FastifyPluginAsyncZod = async app => {
     '/newStaff',
     {
       schema: {
+        tags: ['Staff'],
+        description: 'Create a new staff member',
         body: z.object({
           name: z.string().min(2, ERROR_MESSAGES.INVALID_NAME),
           email: z.string().email(ERROR_MESSAGES.INVALID_EMAIL),
