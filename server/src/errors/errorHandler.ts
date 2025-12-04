@@ -45,7 +45,6 @@ export function errorHandler(
         `Error processing request: ${request.method} ${request.url}`
       )
       console.error(error)
-
       // Determine status code - use the AppError status code if available, otherwise default to 500
       const statusCode = error instanceof AppError ? error.statusCode : 500
 

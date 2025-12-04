@@ -10,16 +10,18 @@ import {
 } from 'fastify-type-provider-zod'
 import { env } from './env'
 import { errorHandler } from './errors/errorHandler'
-import { assetById } from './routes/itAssets/delete/assetById'
-import { allAssets } from './routes/itAssets/get/allAssets'
-import { assetBySerial } from './routes/itAssets/get/assetBySerial'
-import { assetsByStaffEmail } from './routes/itAssets/get/assetsByStaffEmail'
-import { assetDetails } from './routes/itAssets/patch/assetDetails'
-import { assetToStaff } from './routes/itAssets/post/assetToStaff'
-import { newAsset } from './routes/itAssets/post/newAsset'
-import { allStaff } from './routes/staff/get/allStaff'
-import { staffDetails } from './routes/staff/patch/staffDetails'
-import { newStaff } from './routes/staff/post/newStaff'
+import { assetById } from './routes/delete/assetById'
+import { allAssets } from './routes/get/allAssets'
+import { allStaff } from './routes/get/allStaff'
+import { assetBySerial } from './routes/get/assetBySerial'
+import { assetWithId } from './routes/get/assetWithId'
+import { assetsByStaffEmail } from './routes/get/assetsByStaffEmail'
+import { staffById } from './routes/get/staffById'
+import { assetDetails } from './routes/patch/assetDetails'
+import { staffDetails } from './routes/patch/staffDetails'
+import { assetToStaff } from './routes/post/assetToStaff'
+import { newAsset } from './routes/post/newAsset'
+import { newStaff } from './routes/post/newStaff'
 
 const app = fastify({
   logger: {
@@ -33,11 +35,11 @@ const app = fastify({
   },
 }).withTypeProvider<ZodTypeProvider>()
 
-app.setSerializerCompiler(serializerCompiler)
-app.setValidatorCompiler(validatorCompiler)
-
 // Register error handler
 app.register(errorHandler)
+
+app.setSerializerCompiler(serializerCompiler)
+app.setValidatorCompiler(validatorCompiler)
 
 app.register(fastifyCors, {
   origin: env.CORS_ORIGIN,
@@ -65,7 +67,9 @@ if (process.env.NODE_ENV === 'development') {
 app.register(newAsset) // post route to add a new asset
 app.register(newStaff) // post route to add a new staff
 app.register(allStaff) // get route to fetch all staffs
+app.register(staffById) // get route to fetch staff by ID
 app.register(allAssets) // get route to fetch all assets
+app.register(assetWithId) // get route to fetch an asset by ID
 app.register(assetById) // delete route to remove an asset by ID
 app.register(assetToStaff) // post route to assign an asset to a staff with confirmation
 app.register(assetDetails) // patch route to update asset details

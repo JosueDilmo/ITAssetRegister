@@ -10,7 +10,7 @@ export async function getCurrentITAssetUser() {
     id: session.user?.id,
     role: session.user?.role,
     email: session.user?.email,
-    name: session.user?.name
+    name: session.user?.name,
     image: session.user?.image,
   }
 

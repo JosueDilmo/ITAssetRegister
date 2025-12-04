@@ -1,3 +1,9 @@
+export interface GetAllStaffParams {
+  orderBy: 'name' | 'department' | 'email' | 'createdAt'
+  page: number
+  search?: string
+}
+
 export interface AssignAssetWithConfirmationParams {
   userConfirmed?: boolean
   staffEmail: string
@@ -21,6 +27,10 @@ export interface GetAssetSerialParams {
 
 export interface GetAssetParams {
   staffEmail: string
+}
+
+export interface GetByIdParams {
+  id: string
 }
 
 export interface DeleteAssetParams {

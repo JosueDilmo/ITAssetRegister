@@ -1,7 +1,4 @@
 // Standard error messages to maintain consistency
-
-import { INVALID } from 'zod'
-
 export const ERROR_MESSAGES = {
   // Generic errors
   INTERNAL_SERVER_ERROR:
@@ -18,8 +15,12 @@ export const ERROR_MESSAGES = {
     'A database internal error occurred. Please try again later.',
 
   // Asset errors
-  ASSET_NOT_FOUND: 'Asset not found.',
   ASSET_ALREADY_EXISTS: 'Asset with this serial number already exists.',
+  ASSET_UPDATE_FAILED: 'Failed to update asset details.',
+  ASSET_REMOVAL_FAILED: 'Failed to remove asset assignment.',
+  ASSET_ASSIGNMENT_FAILED: 'Failed to assign asset to staff.',
+  ASSET_NOT_FOUND: 'Asset with this ID not found.',
+  ASSET_SN_NOT_FOUND: 'Asset with this serial number not found.',
   ASSET_ID_REQUIRED: 'Asset ID is required.',
   ASSET_SERIAL_REQUIRED: 'Asset serial number is required.',
   ASSET_NAME_REQUIRED: 'Asset name is required.',
@@ -27,24 +28,26 @@ export const ERROR_MESSAGES = {
   ASSET_MAKER_REQUIRED: 'Asset maker is required.',
   ASSET_NUMBER_REQUIRED: 'Asset number is required.',
   ASSET_STATUS_REQUIRED: 'Asset status is required.',
-  ASSET_UPDATED_BY_REQUIRED: 'Updated by information is required.',
-  ASSET_ASSIGNMENT_FAILED: 'Failed to assign asset to staff.',
-  ASSET_REMOVAL_FAILED: 'Failed to remove asset assignment.',
-  ASSET_UPDATE_FAILED: 'Failed to update asset details.',
 
   // Staff errors
-  STAFF_NOT_FOUND: 'Staff not found.',
-  STAFF_ID_REQUIRED: 'Staff ID is required.',
   STAFF_ALREADY_EXISTS: 'Staff with this email already exists.',
-  STAFF_EMAIL_REQUIRED: 'Staff email is required.',
   STAFF_UPDATE_FAILED: 'Failed to update staff details.',
+  STAFF_NOT_FOUND: 'Staff with this email not found.',
+  STAFF_ID_NOT_FOUND: 'Staff with this ID not found.',
+  STAFF_ASSETS_NOT_FOUND: 'No assets assigned to this staff member.',
+  STAFF_ID_REQUIRED: 'Staff ID is required.',
+  STAFF_EMAIL_REQUIRED: 'Staff email is required.',
   STAFF_NAME_REQUIRED: 'Staff name is required.',
   STAFF_DEPARTMENT_REQUIRED: 'Staff department is required.',
   STAFF_JOB_TITLE_REQUIRED: 'Staff job title is required.',
   STAFF_STATUS_REQUIRED: 'Staff status is required.',
 
+  //Conflict errors
+  CONFLICTING_ASSET_ASSIGNMENT: 'Asset is already assigned to:',
+  CONFLICTING_CONFIRM: 'Are you sure you want to proceed with this action?',
+
   // Validation errors
-  MISSING_UPDATED_BY: 'Updated by information is required.',
+  UPDATED_BY_REQUIRED: 'Updated by information is required.',
   MISSING_REQUIRED_FIELDS: 'Please fill in all required fields.',
   INVALID_EMAIL: 'Please provide a valid email address.',
   INVALID_INPUT: 'Invalid input provided. Please check and try again.',

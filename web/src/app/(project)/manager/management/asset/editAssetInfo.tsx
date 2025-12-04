@@ -145,6 +145,10 @@ export function EditAssetInfo({
               {item.serialNumber}
             </p>
             <p className="mb-2 font-normal text-gray-100">
+              <span className="font-bold text-gray-50">Maker:</span>{' '}
+              {item.maker}
+            </p>
+            <p className="mb-2 font-normal text-gray-100">
               <span className="font-bold text-gray-50">Type:</span> {item.type}
             </p>
             <p className="font-bold text-gray-50">

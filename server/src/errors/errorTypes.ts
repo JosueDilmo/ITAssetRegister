@@ -28,13 +28,6 @@ export class ValidationError extends AppError {
   }
 }
 
-// For 404 Not Found - resource not found errors
-export class NotFoundError extends AppError {
-  constructor(message: string) {
-    super(message, 404, 'NOT_FOUND', null)
-  }
-}
-
 // For 401 Unauthorized - authentication errors
 export class AuthenticationError extends AppError {
   constructor(message: string) {
@@ -46,6 +39,13 @@ export class AuthenticationError extends AppError {
 export class AuthorizationError extends AppError {
   constructor(message: string) {
     super(message, 403, 'AUTHORIZATION_ERROR', null)
+  }
+}
+
+// For 404 Not Found - resource not found errors
+export class NotFoundError extends AppError {
+  constructor(message: string) {
+    super(message, 404, 'NOT_FOUND', null)
   }
 }
 
