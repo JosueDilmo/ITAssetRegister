@@ -17,7 +17,9 @@ export async function createStaff({
     .where(eq(staffTab.email, email))
 
   if (alreadyRegistered.length > 0) {
-    throw new ConflictError(ERROR_MESSAGES.STAFF_ALREADY_EXISTS)
+    throw new ConflictError(
+      `${ERROR_MESSAGES.STAFF_ALREADY_EXISTS} Email: ${email}`
+    )
   }
 
   const newRegistered = await db

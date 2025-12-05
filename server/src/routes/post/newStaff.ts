@@ -27,7 +27,7 @@ export const newStaff: FastifyPluginAsyncZod = async app => {
             .describe('Successful'),
           400: z
             .object({
-              success: z.boolean(),
+              success: z.literal(false),
               error: z.object({
                 code: z.string(),
                 message: z.string(),
@@ -37,7 +37,7 @@ export const newStaff: FastifyPluginAsyncZod = async app => {
             .describe('Bad Request - Input Validation'),
           401: z
             .object({
-              success: z.boolean(),
+              success: z.literal(false),
               error: z.object({
                 code: z.string(),
                 message: z.string(),
@@ -45,29 +45,29 @@ export const newStaff: FastifyPluginAsyncZod = async app => {
               }),
             })
             .describe('Unauthorized - Authentication'),
-          403: z.object({
-            success: z.boolean(),
-            error: z
-              .object({
-                code: z.string(),
-                message: z.string(),
-                details: z.any().optional(),
-              })
-              .describe('Forbidden - Authorization'),
-          }),
-          404: z
+          403: z
             .object({
-              success: z.boolean(),
+              success: z.literal(false),
               error: z.object({
                 code: z.string(),
                 message: z.string(),
-                details: z.string().optional(),
+                details: z.any().optional(),
+              }),
+            })
+            .describe('Forbidden - Authorization'),
+          404: z
+            .object({
+              success: z.literal(false),
+              error: z.object({
+                code: z.string(),
+                message: z.string(),
+                details: z.any().optional(),
               }),
             })
             .describe('Not Found - Resource Not Found'),
           409: z
             .object({
-              success: z.boolean(),
+              success: z.literal(false),
               error: z.object({
                 code: z.string(),
                 message: z.string(),
@@ -77,7 +77,7 @@ export const newStaff: FastifyPluginAsyncZod = async app => {
             .describe('Conflict - Resource Conflicts'),
           500: z
             .object({
-              success: z.boolean(),
+              success: z.literal(false),
               error: z.object({
                 code: z.string(),
                 message: z.string(),

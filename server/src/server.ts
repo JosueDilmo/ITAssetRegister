@@ -35,9 +35,6 @@ const app = fastify({
   },
 }).withTypeProvider<ZodTypeProvider>()
 
-// Register error handler
-app.register(errorHandler)
-
 app.setSerializerCompiler(serializerCompiler)
 app.setValidatorCompiler(validatorCompiler)
 
@@ -45,6 +42,9 @@ app.register(fastifyCors, {
   origin: env.CORS_ORIGIN,
   methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
 })
+
+// Register the error handler
+app.setErrorHandler(errorHandler)
 
 if (process.env.NODE_ENV === 'development') {
   // Documentation
@@ -57,13 +57,12 @@ if (process.env.NODE_ENV === 'development') {
     },
     transform: jsonSchemaTransform,
   })
-
-  // Register routes
   app.register(fastifySwaggerUi, {
     routePrefix: '/docs',
   })
 }
 
+// Register routes
 app.register(newAsset) // post route to add a new asset
 app.register(newStaff) // post route to add a new staff
 app.register(allStaff) // get route to fetch all staffs
