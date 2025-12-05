@@ -14,7 +14,7 @@ export const staffById: FastifyPluginAsyncZod = async app => {
           id: z.string().uuid(ERROR_MESSAGES.STAFF_ID_REQUIRED),
         }),
         response: {
-          201: z
+          200: z
             .object({
               staffDetails: z.array(
                 z.object({
@@ -25,7 +25,7 @@ export const staffById: FastifyPluginAsyncZod = async app => {
                   jobTitle: z.string(),
                   status: z.string(),
                   note: z.string().nullable(),
-                  assetHistoryList: z.array(z.string()),
+                  assetHistoryList: z.array(z.string().nullable()),
                   createdAt: z.string(),
                   createdBy: z.string(),
                   changeLog: z.array(
@@ -33,8 +33,8 @@ export const staffById: FastifyPluginAsyncZod = async app => {
                       updatedBy: z.string(),
                       updatedAt: z.string(),
                       updatedField: z.string(),
-                      previousValue: z.string(),
-                      newValue: z.string(),
+                      previousValue: z.array(z.string().nullable()),
+                      newValue: z.array(z.string().nullable()),
                     })
                   ),
                 })
@@ -77,7 +77,7 @@ export const staffById: FastifyPluginAsyncZod = async app => {
               error: z.object({
                 code: z.string(),
                 message: z.string(),
-                details: z.string().optional(),
+                details: z.any().optional(),
               }),
             })
             .describe('Not Found - Resource Not Found'),
@@ -108,12 +108,12 @@ export const staffById: FastifyPluginAsyncZod = async app => {
       const { id } = request.params
 
       if (!id) {
-        throw new ValidationError(ERROR_MESSAGES.INVALID_ID)
+        throw new ValidationError(`${ERROR_MESSAGES.INVALID_ID} ID: ${id}`)
       }
 
       const { staff } = await getStaffById({ id })
 
-      return reply.status(201).send({
+      return reply.status(200).send({
         staffDetails: staff.map(staff => ({
           id: staff.id,
           name: staff.name,

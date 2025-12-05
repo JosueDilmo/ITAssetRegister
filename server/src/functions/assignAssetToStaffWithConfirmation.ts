@@ -62,16 +62,23 @@ export async function assignAssetToStaffWithConfirmation({
       .set({ assignedTo: staffEmail, dateAssigned: new Date().toISOString() })
       .where(eq(assetTab.id, assetId))
 
-    // Update staff assetHistoryList (append assetID if not already present)
+    // Update staff assetHistoryList to include the new asset ID
     const currentAssetHistory: string[] = Array.isArray(
       staff[0].assetHistoryList
     )
       ? staff[0].assetHistoryList
-      : []
+      : staff[0].assetHistoryList
+        ? [staff[0].assetHistoryList]
+        : []
 
     const updatedAssetHistory = currentAssetHistory.includes(assetId)
       ? currentAssetHistory
       : [...currentAssetHistory, assetId]
+
+    if (!updatedAssetHistory.includes(assetId)) {
+      updatedAssetHistory.push(assetId)
+    }
+
     await trx
       .update(staffTab)
       .set({ assetHistoryList: updatedAssetHistory })
@@ -95,21 +102,22 @@ export async function assignAssetToStaffWithConfirmation({
       .where(eq(staffTab.email, staffEmail))
 
     // Update Asset changeLog
-    const prevChangeLog = Array.isArray(asset[0].changeLog)
+    const prevAssetChangeLog = Array.isArray(asset[0].changeLog)
       ? asset[0].changeLog
       : []
     const newChangeLog = {
       updatedBy,
       updatedAt: new Date().toISOString(),
       updatedField: 'assignedTo',
-      previousValue: asset[0].assignedTo,
-      newValue: staffEmail,
+      previousValue: [String(asset[0].assignedTo)],
+      newValue: [String(staffEmail)],
     }
-    const updatedChangeLog = [...prevChangeLog, newChangeLog]
+    const updatedChangeLog = [...prevAssetChangeLog, newChangeLog]
     await trx
       .update(assetTab)
       .set({ changeLog: updatedChangeLog })
       .where(eq(assetTab.id, assetId))
+
     return {
       success: true,
       message: 'Asset assigned successfully',

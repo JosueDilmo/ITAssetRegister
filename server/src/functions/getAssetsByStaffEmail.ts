@@ -21,9 +21,14 @@ export async function getAssetsByStaffEmail({ staffEmail }: GetAssetParams) {
       id: asset.id,
       serialNumber: asset.serialNumber,
       name: asset.name,
-      email: asset.assignedTo,
     }
   })
+
+  if (assetList.length === 0) {
+    throw new NotFoundError(
+      `${ERROR_MESSAGES.STAFF_ASSETS_NOT_FOUND} Email: ${staffEmail}`
+    )
+  }
 
   return {
     success: true,

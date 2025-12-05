@@ -35,14 +35,11 @@ export async function updateStaffDetails({
       updatedBy,
       updatedAt: new Date().toISOString(),
       updatedField: 'status and note',
-      previousValue: JSON.stringify({
-        status: staff[0].status,
-        note: staff[0].note,
-      }),
-      newValue: JSON.stringify({ status, note }),
+      previousValue: [String(staff[0].status), String(staff[0].note)],
+      newValue: [String(status), String(note)],
     }
     const updatedChangeLog = [...changeLog, newChangeLog]
-    await db
+    await tx
       .update(staffTab)
       .set({
         changeLog: updatedChangeLog,

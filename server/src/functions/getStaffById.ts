@@ -23,7 +23,7 @@ export async function getStaffById({ id }: GetByIdParams) {
     .where(eq(staffTab.id, id))
 
   if (staffQuery.length === 0) {
-    throw new NotFoundError(ERROR_MESSAGES.STAFF_ID_NOT_FOUND)
+    throw new NotFoundError(`${ERROR_MESSAGES.STAFF_ID_NOT_FOUND} ID: ${id}`)
   }
 
   const staff = staffQuery.map(staff => ({
@@ -41,8 +41,8 @@ export async function getStaffById({ id }: GetByIdParams) {
       updatedBy: string
       updatedAt: string
       updatedField: string
-      previousValue: string
-      newValue: string
+      previousValue: string[]
+      newValue: string[]
     }>,
   }))
 

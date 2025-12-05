@@ -23,7 +23,7 @@ export async function updateAssetDetails({
     }
 
     // Update the staff's status and note in the database
-    await db
+    await trx
       .update(assetTab)
       .set({ status: status, note: note })
       .where(eq(assetTab.id, id))
@@ -36,14 +36,11 @@ export async function updateAssetDetails({
       updatedBy,
       updatedAt: new Date().toISOString(),
       updatedField: 'status and note',
-      previousValue: JSON.stringify({
-        status: asset[0].status,
-        note: asset[0].note,
-      }),
-      newValue: JSON.stringify({ status, note }),
+      previousValue: [String(asset[0].status), String(asset[0].note)],
+      newValue: [String(status), String(note)],
     }
     const updatedChangeLog = [...changeLog, newChangeLog]
-    await db
+    await trx
       .update(assetTab)
       .set({
         changeLog: updatedChangeLog,

@@ -29,7 +29,7 @@ export const allStaff: FastifyPluginAsyncZod = async app => {
                   jobTitle: z.string(),
                   status: z.string(),
                   note: z.string().nullable(),
-                  assetHistoryList: z.array(z.string()),
+                  assetHistoryList: z.array(z.string().nullable()),
                   createdAt: z.string(),
                   createdBy: z.string(),
                   changeLog: z.array(
@@ -37,8 +37,8 @@ export const allStaff: FastifyPluginAsyncZod = async app => {
                       updatedBy: z.string(),
                       updatedAt: z.string(),
                       updatedField: z.string(),
-                      previousValue: z.string(),
-                      newValue: z.string(),
+                      previousValue: z.array(z.string().nullable()),
+                      newValue: z.array(z.string().nullable()),
                     })
                   ),
                 })
@@ -82,7 +82,7 @@ export const allStaff: FastifyPluginAsyncZod = async app => {
               error: z.object({
                 code: z.string(),
                 message: z.string(),
-                details: z.string().optional(),
+                details: z.any().optional(),
               }),
             })
             .describe('Not Found - Resource Not Found'),

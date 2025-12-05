@@ -36,8 +36,8 @@ export const assetWithId: FastifyPluginAsyncZod = async app => {
                       updatedBy: z.string(),
                       updatedAt: z.string(),
                       updatedField: z.string(),
-                      previousValue: z.string().nullable(),
-                      newValue: z.string().nullable(),
+                      previousValue: z.array(z.string().nullable()),
+                      newValue: z.array(z.string().nullable()),
                     })
                   ),
                 })
@@ -80,7 +80,7 @@ export const assetWithId: FastifyPluginAsyncZod = async app => {
               error: z.object({
                 code: z.string(),
                 message: z.string(),
-                details: z.string().optional(),
+                details: z.any().optional(),
               }),
             })
             .describe('Not Found - Resource Not Found'),

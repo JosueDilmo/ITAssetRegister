@@ -61,7 +61,7 @@ export const assetDetails: FastifyPluginAsyncZod = async app => {
               error: z.object({
                 code: z.string(),
                 message: z.string(),
-                details: z.string().optional(),
+                details: z.any().optional(),
               }),
             })
             .describe('Not Found - Resource Not Found'),

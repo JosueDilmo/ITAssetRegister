@@ -52,20 +52,21 @@ export async function removeAssetAssignment({
       .returning()
 
     // Update the asset's changeLog (appen new entry)
-    const prevChangeLog = Array.isArray(asset.changeLog) ? asset.changeLog : []
-    const newChangeLog = {
+    const prevAssetChangeLog = Array.isArray(asset.changeLog)
+      ? asset.changeLog
+      : []
+    const newAssetChangeLog = {
       updatedBy,
       updatedAt: new Date().toISOString(),
-      updatedField: 'assignedTo',
-      previousValue: prevAssignedTo,
-      newValue:
-        'EMPTY - Asset removed from previous user and date assigned cleared',
+      updatedField: 'assignedTo and dateAssigned',
+      previousValue: [String(prevAssignedTo), String(asset.dateAssigned)],
+      newValue: [String('assignedTo: null'), String('dateAssigned: null')],
     }
-    const updatedChangeLog = [...prevChangeLog, newChangeLog]
+    const updatedAssetChangeLog = [...prevAssetChangeLog, newAssetChangeLog]
     await trx
       .update(assetTab)
       .set({
-        changeLog: updatedChangeLog,
+        changeLog: updatedAssetChangeLog,
       })
       .where(eq(assetTab.id, assetId))
 
@@ -76,9 +77,9 @@ export async function removeAssetAssignment({
     const newStaffChangeLog = {
       updatedBy,
       updatedAt: new Date().toISOString(),
-      updatedField: 'assetHistoryList',
-      previousValue: staff[0].assetHistoryList,
-      newValue: `Asset with ID:${assetId} removed`,
+      updatedField: 'assignedTo and dateAssigned',
+      previousValue: [String(staff[0].assetHistoryList)],
+      newValue: [String(`Asset removed: ${assetId}`)],
     }
     const updatedStaffChangeLog = [...prevStaffChangeLog, newStaffChangeLog]
     await trx

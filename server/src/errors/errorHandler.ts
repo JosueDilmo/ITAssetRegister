@@ -1,15 +1,9 @@
-import type {
-  FastifyError,
-  FastifyInstance,
-  FastifyReply,
-  FastifyRequest,
-} from 'fastify'
+import type { FastifyError, FastifyReply, FastifyRequest } from 'fastify'
 import { ERROR_MESSAGES } from './errorMessages'
 import { AppError } from './errorTypes'
 
 // Converts any error to a standardized response format
 export function formatErrorResponse(error: Error | AppError) {
-  // Always return the Zod schema structure for errors
   if (error instanceof AppError) {
     return {
       success: false,
@@ -20,8 +14,7 @@ export function formatErrorResponse(error: Error | AppError) {
       },
     }
   }
-
-  // For standard errors or unknown errors
+  // For generic errors, return a general error response
   return {
     success: false,
     error: {
@@ -40,12 +33,11 @@ export const errorHandler = (
   // Log the error
   console.error(`Error processing request: ${request.method} ${request.url}`)
   console.error(error)
-  // Determine status code - use the AppError status code if available, otherwise default to 500
-  const statusCode = error instanceof AppError ? error.statusCode : 500
-
+  // Use AppError status code if available, otherwise 500
+  const statusCode =
+    error instanceof AppError && error.statusCode ? error.statusCode : 500
   // Format the error response to always match Zod schema
   const errorResponse = formatErrorResponse(error)
-
   // Send the response
   reply.status(statusCode).send(errorResponse)
 }

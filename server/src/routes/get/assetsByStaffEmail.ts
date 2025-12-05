@@ -5,13 +5,13 @@ import { getAssetsByStaffEmail } from '../../functions/getAssetsByStaffEmail'
 
 export const assetsByStaffEmail: FastifyPluginAsyncZod = async app => {
   app.get(
-    '/assetByStaffEmail',
+    '/assetByStaff/:email',
     {
       schema: {
         tags: ['IT Assets'],
         description: 'Get IT assets assigned to a staff member by their email',
-        querystring: z.object({
-          staffEmail: z.string().email(ERROR_MESSAGES.INVALID_EMAIL),
+        params: z.object({
+          email: z.string().email(ERROR_MESSAGES.INVALID_EMAIL),
         }),
         response: {
           200: z
@@ -23,7 +23,6 @@ export const assetsByStaffEmail: FastifyPluginAsyncZod = async app => {
                   id: z.string().uuid(),
                   serialNumber: z.string(),
                   name: z.string(),
-                  email: z.string().nullable(),
                 })
               ),
             })
@@ -64,7 +63,7 @@ export const assetsByStaffEmail: FastifyPluginAsyncZod = async app => {
               error: z.object({
                 code: z.string(),
                 message: z.string(),
-                details: z.string().optional(),
+                details: z.any().optional(),
               }),
             })
             .describe('Not Found - Resource Not Found'),
@@ -92,11 +91,11 @@ export const assetsByStaffEmail: FastifyPluginAsyncZod = async app => {
       },
     },
     async (request, reply) => {
-      const { staffEmail } = request.query
-      if (!staffEmail.trim()) {
+      const { email } = request.params
+      if (!email.trim()) {
         throw new ValidationError(ERROR_MESSAGES.STAFF_EMAIL_REQUIRED)
       }
-      const result = await getAssetsByStaffEmail({ staffEmail })
+      const result = await getAssetsByStaffEmail({ staffEmail: email })
       return reply.status(200).send({
         success: result.success,
         message: result.message,
@@ -104,7 +103,6 @@ export const assetsByStaffEmail: FastifyPluginAsyncZod = async app => {
           id: asset.id,
           serialNumber: asset.serialNumber,
           name: asset.name,
-          email: asset.email,
         })),
       })
     }

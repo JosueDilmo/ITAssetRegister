@@ -13,7 +13,7 @@ export const assetById: FastifyPluginAsyncZod = async app => {
         params: z.object({
           id: z.string().uuid(ERROR_MESSAGES.INVALID_ID),
         }),
-        querystring: z.object({
+        body: z.object({
           updatedBy: z.string().email(ERROR_MESSAGES.UPDATED_BY_REQUIRED),
           userConfirmed: z.boolean().optional(),
         }),
@@ -60,7 +60,7 @@ export const assetById: FastifyPluginAsyncZod = async app => {
               error: z.object({
                 code: z.string(),
                 message: z.string(),
-                details: z.string().optional(),
+                details: z.any().optional(),
               }),
             })
             .describe('Not Found - Resource Not Found'),
@@ -89,8 +89,8 @@ export const assetById: FastifyPluginAsyncZod = async app => {
     },
     async (request, reply) => {
       const assetId = request.params.id
-      const updatedBy = request.query.updatedBy
-      const userConfirmed = request.query.userConfirmed || false
+      const updatedBy = request.body.updatedBy
+      const userConfirmed = request.body.userConfirmed || false
 
       if (!assetId) {
         throw new ValidationError(ERROR_MESSAGES.ASSET_ID_REQUIRED)

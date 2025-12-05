@@ -64,43 +64,47 @@ export async function createAsset({
 
     // Update staff history and changelod
     if (assignedTo) {
-      const staff = await db.transaction(async trx => {
-        return await trx
-          .select()
-          .from(staffTab)
-          .where(eq(staffTab.email, assignedTo!))
-          .limit(1)
-      })
+      const staff = await tx
+        .select()
+        .from(staffTab)
+        .where(eq(staffTab.email, assignedTo!))
+        .limit(1)
 
       // Update staff assetHistoryList (append assetID if not already present)
       const currentAssetHistory: string[] = Array.isArray(
         staff[0].assetHistoryList
       )
         ? staff[0].assetHistoryList
-        : []
+        : staff[0].assetHistoryList
+          ? [staff[0].assetHistoryList]
+          : []
+
       const updatedAssetHistory = currentAssetHistory.includes(newAsset[0].id)
         ? currentAssetHistory
         : [...currentAssetHistory, newAsset[0].id]
+
+      if (!updatedAssetHistory.includes(newAsset[0].id)) {
+        updatedAssetHistory.push(newAsset[0].id)
+      }
       await tx
         .update(staffTab)
         .set({ assetHistoryList: updatedAssetHistory })
         .where(eq(staffTab.email, assignedTo!))
 
       // Update Staff changeLog
-      const staffChangeLog = Array.isArray(staff[0].changeLog)
+      const prevStaffChangeLog = Array.isArray(staff[0].changeLog)
         ? staff[0].changeLog
         : []
       const newStaffChangeLog = {
         updatedBy: createdBy,
         updatedAt: new Date().toISOString(),
         updatedField: 'assetHistoryList',
-        previousValue: JSON.stringify({
-          assetHistoryList: staff[0].assetHistoryList,
-        }),
-        newValue: JSON.stringify({ assetHistoryList: updatedAssetHistory }),
+        previousValue: currentAssetHistory,
+        newValue: updatedAssetHistory,
       }
-      const updatedStaffChangeLog = [...staffChangeLog, newStaffChangeLog]
-      await db
+      const updatedStaffChangeLog = [...prevStaffChangeLog, newStaffChangeLog]
+
+      await tx
         .update(staffTab)
         .set({
           changeLog: updatedStaffChangeLog,
@@ -108,20 +112,20 @@ export async function createAsset({
         .where(eq(staffTab.id, staff[0].id))
 
       // Update Asset changeLog
-      const prevChangeLog = Array.isArray(newAsset[0].changeLog)
+      const prevAssetChangeLog = Array.isArray(newAsset[0].changeLog)
         ? newAsset[0].changeLog
         : []
-      const newChangeLog = {
+      const newAssetChangeLog = {
         updatedBy: createdBy,
         updatedAt: new Date().toISOString(),
         updatedField: 'assignedTo',
-        previousValue: newAsset[0].assignedTo,
-        newValue: assignedTo,
+        previousValue: [String(newAsset[0].assignedTo)],
+        newValue: [String(assignedTo)],
       }
-      const updatedChangeLog = [...prevChangeLog, newChangeLog]
+      const updatedAssetChangeLog = [...prevAssetChangeLog, newAssetChangeLog]
       await tx
         .update(assetTab)
-        .set({ changeLog: updatedChangeLog })
+        .set({ changeLog: updatedAssetChangeLog })
         .where(eq(assetTab.id, newAsset[0].id))
 
       // Return success message with assigned staff if applicable

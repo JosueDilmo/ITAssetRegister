@@ -16,7 +16,7 @@ export async function getAssetBySerial({ serialNumber }: GetAssetSerialParams) {
     )
   }
 
-  const assetList = asset.map(asset => {
+  const assetDetails = asset.map(asset => {
     return {
       id: asset.id,
       serialNumber: asset.serialNumber,
@@ -35,6 +35,6 @@ export async function getAssetBySerial({ serialNumber }: GetAssetSerialParams) {
   return {
     success: true,
     message: 'Asset list retrieved successfully',
-    assetList,
+    assetDetails,
   }
 }

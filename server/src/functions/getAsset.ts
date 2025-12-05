@@ -44,8 +44,8 @@ export async function getAsset() {
         updatedBy: string
         updatedAt: string
         updatedField: string
-        previousValue: string
-        newValue: string
+        previousValue: string[]
+        newValue: string[]
       }>,
     }
   })

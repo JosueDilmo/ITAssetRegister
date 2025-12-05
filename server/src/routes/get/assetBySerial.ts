@@ -6,12 +6,12 @@ import { getAssetBySerial } from '../../functions/getAssetBySerial'
 
 export const assetBySerial: FastifyPluginAsyncZod = async app => {
   app.get(
-    '/assetBySerial',
+    '/assetBySerial/:serialNumber',
     {
       schema: {
         tags: ['IT Assets'],
         description: 'Get an IT asset by its serial number',
-        querystring: z.object({
+        params: z.object({
           serialNumber: z.string().min(2, ERROR_MESSAGES.INVALID_SERIAL_NUMBER),
         }),
         response: {
@@ -19,7 +19,7 @@ export const assetBySerial: FastifyPluginAsyncZod = async app => {
             .object({
               success: z.boolean(),
               message: z.string(),
-              assetList: z.array(
+              assetDetails: z.array(
                 z.object({
                   id: z.string(),
                   serialNumber: z.string(),
@@ -73,7 +73,7 @@ export const assetBySerial: FastifyPluginAsyncZod = async app => {
               error: z.object({
                 code: z.string(),
                 message: z.string(),
-                details: z.string().optional(),
+                details: z.any().optional(),
               }),
             })
             .describe('Not Found - Resource Not Found'),
@@ -101,18 +101,18 @@ export const assetBySerial: FastifyPluginAsyncZod = async app => {
       },
     },
     async (request, reply) => {
-      const { serialNumber } = request.query
+      const { serialNumber } = request.params
       if (!serialNumber.trim()) {
         throw new ValidationError(ERROR_MESSAGES.ASSET_SERIAL_REQUIRED)
       }
-      const { success, message, assetList } = await getAssetBySerial({
+      const { success, message, assetDetails } = await getAssetBySerial({
         serialNumber,
       })
 
       return reply.status(200).send({
         success,
         message,
-        assetList: assetList.map(asset => ({
+        assetDetails: assetDetails.map(asset => ({
           id: asset.id,
           serialNumber: asset.serialNumber,
           name: asset.name,

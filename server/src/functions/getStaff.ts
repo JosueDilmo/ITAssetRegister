@@ -54,8 +54,8 @@ export async function getStaff({ orderBy, page, search }: GetAllStaffParams) {
       updatedBy: string
       updatedAt: string
       updatedField: string
-      previousValue: string
-      newValue: string
+      previousValue: string[]
+      newValue: string[]
     }>,
   }))
 

@@ -48,8 +48,8 @@ export async function getAssetById({ id }: GetByIdParams) {
         updatedBy: string
         updatedAt: string
         updatedField: string
-        previousValue: string
-        newValue: string
+        previousValue: string[]
+        newValue: string[]
       }>,
     }
   })
