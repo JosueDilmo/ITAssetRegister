@@ -27,6 +27,7 @@ export const newAsset: FastifyPluginAsyncZod = async app => {
                 success: z.boolean(),
                 message: z.string(),
                 staff: z.string().nullable(),
+                assetId: z.string(),
               }),
             })
             .describe('Successful'),

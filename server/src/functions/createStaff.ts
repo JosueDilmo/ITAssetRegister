@@ -35,5 +35,6 @@ export async function createStaff({
     success: true,
     message: 'Staff registered successfully',
     staff: newRegistered[0].email,
+    staffId: newRegistered[0].id,
   }
 }

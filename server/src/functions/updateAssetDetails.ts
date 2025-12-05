@@ -1,8 +1,9 @@
 import { eq } from 'drizzle-orm'
 import { db } from '../drizzle/client'
 import { assetTab } from '../drizzle/schema/assetTab'
-import { ERROR_MESSAGES, NotFoundError } from '../errors'
+import { DatabaseError, ERROR_MESSAGES, NotFoundError } from '../errors'
 import type { PatchDetailsParams } from '../types'
+import { updateChangelog } from './utils/updateChangelog'
 
 export async function updateAssetDetails({
   id,
@@ -29,23 +30,23 @@ export async function updateAssetDetails({
       .where(eq(assetTab.id, id))
 
     // Log the change in the changeLog
-    const changeLog = Array.isArray(asset[0].changeLog)
-      ? asset[0].changeLog
-      : []
-    const newChangeLog = {
-      updatedBy,
-      updatedAt: new Date().toISOString(),
-      updatedField: 'status and note',
-      previousValue: [String(asset[0].status), String(asset[0].note)],
-      newValue: [String(status), String(note)],
+    const changelogUpdateResult = await updateChangelog({
+      trx,
+      tableIdentity: 'asset',
+      identifierField: assetTab.id,
+      identifierValue: id,
+      newChangeLogEntry: {
+        updatedBy,
+        updatedAt: new Date().toISOString(),
+        updatedField: 'status and note',
+        previousValue: [String(asset[0].status), String(asset[0].note)],
+        newValue: [String(status), String(note)],
+      },
+    })
+
+    if (!changelogUpdateResult) {
+      throw new DatabaseError(ERROR_MESSAGES.DATABASE_TRANSACTION_ERROR)
     }
-    const updatedChangeLog = [...changeLog, newChangeLog]
-    await trx
-      .update(assetTab)
-      .set({
-        changeLog: updatedChangeLog,
-      })
-      .where(eq(assetTab.id, id))
 
     return {
       success: true,

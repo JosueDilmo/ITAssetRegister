@@ -20,9 +20,12 @@ export const newStaff: FastifyPluginAsyncZod = async app => {
         response: {
           200: z
             .object({
-              success: z.boolean(),
-              message: z.string(),
-              staff: z.string(),
+              result: z.object({
+                success: z.boolean(),
+                message: z.string(),
+                staff: z.string().nullable(),
+                staffId: z.string(),
+              }),
             })
             .describe('Successful'),
           400: z
@@ -114,11 +117,7 @@ export const newStaff: FastifyPluginAsyncZod = async app => {
         jobTitle,
         createdBy,
       })
-      return reply.status(200).send({
-        success: result.success,
-        message: result.message,
-        staff: result.staff,
-      })
+      return reply.status(200).send({ result })
     }
   )
 }

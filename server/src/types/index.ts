@@ -4,6 +4,14 @@ export interface GetAllStaffParams {
   search?: string
 }
 
+export type ChangeLogEntry = {
+  updatedBy: string
+  updatedAt: string
+  updatedField: string
+  previousValue: string[]
+  newValue: string[]
+}
+
 export interface AssignAssetWithConfirmationParams {
   userConfirmed?: boolean
   staffEmail: string

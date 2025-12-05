@@ -2,8 +2,14 @@ import { eq } from 'drizzle-orm'
 import { db } from '../drizzle/client'
 import { assetTab } from '../drizzle/schema/assetTab'
 import { staffTab } from '../drizzle/schema/staffTab'
-import { ConflictError, ERROR_MESSAGES, NotFoundError } from '../errors'
+import {
+  ConflictError,
+  DatabaseError,
+  ERROR_MESSAGES,
+  NotFoundError,
+} from '../errors'
 import type { AssignAssetWithConfirmationParams } from '../types'
+import { updateChangelog } from './utils/updateChangelog'
 
 export async function assignAssetToStaffWithConfirmation({
   userConfirmed,
@@ -36,9 +42,9 @@ export async function assignAssetToStaffWithConfirmation({
         `${ERROR_MESSAGES.ASSET_NOT_FOUND} ID: ${assetId}`
       )
     }
-    const previousAssignedTo = asset[0].assignedTo
 
     // If the asset is already assigned to the same staff, throw conflict error
+    const previousAssignedTo = asset[0].assignedTo
     if (previousAssignedTo && previousAssignedTo === staffEmail) {
       throw new ConflictError(
         `${ERROR_MESSAGES.CONFLICTING_ASSET_ASSIGNMENT} ${staffEmail}.`
@@ -84,39 +90,40 @@ export async function assignAssetToStaffWithConfirmation({
       .set({ assetHistoryList: updatedAssetHistory })
       .where(eq(staffTab.email, staffEmail))
 
-    // Update Staff changelog
-    const prevStaffChangeLog = Array.isArray(staff[0].changeLog)
-      ? staff[0].changeLog
-      : []
-    const newStaffChangeLog = {
-      updatedBy,
-      updatedAt: new Date().toISOString(),
-      updatedField: 'assetHistoryList',
-      previousValue: currentAssetHistory,
-      newValue: updatedAssetHistory,
-    }
-    const updatedStaffChangeLog = [...prevStaffChangeLog, newStaffChangeLog]
-    await trx
-      .update(staffTab)
-      .set({ changeLog: updatedStaffChangeLog })
-      .where(eq(staffTab.email, staffEmail))
+    // Wait for changelog updates to complete
+    const [staffChangelogResult, assetChangelogResult] = await Promise.all([
+      updateChangelog({
+        trx: trx,
+        tableIdentity: 'staff',
+        identifierField: staffTab.email,
+        identifierValue: staffEmail,
+        newChangeLogEntry: {
+          updatedBy,
+          updatedAt: new Date().toISOString(),
+          updatedField: 'assetHistoryList',
+          previousValue: currentAssetHistory,
+          newValue: updatedAssetHistory,
+        },
+      }),
+      updateChangelog({
+        trx: trx,
+        tableIdentity: 'asset',
+        identifierField: assetTab.id,
+        identifierValue: assetId,
+        newChangeLogEntry: {
+          updatedBy,
+          updatedAt: new Date().toISOString(),
+          updatedField: 'assignedTo',
+          previousValue: [String(previousAssignedTo)],
+          newValue: [String(staffEmail)],
+        },
+      }),
+    ])
 
-    // Update Asset changeLog
-    const prevAssetChangeLog = Array.isArray(asset[0].changeLog)
-      ? asset[0].changeLog
-      : []
-    const newChangeLog = {
-      updatedBy,
-      updatedAt: new Date().toISOString(),
-      updatedField: 'assignedTo',
-      previousValue: [String(asset[0].assignedTo)],
-      newValue: [String(staffEmail)],
+    // Check if both changelog updates succeeded
+    if (!staffChangelogResult || !assetChangelogResult) {
+      throw new DatabaseError(ERROR_MESSAGES.INTERNAL_DB_ERROR)
     }
-    const updatedChangeLog = [...prevAssetChangeLog, newChangeLog]
-    await trx
-      .update(assetTab)
-      .set({ changeLog: updatedChangeLog })
-      .where(eq(assetTab.id, assetId))
 
     return {
       success: true,

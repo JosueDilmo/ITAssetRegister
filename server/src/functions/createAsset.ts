@@ -46,7 +46,7 @@ export async function createAsset({
   ///
 
   // Create new asset
-  await db.transaction(async tx => {
+  const result = await db.transaction(async tx => {
     const newAsset = await tx
       .insert(assetTab)
       .values({
@@ -133,12 +133,15 @@ export async function createAsset({
         success: true,
         message: 'Asset registered successfully',
         staff: newAsset[0].assignedTo,
+        assetId: newAsset[0].id,
       }
     }
+    return {
+      success: true,
+      message: 'Asset registered successfully',
+      staff: null,
+      assetId: newAsset[0].id,
+    }
   })
-  return {
-    success: true,
-    message: 'Asset registered successfully',
-    staff: null,
-  }
+  return result
 }

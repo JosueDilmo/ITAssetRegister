@@ -13,6 +13,8 @@ export const ERROR_MESSAGES = {
     'Database connection error. Please try again later.',
   INTERNAL_DB_ERROR:
     'A database internal error occurred. Please try again later.',
+  DATABASE_TRANSACTION_ERROR:
+    'A database transaction error occurred. Please try again later.',
 
   // Asset errors
   ASSET_ALREADY_EXISTS: 'Asset with this serial number already exists.',
