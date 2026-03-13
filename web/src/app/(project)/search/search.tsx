@@ -1,6 +1,6 @@
 import type { UserProps } from '@/app/interface/index'
 import type { AssetList } from '@/app/types/index'
-import { getAssetBySerial } from '@/http/api'
+import { getAssetBySerialSerialNumber } from '@/http/api'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as Icons from 'lucide-react'
 import { useState } from 'react'
@@ -26,11 +26,10 @@ export function Search({ staffEmail, userEmail, userRole }: UserProps) {
   const serialNumber = watch('serialNumber', '')
 
   async function searchAsset() {
-    const { success, message, assetList } = await getAssetBySerial({
-      serialNumber,
-    })
+    const { success, message, assetDetails } =
+      await getAssetBySerialSerialNumber(serialNumber)
     if (success) {
-      setAssetFound(assetList)
+      setAssetFound(assetDetails)
       toast[success ? 'success' : 'error'](message)
     } else {
       toast.error(message)

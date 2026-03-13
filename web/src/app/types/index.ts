@@ -4,6 +4,7 @@ export type AssetList = Array<{
   name: string
   type: string
   maker: string
+  condition: string
   assignedTo: string | null
   datePurchased: string
   assetNumber: string
@@ -11,13 +12,6 @@ export type AssetList = Array<{
   note: string | null
   createdAt: string
   createdBy: string
-  changeLog: Array<{
-    updatedBy: string
-    updatedAt: string
-    updatedField: string
-    previousValue: string
-    newValue: string
-  }>
 }>
 
 export type StaffList = Array<{
@@ -28,14 +22,14 @@ export type StaffList = Array<{
   jobTitle: string
   status: string
   note: string | null
-  assetHistoryList: string[]
+  assetHistoryList: Array<string | null>
   createdAt: string
   createdBy: string
   changeLog: Array<{
     updatedBy: string
     updatedAt: string
     updatedField: string
-    previousValue: string
-    newValue: string
+    previousValue: Array<string | null>
+    newValue: Array<string | null>
   }>
 }>

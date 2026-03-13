@@ -13,6 +13,7 @@ export const ASSET_ERROR_MESSAGES = {
   NAME: 'Insert Asset Name',
   TYPE: 'Insert Asset Type',
   MAKER: 'Insert Asset Maker',
+  CONDITION: 'Insert Asset Condition',
   ASSIGNED_TO: 'Insert Employee Email',
   DATE_PURCHASED: 'Valid Date: yyyy-mm-dd',
   ASSET_NUMBER: 'Asset Number = IT-XXXX',

@@ -9,6 +9,7 @@ CREATE TABLE "asset" (
 	"datePurchased" date NOT NULL,
 	"assetNumber" text NOT NULL,
 	"status" text DEFAULT 'ACTIVE' NOT NULL,
+	"condition" text DEFAULT '' NOT NULL,
 	"note" text DEFAULT '',
 	"createdAt" timestamp DEFAULT now() NOT NULL,
 	"createdBy" text NOT NULL,

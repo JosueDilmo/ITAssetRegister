@@ -18,6 +18,7 @@ export const assetTab = pgTable('asset', {
   datePurchased: date('datePurchased', { mode: 'string' }).notNull(),
   assetNumber: text('assetNumber').notNull().unique(),
   status: text('status').notNull().default('ACTIVE'),
+  condition: text('condition').notNull().default(''),
   note: text('note').default(''),
   createdAt: timestamp('createdAt').notNull().defaultNow(),
   createdBy: text('createdBy').notNull(),

@@ -9,6 +9,7 @@ export interface AssetInfoProps {
     name: string
     type: string
     maker: string
+    condition: string
     assignedTo: string | null
     dateAssigned: string | null
     datePurchased: string
@@ -28,7 +29,7 @@ export interface StaffInfoProps {
     jobTitle: string
     status: string
     note: string | null
-    assetHistoryList: string[]
+    assetHistoryList: Array<string | null>
     createdAt: string
   }>
 }
@@ -40,7 +41,6 @@ export interface AssetProps {
     id: string
     serialNumber: string
     name: string
-    email: string | null
   }[]
 }
 
@@ -55,6 +55,7 @@ export interface assetNormalizeData {
   name: string
   type: string
   maker: string
+  condition: string
   assignedTo: string | null
   datePurchased: string
   assetNumber: string

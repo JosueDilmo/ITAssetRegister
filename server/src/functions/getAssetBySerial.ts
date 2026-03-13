@@ -23,6 +23,7 @@ export async function getAssetBySerial({ serialNumber }: GetAssetSerialParams) {
       name: asset.name,
       type: asset.type,
       maker: asset.maker,
+      condition: asset.condition,
       assignedTo: asset.assignedTo,
       datePurchased: asset.datePurchased,
       assetNumber: asset.assetNumber,

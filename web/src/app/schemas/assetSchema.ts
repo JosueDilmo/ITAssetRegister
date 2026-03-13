@@ -6,6 +6,7 @@ export const assetSchema = z.object({
   name: z.string().min(2, ASSET_ERROR_MESSAGES.NAME),
   type: z.string().min(2, ASSET_ERROR_MESSAGES.TYPE),
   maker: z.string().min(2, ASSET_ERROR_MESSAGES.MAKER),
+  condition: z.string().min(2, ASSET_ERROR_MESSAGES.CONDITION),
   assignedTo: z.preprocess(
     value => (value === '' ? null : value),
     z.string().email(ASSET_ERROR_MESSAGES.ASSIGNED_TO).nullable()
@@ -21,6 +22,7 @@ export type AssetSchemaType = z.infer<typeof assetSchema>
 // Schema for editing asset details
 export const AssetDetailsSchema = z.object({
   status: z.string().min(2, ASSET_ERROR_MESSAGES.STATUS),
+  condition: z.string().min(2, ASSET_ERROR_MESSAGES.CONDITION).optional(),
   note: z.string().min(10, ASSET_ERROR_MESSAGES.NOTE).optional().nullable(),
 })
 export type AssetDetailsParams = z.infer<typeof AssetDetailsSchema>

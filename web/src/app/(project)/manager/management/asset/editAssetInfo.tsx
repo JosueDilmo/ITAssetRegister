@@ -30,6 +30,8 @@ export function EditAssetInfo({
   // State to manage the current note
   const [noteRegistered] = useState<string | null>(data[0].note)
 
+  const [conditionRegistered] = useState<string>(data[0].condition)
+
   // Initialize status with the current value
   useEffect(() => {
     setValue('status', data[0].status) // Initialize status with the current value
@@ -47,12 +49,19 @@ export function EditAssetInfo({
 
   const newNote = watch('note')
 
+  const newCondition = watch('condition')
+
   // Function to update asset details
-  async function updateAssetInfo({ status, note }: AssetDetailsParams) {
+  async function updateAssetInfo({
+    status,
+    condition,
+    note,
+  }: AssetDetailsParams) {
     const id = data[0].id
     const normalizedDetails = {
       status: status.toUpperCase(),
       note: !note || note === '' ? null : note.trim(),
+      condition: !condition || condition === '' ? '' : condition.trim(),
     }
 
     // Update the asset details
@@ -60,6 +69,7 @@ export function EditAssetInfo({
       await patchAssetDetailsId(id, {
         status: normalizedDetails.status,
         note: normalizedDetails.note,
+        condition: normalizedDetails.condition,
         updatedBy: userEmail,
       })
 
@@ -103,6 +113,42 @@ export function EditAssetInfo({
               <span className="text-gray-300 ml-2">
                 {status.toUpperCase()}{' '}
               </span>
+            )}
+            {userRole === 'admin' ? (
+              <>
+                <p className="font-bold text-gray-50">
+                  Condition:{' '}
+                  <span className="font-normal text-gray-100">
+                    {newCondition ? newCondition : conditionRegistered}
+                  </span>
+                </p>
+                <InputRoot className="mb-2" data-error={!!errors.condition}>
+                  <InputField
+                    type="text"
+                    placeholder={'add new condition'}
+                    onChange={e => {
+                      const value = e.target.value.trim()
+                      if (value) {
+                        setValue('condition', value)
+                      } else {
+                        setValue('condition', conditionRegistered)
+                      }
+                    }}
+                  />
+                </InputRoot>
+                {errors.condition && (
+                  <p className="ml-2 text-red text-xs font-semibold">
+                    {errors.condition.message}
+                  </p>
+                )}
+              </>
+            ) : (
+              <p className="mt-2 font-bold text-gray-50">
+                Condition:{' '}
+                <span className="font-normal text-gray-100">
+                  {newCondition ? newCondition : conditionRegistered}
+                </span>
+              </p>
             )}
             {userRole === 'admin' ? (
               <>

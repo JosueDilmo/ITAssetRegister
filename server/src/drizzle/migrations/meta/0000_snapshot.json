@@ -1,5 +1,5 @@
 {
-  "id": "8c5b6698-3345-4cae-accb-ddcb657fa3a1",
+  "id": "da7c5cc5-84d9-4dab-aeb6-bc6f697278c7",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -69,6 +69,13 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'ACTIVE'"
+        },
+        "condition": {
+          "name": "condition",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
         },
         "note": {
           "name": "note",

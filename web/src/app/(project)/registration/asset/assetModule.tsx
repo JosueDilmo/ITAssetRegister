@@ -28,6 +28,7 @@ export function AssetModule({ userEmail, userRole, staffEmail }: UserProps) {
     name,
     type,
     maker,
+    condition,
     assignedTo,
     datePurchased,
     assetNumber,
@@ -37,16 +38,17 @@ export function AssetModule({ userEmail, userRole, staffEmail }: UserProps) {
       name,
       type,
       maker,
+      condition,
       assignedTo,
       datePurchased,
       assetNumber,
       createdBy: userEmail,
     })
 
-    const { success, message, staff } = await postNewAsset(normalizedData)
-    toast[success ? 'success' : 'error'](message)
-    if (staff) {
-      toast.info(`Staff: ${staff}`)
+    const { result } = await postNewAsset(normalizedData)
+    toast[result.success ? 'success' : 'error'](result.message)
+    if (result.staff) {
+      toast.info(`Staff: ${result.staff}`)
     }
     await router.push('/registration')
     reset()
@@ -127,6 +129,25 @@ export function AssetModule({ userEmail, userRole, staffEmail }: UserProps) {
           {errors.maker && (
             <p className="ml-4 text-red text-xs font-semibold">
               {errors.maker.message}
+            </p>
+          )}
+        </div>
+
+        {/* Condition */}
+        <div className="space-y-2">
+          <InputRoot data-error={!!errors.condition}>
+            <InputIcon>
+              <Icons.ListCheck />
+            </InputIcon>
+            <InputField
+              type="text"
+              placeholder="Condition"
+              {...register('condition')}
+            />
+          </InputRoot>
+          {errors.condition && (
+            <p className="ml-4 text-red text-xs font-semibold">
+              {errors.condition.message}
             </p>
           )}
         </div>

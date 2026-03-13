@@ -30,6 +30,7 @@ export const ERROR_MESSAGES = {
   ASSET_MAKER_REQUIRED: 'Asset maker is required.',
   ASSET_NUMBER_REQUIRED: 'Asset number is required.',
   ASSET_STATUS_REQUIRED: 'Asset status is required.',
+  ASSET_CONDITION_REQUIRED: 'Asset condition is required.',
 
   // Staff errors
   STAFF_ALREADY_EXISTS: 'Staff with this email already exists.',
@@ -58,6 +59,7 @@ export const ERROR_MESSAGES = {
   INVALID_ASSET_TYPE: 'Please provide a valid ASSET type.',
   INVALID_MAKER: 'Please provide a valid ASSET maker.',
   INVALID_STATUS: 'Please provide a valid ASSET status.',
+  INVALID_CONDITION: 'Please provide a valid ASSET condition.',
   INVALID_NOTE: 'Please provide a valid note (at least 10 characters).',
   INVALID_SERIAL_NUMBER: 'Please provide a valid serial number.',
   INVALID_ASSET_NUMBER: 'Please provide a valid asset number.',

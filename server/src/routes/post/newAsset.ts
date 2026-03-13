@@ -15,6 +15,7 @@ export const newAsset: FastifyPluginAsyncZod = async app => {
           name: z.string().min(2, ERROR_MESSAGES.INVALID_NAME),
           type: z.string().min(2, ERROR_MESSAGES.INVALID_ASSET_TYPE),
           maker: z.string().min(2, ERROR_MESSAGES.INVALID_MAKER),
+          condition: z.string().min(2, ERROR_MESSAGES.INVALID_CONDITION),
           assignedTo: z.string().email().nullable(),
           datePurchased: z.string().date(ERROR_MESSAGES.INVALID_DATE),
           assetNumber: z.string().min(2, ERROR_MESSAGES.INVALID_ASSET_NUMBER),
@@ -101,6 +102,7 @@ export const newAsset: FastifyPluginAsyncZod = async app => {
         name,
         type,
         maker,
+        condition,
         assignedTo,
         datePurchased,
         assetNumber,
@@ -123,6 +125,9 @@ export const newAsset: FastifyPluginAsyncZod = async app => {
       if (!assetNumber.trim()) {
         throw new ValidationError(ERROR_MESSAGES.ASSET_NUMBER_REQUIRED)
       }
+      if (!condition.trim()) {
+        throw new ValidationError(ERROR_MESSAGES.ASSET_CONDITION_REQUIRED)
+      }
 
       // Call createAsset function with the extracted parameters
       const result = await createAsset({
@@ -130,6 +135,7 @@ export const newAsset: FastifyPluginAsyncZod = async app => {
         name,
         type,
         maker,
+        condition,
         assignedTo,
         datePurchased,
         assetNumber,

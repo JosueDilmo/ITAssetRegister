@@ -23,6 +23,7 @@ export interface CreateAssetParams {
   name: string
   type: string
   maker: string
+  condition: string
   assignedTo: string | null
   datePurchased: string
   assetNumber: string
@@ -50,6 +51,7 @@ export interface DeleteAssetParams {
 export interface PatchDetailsParams {
   id: string
   status: string
+  condition: string
   note: string | null
   updatedBy: string
 }

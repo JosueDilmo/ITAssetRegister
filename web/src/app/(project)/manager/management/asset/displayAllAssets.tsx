@@ -4,11 +4,11 @@ import { BoxField, BoxIcon, BoxRoot } from '../../../../components/box'
 import { Button } from '../../../../components/button'
 
 export async function DisplayAllAssets() {
-  const queryAll = await getAllAssets()
+  const data = await getAllAssets()
 
   return (
     <div className="w-full h-dvh grid grid-cols-2 gap-4 p-6 ml-4 rounded-xl overflow-hidden scrollbar-hide overflow-y-auto">
-      {queryAll.map(asset => (
+      {data?.assetList?.map(asset => (
         <div
           key={asset.id}
           className="max-w-sm max-h-fit p-6 bg-gray-700 border border-gray-200 rounded-lg"
@@ -32,6 +32,11 @@ export async function DisplayAllAssets() {
           </Button>
         </div>
       ))}
+      {(!data?.assetList || data.assetList.length === 0) && (
+        <div className="col-span-2 text-center text-gray-400 text-lg mt-10">
+          No assets found.
+        </div>
+      )}
     </div>
   )
 }

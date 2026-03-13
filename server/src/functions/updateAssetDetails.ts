@@ -3,11 +3,12 @@ import { db } from '../drizzle/client'
 import { assetTab } from '../drizzle/schema/assetTab'
 import { DatabaseError, ERROR_MESSAGES, NotFoundError } from '../errors'
 import type { PatchDetailsParams } from '../types'
-import { updateChangelog } from './utils/updateChangelog'
+import { updateChangelog } from './utils/updateChangeLog'
 
 export async function updateAssetDetails({
   id,
   status,
+  condition,
   note,
   updatedBy,
 }: PatchDetailsParams) {
@@ -23,10 +24,10 @@ export async function updateAssetDetails({
       throw new NotFoundError(`${ERROR_MESSAGES.ASSET_NOT_FOUND} ID: ${id}`)
     }
 
-    // Update the staff's status and note in the database
+    // Update the staff's status, condition, and note in the database
     await trx
       .update(assetTab)
-      .set({ status: status, note: note })
+      .set({ status: status, condition: condition, note: note })
       .where(eq(assetTab.id, id))
 
     // Log the change in the changeLog

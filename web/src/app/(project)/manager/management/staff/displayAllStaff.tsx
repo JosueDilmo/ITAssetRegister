@@ -12,7 +12,7 @@ export function DisplayAllStaff() {
   const [search, setSearch] = useState<string>('')
   const [pageValue, setPageValue] = useState<number>(1)
   const [pageTotal, setPageTotal] = useState<number>(1)
-  const [queryAll, setQueryAll] = useState<StaffList>([])
+  const [data, setData] = useState<StaffList>([])
 
   // Get the current values of the form fields
   const handleOrderByChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -21,7 +21,7 @@ export function DisplayAllStaff() {
 
   useEffect(() => {
     getAllStaff({ search: search, page: pageValue }).then(data => {
-      setQueryAll(data.staffList)
+      setData(data.staffList)
       setPageTotal(data.totalPages)
     })
   }, [search, pageValue])
@@ -62,7 +62,7 @@ export function DisplayAllStaff() {
           </option>
         ))}
       </select>
-      {queryAll.map(staff => (
+      {data.map(staff => (
         <div
           key={staff.id}
           className="max-w-sm max-h-fit p-6 bg-gray-700 border border-gray-200 rounded-lg"

@@ -15,6 +15,7 @@ export const assetDetails: FastifyPluginAsyncZod = async app => {
         }),
         body: z.object({
           status: z.string().min(2, ERROR_MESSAGES.INVALID_STATUS),
+          condition: z.string().min(2, ERROR_MESSAGES.INVALID_CONDITION),
           note: z.string().min(10, ERROR_MESSAGES.INVALID_NOTE).nullable(),
           updatedBy: z.string().email(ERROR_MESSAGES.UPDATED_BY_REQUIRED),
         }),
@@ -90,9 +91,12 @@ export const assetDetails: FastifyPluginAsyncZod = async app => {
     },
     async (request, reply) => {
       const assetID = request.params.id
-      const { status, note, updatedBy } = request.body
+      const { status, condition, note, updatedBy } = request.body
       if (!status.trim()) {
         throw new ValidationError(ERROR_MESSAGES.ASSET_STATUS_REQUIRED)
+      }
+      if (!condition.trim()) {
+        throw new ValidationError(ERROR_MESSAGES.ASSET_CONDITION_REQUIRED)
       }
       if (!updatedBy.trim()) {
         throw new ValidationError(ERROR_MESSAGES.UPDATED_BY_REQUIRED)
@@ -101,6 +105,7 @@ export const assetDetails: FastifyPluginAsyncZod = async app => {
       const result = await updateAssetDetails({
         id: assetID,
         status: status,
+        condition: condition,
         note: note,
         updatedBy: updatedBy,
       })

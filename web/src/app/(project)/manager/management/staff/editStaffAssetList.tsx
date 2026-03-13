@@ -41,9 +41,8 @@ export function EditStaffAssetList({
 
   useEffect(() => {
     async function getAllAssetByEmail() {
-      const { success, message, assetList } = await getAssetByStaffEmail({
-        staffEmail,
-      })
+      const { success, message, assetList } =
+        await getAssetByStaffEmail(staffEmail)
       setGetResult({ success, message, assetList })
     }
     getAllAssetByEmail()
