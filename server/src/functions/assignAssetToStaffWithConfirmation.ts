@@ -9,7 +9,7 @@ import {
   NotFoundError,
 } from '../errors'
 import type { AssignAssetWithConfirmationParams } from '../types'
-import { updateChangelog } from './utils/updateChangelog'
+import { updateChangelog } from './utils/updateChangeLog'
 
 export async function assignAssetToStaffWithConfirmation({
   userConfirmed,
@@ -65,7 +65,7 @@ export async function assignAssetToStaffWithConfirmation({
     // Assign asset to new staff (update asset record))
     await trx
       .update(assetTab)
-      .set({ assignedTo: staffEmail, dateAssigned: new Date().toISOString() })
+      .set({ assignedTo: staffEmail, note: `Asset assigned to staff ${staff[0].name}`, dateAssigned: new Date().toISOString() })
       .where(eq(assetTab.id, assetId))
 
     // Update staff assetHistoryList to include the new asset ID

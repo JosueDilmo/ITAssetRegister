@@ -31,7 +31,9 @@ async function importStaff() {
       typeof staff['department'] !== 'string' ||
       staff['department'].trim() === '' ||
       typeof staff['jobTitle'] !== 'string' ||
-      staff['jobTitle'].trim() === ''
+      staff['jobTitle'].trim() === '' ||
+      typeof staff['status'] !== 'string' ||
+      staff['status'].trim() === ''
     ) {
       console.error(
         'Skipping row due to missing or empty required fields:',
@@ -42,12 +44,14 @@ async function importStaff() {
         email: typeof staff['email'],
         department: typeof staff['department'],
         jobTitle: typeof staff['jobTitle'],
+        status: typeof staff['status'],
       })
       console.error('Field values:', {
         name: JSON.stringify(staff[nameKey]),
         email: JSON.stringify(staff['email']),
         department: JSON.stringify(staff['department']),
         jobTitle: JSON.stringify(staff['jobTitle']),
+        status: JSON.stringify(staff['status']),
       })
       continue
     }

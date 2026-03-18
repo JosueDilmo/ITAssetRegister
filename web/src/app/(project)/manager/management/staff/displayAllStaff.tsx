@@ -15,9 +15,9 @@ export function DisplayAllStaff() {
   const [data, setData] = useState<StaffList>([])
 
   // Get the current values of the form fields
-  const handleOrderByChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    event.target.value as GetAllStaffOrderBy
-  }
+  // const handleOrderByChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  //   event.target.value as GetAllStaffOrderBy
+  // }
 
   useEffect(() => {
     getAllStaff({ search: search, page: pageValue }).then(data => {
@@ -42,7 +42,7 @@ export function DisplayAllStaff() {
           }}
         />
       </InputRoot>
-      <select
+      {/* <select
         className="mr-8 p-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-50"
         onChange={handleOrderByChange}
       >
@@ -50,19 +50,21 @@ export function DisplayAllStaff() {
         <option value="department">Department</option>
         <option value="email">Email</option>
         <option value="createdAt">Created At</option>
-      </select>
-      <span className="text-gray-50 mr-4">Page:</span>
-      <select
-        className="ml-4 p-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-50"
-        onChange={e => setPageValue(Number(e.target.value))}
-      >
-        {Array.from({ length: pageTotal }, (_, i) => i + 1).map(pageNum => (
-          <option key={pageNum} value={pageNum}>
-            {pageNum}
-          </option>
-        ))}
-      </select>
-      {data.map(staff => (
+      </select> */}
+      <span className="text-gray-50 mr-4">
+        Page:
+        <select
+          className="ml-4 p-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-50"
+          onChange={e => setPageValue(Number(e.target.value))}
+        >
+          {Array.from({ length: pageTotal }, (_, i) => i + 1).map(pageNum => (
+            <option key={pageNum} value={pageNum}>
+              {pageNum}
+            </option>
+          ))}
+        </select>
+      </span>
+      {data?.map(staff => (
         <div
           key={staff.id}
           className="max-w-sm max-h-fit p-6 bg-gray-700 border border-gray-200 rounded-lg"
@@ -85,6 +87,11 @@ export function DisplayAllStaff() {
           </Button>
         </div>
       ))}
+      {(!data || data.length === 0) && (
+        <div className="col-span-2 text-center text-gray-400 text-lg mt-10">
+          No staff found.
+        </div>
+      )}
     </div>
   )
 }
