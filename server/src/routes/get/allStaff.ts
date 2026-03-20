@@ -11,12 +11,7 @@ export const allStaff: FastifyPluginAsyncZod = async app => {
         description: 'Get all staff or a specific staff member by ID',
         querystring: z.object({
           search: z.string().optional(),
-          orderBy: z
-            .enum(['name', 'department', 'email', 'createdAt'])
-            .optional()
-            .default('name'),
-          page: z.coerce.number().optional().default(1),
-        }),
+          orderBy: z.enum(['name']).default('name'),}),
         response: {
           200: z
             .object({
@@ -43,7 +38,6 @@ export const allStaff: FastifyPluginAsyncZod = async app => {
                   ),
                 })
               ),
-              totalPages: z.number(),
             })
             .describe('Successful'),
           400: z
@@ -110,10 +104,8 @@ export const allStaff: FastifyPluginAsyncZod = async app => {
       },
     },
     async (request, reply) => {
-      const { search, orderBy, page } = request.query
-      const { staffList, totalPages } = await getStaff({
-        orderBy,
-        page,
+      const { search } = request.query
+      const { staffList } = await getStaff({
         search,
       })
 
@@ -139,7 +131,6 @@ export const allStaff: FastifyPluginAsyncZod = async app => {
             })),
           }
         }),
-        totalPages,
       })
     }
   )

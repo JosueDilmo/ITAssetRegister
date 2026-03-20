@@ -37,7 +37,10 @@ export function StaffModule({ userEmail, userRole, staffEmail }: UserProps) {
       createdBy: userEmail,
     })
     try {
-      const { success, message, staff } = await postNewStaff(normalizedData)
+      const {result} = await postNewStaff(normalizedData)
+      const message = result.message
+      const success = result.success
+      const staff = result.staff
       toast[success ? 'success' : 'error'](message)
       if (staff) {
         toast.info(`Staff: ${staff}`)

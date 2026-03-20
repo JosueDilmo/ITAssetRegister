@@ -2,7 +2,7 @@
 
 import { InputField, InputRoot } from '@/app/components/input'
 import type { StaffList } from '@/app/types'
-import { type GetAllStaffOrderBy, getAllStaff } from '@/http/api'
+import { getAllStaff } from '@/http/api'
 import * as Icons from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { BoxField, BoxIcon, BoxRoot } from '../../../../components/box'
@@ -10,21 +10,13 @@ import { Button } from '../../../../components/button'
 
 export function DisplayAllStaff() {
   const [search, setSearch] = useState<string>('')
-  const [pageValue, setPageValue] = useState<number>(1)
-  const [pageTotal, setPageTotal] = useState<number>(1)
   const [data, setData] = useState<StaffList>([])
 
-  // Get the current values of the form fields
-  // const handleOrderByChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-  //   event.target.value as GetAllStaffOrderBy
-  // }
-
   useEffect(() => {
-    getAllStaff({ search: search, page: pageValue }).then(data => {
+    getAllStaff({ search: search }).then(data => {
       setData(data.staffList)
-      setPageTotal(data.totalPages)
     })
-  }, [search, pageValue])
+  }, [search])
 
   return (
     <div className="w-full h-dvh grid grid-cols-2 gap-4 p-6 ml-4 rounded-xl overflow-hidden scrollbar-hide overflow-y-auto">
@@ -42,28 +34,6 @@ export function DisplayAllStaff() {
           }}
         />
       </InputRoot>
-      {/* <select
-        className="mr-8 p-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-50"
-        onChange={handleOrderByChange}
-      >
-        <option value="name">Name</option>
-        <option value="department">Department</option>
-        <option value="email">Email</option>
-        <option value="createdAt">Created At</option>
-      </select> */}
-      <span className="text-gray-50 mr-4">
-        Page:
-        <select
-          className="ml-4 p-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-50"
-          onChange={e => setPageValue(Number(e.target.value))}
-        >
-          {Array.from({ length: pageTotal }, (_, i) => i + 1).map(pageNum => (
-            <option key={pageNum} value={pageNum}>
-              {pageNum}
-            </option>
-          ))}
-        </select>
-      </span>
       {data?.map(staff => (
         <div
           key={staff.id}

@@ -19,7 +19,6 @@ export function AddAsset({
       assetId: id,
       updatedBy: userEmail,
     })
-
     if (success) {
       toast[success ? 'success' : 'error'](message)
     } else {

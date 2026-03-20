@@ -1,6 +1,4 @@
 export interface GetAllStaffParams {
-  orderBy: 'name' | 'department' | 'email' | 'createdAt'
-  page: number
   search?: string
 }
 
@@ -51,7 +49,7 @@ export interface DeleteAssetParams {
 export interface PatchDetailsParams {
   id: string
   status: string
-  condition: string
+  condition?: string
   note: string | null
   updatedBy: string
 }
