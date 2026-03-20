@@ -1,36 +1,33 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { z } from 'zod'
-import { ERROR_MESSAGES, ValidationError } from '../../errors'
-import { createStaff } from '../../functions/createStaff'
+import { ERROR_MESSAGES, ValidationError } from '../../../errors'
+import { updateStaffDetails } from '../../../functions/updateStaffDetails'
 
-export const newStaff: FastifyPluginAsyncZod = async app => {
-  app.post(
-    '/newStaff',
+export const staffDetails: FastifyPluginAsyncZod = async app => {
+  app.patch(
+    '/staffDetails/:id',
     {
       schema: {
         tags: ['Staff'],
-        description: 'Create a new staff member',
+        description: 'Update staff details such as status and note',
+        params: z.object({
+          id: z.string().uuid(ERROR_MESSAGES.INVALID_ID),
+        }),
         body: z.object({
-          name: z.string().min(2, ERROR_MESSAGES.INVALID_NAME),
-          email: z.string().email(ERROR_MESSAGES.INVALID_EMAIL),
-          department: z.string().min(2, ERROR_MESSAGES.INVALID_DEPARTMENT),
-          jobTitle: z.string().min(2, ERROR_MESSAGES.INVALID_JOB_TITLE),
-          createdBy: z.string().email(ERROR_MESSAGES.MISSING_REQUIRED_FIELDS),
+          status: z.string().min(1, ERROR_MESSAGES.INVALID_STATUS),
+          note: z.string().nullable(),
+          updatedBy: z.string().min(1, ERROR_MESSAGES.UPDATED_BY_REQUIRED),
         }),
         response: {
           200: z
             .object({
-              result: z.object({
-                success: z.boolean(),
-                message: z.string(),
-                staff: z.string().nullable(),
-                staffId: z.string(),
-              }),
+              success: z.boolean(),
+              message: z.string(),
             })
             .describe('Successful'),
           400: z
             .object({
-              success: z.literal(false),
+              success: z.boolean(),
               error: z.object({
                 code: z.string(),
                 message: z.string(),
@@ -40,7 +37,7 @@ export const newStaff: FastifyPluginAsyncZod = async app => {
             .describe('Bad Request - Input Validation'),
           401: z
             .object({
-              success: z.literal(false),
+              success: z.boolean(),
               error: z.object({
                 code: z.string(),
                 message: z.string(),
@@ -48,19 +45,19 @@ export const newStaff: FastifyPluginAsyncZod = async app => {
               }),
             })
             .describe('Unauthorized - Authentication'),
-          403: z
-            .object({
-              success: z.literal(false),
-              error: z.object({
+          403: z.object({
+            success: z.boolean(),
+            error: z
+              .object({
                 code: z.string(),
                 message: z.string(),
                 details: z.any().optional(),
-              }),
-            })
-            .describe('Forbidden - Authorization'),
+              })
+              .describe('Forbidden - Authorization'),
+          }),
           404: z
             .object({
-              success: z.literal(false),
+              success: z.boolean(),
               error: z.object({
                 code: z.string(),
                 message: z.string(),
@@ -70,7 +67,7 @@ export const newStaff: FastifyPluginAsyncZod = async app => {
             .describe('Not Found - Resource Not Found'),
           409: z
             .object({
-              success: z.literal(false),
+              success: z.boolean(),
               error: z.object({
                 code: z.string(),
                 message: z.string(),
@@ -80,7 +77,7 @@ export const newStaff: FastifyPluginAsyncZod = async app => {
             .describe('Conflict - Resource Conflicts'),
           500: z
             .object({
-              success: z.literal(false),
+              success: z.boolean(),
               error: z.object({
                 code: z.string(),
                 message: z.string(),
@@ -92,32 +89,29 @@ export const newStaff: FastifyPluginAsyncZod = async app => {
       },
     },
     async (request, reply) => {
-      const { name, email, department, jobTitle, createdBy } = request.body
+      const staffId = request.params.id
+      const { status, note, updatedBy } = request.body
 
-      if (!name.trim()) {
-        throw new ValidationError(ERROR_MESSAGES.STAFF_NAME_REQUIRED)
+      if (!staffId.trim()) {
+        throw new ValidationError(ERROR_MESSAGES.STAFF_ID_REQUIRED)
       }
 
-      if (!email.trim()) {
-        throw new ValidationError(ERROR_MESSAGES.STAFF_EMAIL_REQUIRED)
+      if (!updatedBy.trim()) {
+        throw new ValidationError(ERROR_MESSAGES.UPDATED_BY_REQUIRED)
       }
 
-      if (!department.trim()) {
-        throw new ValidationError(ERROR_MESSAGES.STAFF_DEPARTMENT_REQUIRED)
+      if (!status.trim()) {
+        throw new ValidationError(ERROR_MESSAGES.STAFF_STATUS_REQUIRED)
       }
 
-      if (!jobTitle.trim()) {
-        throw new ValidationError(ERROR_MESSAGES.STAFF_JOB_TITLE_REQUIRED)
-      }
-
-      const result = await createStaff({
-        name,
-        email,
-        department,
-        jobTitle,
-        createdBy,
+      const result = await updateStaffDetails({
+        id: staffId,
+        status: status,
+        note: note,
+        updatedBy: updatedBy,
       })
-      return reply.status(200).send({ result })
+
+      return reply.status(200).send(result)
     }
   )
 }

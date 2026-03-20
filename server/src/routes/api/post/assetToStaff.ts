@@ -1,43 +1,28 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { z } from 'zod'
-import { getStaff } from '../../functions/getStaff'
+import { ERROR_MESSAGES, ValidationError } from '../../../errors'
+import { assignAssetToStaffWithConfirmation } from '../../../functions/assignAssetToStaffWithConfirmation'
 
-export const allStaff: FastifyPluginAsyncZod = async app => {
-  app.get(
-    '/allStaff',
+export const assetToStaff: FastifyPluginAsyncZod = async app => {
+  app.post(
+    '/assetToStaff/:email',
     {
       schema: {
-        tags: ['Staff'],
-        description: 'Get all staff or a specific staff member by ID',
-        querystring: z.object({
-          search: z.string().optional(),
-          orderBy: z.enum(['name']).default('name'),}),
+        tags: ['IT Assets'],
+        description: 'Assign an IT asset to a staff member by their email',
+        params: z.object({
+          email: z.string().email(ERROR_MESSAGES.INVALID_EMAIL),
+        }),
+        body: z.object({
+          assetId: z.string().uuid(ERROR_MESSAGES.INVALID_ID),
+          updatedBy: z.string().email(ERROR_MESSAGES.UPDATED_BY_REQUIRED),
+          userConfirmed: z.boolean().optional(),
+        }),
         response: {
           200: z
             .object({
-              staffList: z.array(
-                z.object({
-                  id: z.string().uuid(),
-                  name: z.string(),
-                  email: z.string(),
-                  department: z.string(),
-                  jobTitle: z.string(),
-                  status: z.string(),
-                  note: z.string().nullable(),
-                  assetHistoryList: z.array(z.string().nullable()),
-                  createdAt: z.string(),
-                  createdBy: z.string(),
-                  changeLog: z.array(
-                    z.object({
-                      updatedBy: z.string(),
-                      updatedAt: z.string(),
-                      updatedField: z.string(),
-                      previousValue: z.array(z.string().nullable()),
-                      newValue: z.array(z.string().nullable()),
-                    })
-                  ),
-                })
-              ),
+              success: z.boolean(),
+              message: z.string(),
             })
             .describe('Successful'),
           400: z
@@ -104,33 +89,33 @@ export const allStaff: FastifyPluginAsyncZod = async app => {
       },
     },
     async (request, reply) => {
-      const { search } = request.query
-      const { staffList } = await getStaff({
-        search,
+      const staffEmail = request.params.email
+      const userConfirmed = request.body.userConfirmed || false
+      const assetId = request.body.assetId
+      const updatedBy = request.body.updatedBy
+
+      if (!staffEmail.trim()) {
+        throw new ValidationError(ERROR_MESSAGES.STAFF_EMAIL_REQUIRED)
+      }
+
+      if (!assetId.trim()) {
+        throw new ValidationError(ERROR_MESSAGES.ASSET_ID_REQUIRED)
+      }
+
+      if (!updatedBy.trim()) {
+        throw new ValidationError(ERROR_MESSAGES.UPDATED_BY_REQUIRED)
+      }
+
+      const result = await assignAssetToStaffWithConfirmation({
+        staffEmail,
+        assetId,
+        updatedBy,
+        userConfirmed,
       })
 
       return reply.status(200).send({
-        staffList: staffList.map(staff => {
-          return {
-            id: staff.id,
-            name: staff.name,
-            email: staff.email,
-            department: staff.department,
-            jobTitle: staff.jobTitle,
-            status: staff.status,
-            note: staff.note,
-            assetHistoryList: staff.assetHistoryList,
-            createdAt: staff.createdAt.toISOString(),
-            createdBy: staff.createdBy,
-            changeLog: staff.changeLog.map(log => ({
-              updatedBy: log.updatedBy,
-              updatedAt: log.updatedAt,
-              updatedField: log.updatedField,
-              previousValue: log.previousValue,
-              newValue: log.newValue,
-            })),
-          }
-        }),
+        success: result.success,
+        message: result.message,
       })
     }
   )

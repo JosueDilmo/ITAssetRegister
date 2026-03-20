@@ -1,30 +1,27 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { z } from 'zod'
-import { ERROR_MESSAGES, ValidationError } from '../../errors'
-import { getAssetsByStaffEmail } from '../../functions/getAssetsByStaffEmail'
+import { ERROR_MESSAGES, ValidationError } from '../../../errors'
+import { removeAssetAssignment } from '../../../functions/removeAssetAssignment'
 
-export const assetsByStaffEmail: FastifyPluginAsyncZod = async app => {
-  app.get(
-    '/assetByStaff/:email',
+export const assetById: FastifyPluginAsyncZod = async app => {
+  app.delete(
+    '/assetBy/:id',
     {
       schema: {
         tags: ['IT Assets'],
-        description: 'Get IT assets assigned to a staff member by their email',
+        description: 'Delete an asset by its ID',
         params: z.object({
-          email: z.string().email(ERROR_MESSAGES.INVALID_EMAIL),
+          id: z.string().uuid(ERROR_MESSAGES.INVALID_ID),
+        }),
+        body: z.object({
+          updatedBy: z.string().email(ERROR_MESSAGES.UPDATED_BY_REQUIRED),
+          userConfirmed: z.boolean().optional(),
         }),
         response: {
           200: z
             .object({
               success: z.boolean(),
               message: z.string(),
-              assetList: z.array(
-                z.object({
-                  id: z.string().uuid(),
-                  serialNumber: z.string(),
-                  name: z.string(),
-                })
-              ),
             })
             .describe('Successful'),
           400: z
@@ -91,19 +88,23 @@ export const assetsByStaffEmail: FastifyPluginAsyncZod = async app => {
       },
     },
     async (request, reply) => {
-      const { email } = request.params
-      if (!email.trim()) {
-        throw new ValidationError(ERROR_MESSAGES.STAFF_EMAIL_REQUIRED)
+      const assetId = request.params.id
+      const updatedBy = request.body.updatedBy
+      const userConfirmed = request.body.userConfirmed || false
+
+      if (!assetId) {
+        throw new ValidationError(ERROR_MESSAGES.ASSET_ID_REQUIRED)
       }
-      const result = await getAssetsByStaffEmail({ staffEmail: email })
+
+      const { success, message } = await removeAssetAssignment({
+        assetId,
+        updatedBy,
+        userConfirmed,
+      })
+
       return reply.status(200).send({
-        success: result.success,
-        message: result.message,
-        assetList: result.assetList.map(asset => ({
-          id: asset.id,
-          serialNumber: asset.serialNumber,
-          name: asset.name,
-        })),
+        success,
+        message,
       })
     }
   )

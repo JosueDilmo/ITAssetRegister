@@ -1,21 +1,23 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { z } from 'zod'
-import { ERROR_MESSAGES, ValidationError } from '../../errors'
-import { removeAssetAssignment } from '../../functions/removeAssetAssignment'
+import { ERROR_MESSAGES, ValidationError } from '../../../errors'
+import { updateAssetDetails } from '../../../functions/updateAssetDetails'
 
-export const assetById: FastifyPluginAsyncZod = async app => {
-  app.delete(
-    '/assetBy/:id',
+export const assetDetails: FastifyPluginAsyncZod = async app => {
+  app.patch(
+    '/assetDetails/:id',
     {
       schema: {
         tags: ['IT Assets'],
-        description: 'Delete an asset by its ID',
+        description: 'Update IT asset details such as status and note',
         params: z.object({
           id: z.string().uuid(ERROR_MESSAGES.INVALID_ID),
         }),
         body: z.object({
+          status: z.string().min(2, ERROR_MESSAGES.INVALID_STATUS),
+          condition: z.string().min(2, ERROR_MESSAGES.INVALID_CONDITION),
+          note: z.string().min(10, ERROR_MESSAGES.INVALID_NOTE).nullable(),
           updatedBy: z.string().email(ERROR_MESSAGES.UPDATED_BY_REQUIRED),
-          userConfirmed: z.boolean().optional(),
         }),
         response: {
           200: z
@@ -88,24 +90,28 @@ export const assetById: FastifyPluginAsyncZod = async app => {
       },
     },
     async (request, reply) => {
-      const assetId = request.params.id
-      const updatedBy = request.body.updatedBy
-      const userConfirmed = request.body.userConfirmed || false
-
-      if (!assetId) {
-        throw new ValidationError(ERROR_MESSAGES.ASSET_ID_REQUIRED)
+      const assetID = request.params.id
+      const { status, condition, note, updatedBy } = request.body
+      if (!status.trim()) {
+        throw new ValidationError(ERROR_MESSAGES.ASSET_STATUS_REQUIRED)
+      }
+      if (!condition.trim()) {
+        throw new ValidationError(ERROR_MESSAGES.ASSET_CONDITION_REQUIRED)
+      }
+      if (!updatedBy.trim()) {
+        throw new ValidationError(ERROR_MESSAGES.UPDATED_BY_REQUIRED)
       }
 
-      const { success, message } = await removeAssetAssignment({
-        assetId,
-        updatedBy,
-        userConfirmed,
+      const result = await updateAssetDetails({
+        id: assetID,
+        status: status,
+        condition: condition,
+        note: note,
+        updatedBy: updatedBy,
       })
-
-      return reply.status(200).send({
-        success,
-        message,
-      })
+      return reply
+        .status(200)
+        .send({ success: result.success, message: result.message })
     }
   )
 }

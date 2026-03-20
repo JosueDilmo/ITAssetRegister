@@ -1,28 +1,44 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { z } from 'zod'
-import { ERROR_MESSAGES, ValidationError } from '../../errors'
-import { updateStaffDetails } from '../../functions/updateStaffDetails'
+import { ERROR_MESSAGES, ValidationError } from '../../../errors'
+import { getStaffById } from '../../../functions/getStaffById'
 
-export const staffDetails: FastifyPluginAsyncZod = async app => {
-  app.patch(
-    '/staffDetails/:id',
+export const staffById: FastifyPluginAsyncZod = async app => {
+  app.get(
+    '/staffBy/:id',
     {
       schema: {
         tags: ['Staff'],
-        description: 'Update staff details such as status and note',
+        description: 'Get staff by ID',
         params: z.object({
-          id: z.string().uuid(ERROR_MESSAGES.INVALID_ID),
-        }),
-        body: z.object({
-          status: z.string().min(1, ERROR_MESSAGES.INVALID_STATUS),
-          note: z.string().nullable(),
-          updatedBy: z.string().min(1, ERROR_MESSAGES.UPDATED_BY_REQUIRED),
+          id: z.string().uuid(ERROR_MESSAGES.STAFF_ID_REQUIRED),
         }),
         response: {
           200: z
             .object({
-              success: z.boolean(),
-              message: z.string(),
+              staffDetails: z.array(
+                z.object({
+                  id: z.string().uuid(),
+                  name: z.string(),
+                  email: z.string(),
+                  department: z.string(),
+                  jobTitle: z.string(),
+                  status: z.string(),
+                  note: z.string().nullable(),
+                  assetHistoryList: z.array(z.string().nullable()),
+                  createdAt: z.string(),
+                  createdBy: z.string(),
+                  changeLog: z.array(
+                    z.object({
+                      updatedBy: z.string(),
+                      updatedAt: z.string(),
+                      updatedField: z.string(),
+                      previousValue: z.array(z.string().nullable()),
+                      newValue: z.array(z.string().nullable()),
+                    })
+                  ),
+                })
+              ),
             })
             .describe('Successful'),
           400: z
@@ -89,29 +105,35 @@ export const staffDetails: FastifyPluginAsyncZod = async app => {
       },
     },
     async (request, reply) => {
-      const staffId = request.params.id
-      const { status, note, updatedBy } = request.body
+      const { id } = request.params
 
-      if (!staffId.trim()) {
-        throw new ValidationError(ERROR_MESSAGES.STAFF_ID_REQUIRED)
+      if (!id) {
+        throw new ValidationError(`${ERROR_MESSAGES.INVALID_ID} ID: ${id}`)
       }
 
-      if (!updatedBy.trim()) {
-        throw new ValidationError(ERROR_MESSAGES.UPDATED_BY_REQUIRED)
-      }
+      const { staff } = await getStaffById({ id })
 
-      if (!status.trim()) {
-        throw new ValidationError(ERROR_MESSAGES.STAFF_STATUS_REQUIRED)
-      }
-
-      const result = await updateStaffDetails({
-        id: staffId,
-        status: status,
-        note: note,
-        updatedBy: updatedBy,
+      return reply.status(200).send({
+        staffDetails: staff.map(staff => ({
+          id: staff.id,
+          name: staff.name,
+          email: staff.email,
+          department: staff.department,
+          jobTitle: staff.jobTitle,
+          status: staff.status,
+          note: staff.note,
+          assetHistoryList: staff.assetHistoryList,
+          createdAt: staff.createdAt.toISOString(),
+          createdBy: staff.createdBy,
+          changeLog: staff.changeLog.map(log => ({
+            updatedBy: log.updatedBy,
+            updatedAt: log.updatedAt,
+            updatedField: log.updatedField,
+            previousValue: log.previousValue,
+            newValue: log.newValue,
+          })),
+        })),
       })
-
-      return reply.status(200).send(result)
     }
   )
 }

@@ -1,39 +1,28 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { z } from 'zod'
-import { ERROR_MESSAGES } from '../../errors'
-import { NotFoundError, ValidationError } from '../../errors/errorTypes'
-import { getAssetBySerial } from '../../functions/getAssetBySerial'
+import { ERROR_MESSAGES, ValidationError } from '../../../errors'
+import { getAssetsByStaffEmail } from '../../../functions/getAssetsByStaffEmail'
 
-export const assetBySerial: FastifyPluginAsyncZod = async app => {
+export const assetsByStaffEmail: FastifyPluginAsyncZod = async app => {
   app.get(
-    '/assetBySerial/:serialNumber',
+    '/assetByStaff/:email',
     {
       schema: {
         tags: ['IT Assets'],
-        description: 'Get an IT asset by its serial number',
+        description: 'Get IT assets assigned to a staff member by their email',
         params: z.object({
-          serialNumber: z.string().min(2, ERROR_MESSAGES.INVALID_SERIAL_NUMBER),
+          email: z.string().email(ERROR_MESSAGES.INVALID_EMAIL),
         }),
         response: {
           200: z
             .object({
               success: z.boolean(),
               message: z.string(),
-              assetDetails: z.array(
+              assetList: z.array(
                 z.object({
-                  id: z.string(),
+                  id: z.string().uuid(),
                   serialNumber: z.string(),
                   name: z.string(),
-                  type: z.string(),
-                  maker: z.string(),
-                  condition: z.string(),
-                  assignedTo: z.string().nullable(),
-                  datePurchased: z.string(),
-                  assetNumber: z.string(),
-                  status: z.string(),
-                  note: z.string().nullable(),
-                  createdAt: z.string(),
-                  createdBy: z.string(),
                 })
               ),
             })
@@ -102,31 +91,18 @@ export const assetBySerial: FastifyPluginAsyncZod = async app => {
       },
     },
     async (request, reply) => {
-      const { serialNumber } = request.params
-      if (!serialNumber.trim()) {
-        throw new ValidationError(ERROR_MESSAGES.ASSET_SERIAL_REQUIRED)
+      const { email } = request.params
+      if (!email.trim()) {
+        throw new ValidationError(ERROR_MESSAGES.STAFF_EMAIL_REQUIRED)
       }
-      const { success, message, assetDetails } = await getAssetBySerial({
-        serialNumber,
-      })
-
+      const result = await getAssetsByStaffEmail({ staffEmail: email })
       return reply.status(200).send({
-        success,
-        message,
-        assetDetails: assetDetails.map(asset => ({
+        success: result.success,
+        message: result.message,
+        assetList: result.assetList.map(asset => ({
           id: asset.id,
           serialNumber: asset.serialNumber,
           name: asset.name,
-          type: asset.type,
-          maker: asset.maker,
-          condition: asset.condition,
-          assignedTo: asset.assignedTo,
-          datePurchased: asset.datePurchased,
-          assetNumber: asset.assetNumber,
-          status: asset.status,
-          note: asset.note,
-          createdAt: asset.createdAt.toISOString(),
-          createdBy: asset.createdBy,
         })),
       })
     }

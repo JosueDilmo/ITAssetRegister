@@ -1,29 +1,35 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { z } from 'zod'
-import { ERROR_MESSAGES, ValidationError } from '../../errors'
-import { updateAssetDetails } from '../../functions/updateAssetDetails'
+import { ERROR_MESSAGES, ValidationError } from '../../../errors'
+import { createAsset } from '../../../functions/createAsset'
 
-export const assetDetails: FastifyPluginAsyncZod = async app => {
-  app.patch(
-    '/assetDetails/:id',
+export const newAsset: FastifyPluginAsyncZod = async app => {
+  app.post(
+    '/newAsset',
     {
       schema: {
         tags: ['IT Assets'],
-        description: 'Update IT asset details such as status and note',
-        params: z.object({
-          id: z.string().uuid(ERROR_MESSAGES.INVALID_ID),
-        }),
+        description: 'Create a new IT asset',
         body: z.object({
-          status: z.string().min(2, ERROR_MESSAGES.INVALID_STATUS),
+          serialNumber: z.string().min(2, ERROR_MESSAGES.INVALID_SERIAL_NUMBER),
+          name: z.string().min(2, ERROR_MESSAGES.INVALID_NAME),
+          type: z.string().min(2, ERROR_MESSAGES.INVALID_ASSET_TYPE),
+          maker: z.string().min(2, ERROR_MESSAGES.INVALID_MAKER),
           condition: z.string().min(2, ERROR_MESSAGES.INVALID_CONDITION),
-          note: z.string().min(10, ERROR_MESSAGES.INVALID_NOTE).nullable(),
-          updatedBy: z.string().email(ERROR_MESSAGES.UPDATED_BY_REQUIRED),
+          assignedTo: z.string().email().nullable(),
+          datePurchased: z.string().date(ERROR_MESSAGES.INVALID_DATE),
+          assetNumber: z.string().min(2, ERROR_MESSAGES.INVALID_ASSET_NUMBER),
+          createdBy: z.string().email(),
         }),
         response: {
           200: z
             .object({
-              success: z.boolean(),
-              message: z.string(),
+              result: z.object({
+                success: z.boolean(),
+                message: z.string(),
+                staff: z.string().nullable(),
+                assetId: z.string(),
+              }),
             })
             .describe('Successful'),
           400: z
@@ -90,28 +96,53 @@ export const assetDetails: FastifyPluginAsyncZod = async app => {
       },
     },
     async (request, reply) => {
-      const assetID = request.params.id
-      const { status, condition, note, updatedBy } = request.body
-      if (!status.trim()) {
-        throw new ValidationError(ERROR_MESSAGES.ASSET_STATUS_REQUIRED)
+      // Extract parameters from request body
+      const {
+        serialNumber,
+        name,
+        type,
+        maker,
+        condition,
+        assignedTo,
+        datePurchased,
+        assetNumber,
+        createdBy,
+      } = request.body
+
+      // Validate required fields
+      if (!serialNumber.trim()) {
+        throw new ValidationError(ERROR_MESSAGES.ASSET_SERIAL_REQUIRED)
+      }
+      if (!name.trim()) {
+        throw new ValidationError(ERROR_MESSAGES.ASSET_NAME_REQUIRED)
+      }
+      if (!type.trim()) {
+        throw new ValidationError(ERROR_MESSAGES.ASSET_TYPE_REQUIRED)
+      }
+      if (!maker.trim()) {
+        throw new ValidationError(ERROR_MESSAGES.ASSET_MAKER_REQUIRED)
+      }
+      if (!assetNumber.trim()) {
+        throw new ValidationError(ERROR_MESSAGES.ASSET_NUMBER_REQUIRED)
       }
       if (!condition.trim()) {
         throw new ValidationError(ERROR_MESSAGES.ASSET_CONDITION_REQUIRED)
       }
-      if (!updatedBy.trim()) {
-        throw new ValidationError(ERROR_MESSAGES.UPDATED_BY_REQUIRED)
-      }
 
-      const result = await updateAssetDetails({
-        id: assetID,
-        status: status,
-        condition: condition,
-        note: note,
-        updatedBy: updatedBy,
+      // Call createAsset function with the extracted parameters
+      const result = await createAsset({
+        serialNumber,
+        name,
+        type,
+        maker,
+        condition,
+        assignedTo,
+        datePurchased,
+        assetNumber,
+        createdBy,
       })
-      return reply
-        .status(200)
-        .send({ success: result.success, message: result.message })
+
+      return reply.status(200).send({ result })
     }
   )
 }

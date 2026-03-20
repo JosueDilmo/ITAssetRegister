@@ -1,22 +1,22 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { z } from 'zod'
-import { ERROR_MESSAGES } from '../../errors'
-import { getAsset } from '../../functions/getAsset'
+import { ERROR_MESSAGES, ValidationError } from '../../../errors'
+import { getAssetById } from '../../../functions/getAssetById'
 
-export const allAssets: FastifyPluginAsyncZod = async app => {
+export const assetWithId: FastifyPluginAsyncZod = async app => {
   app.get(
-    '/allAssets',
+    '/assetWith/:id',
     {
       schema: {
-        tags: ['IT Assets'],
-        description: 'Get all IT assets or a specific asset by ID',
-        querystring: z.object({
-          id: z.string().uuid(ERROR_MESSAGES.INVALID_ID).optional(),
+        tags: ['Asset'],
+        description: 'Get asset by ID',
+        params: z.object({
+          id: z.string().uuid(ERROR_MESSAGES.ASSET_ID_REQUIRED),
         }),
         response: {
           200: z
             .object({
-              assetList: z.array(
+              assetDetails: z.array(
                 z.object({
                   id: z.string().uuid(),
                   serialNumber: z.string(),
@@ -109,39 +109,38 @@ export const allAssets: FastifyPluginAsyncZod = async app => {
       },
     },
     async (request, reply) => {
-      const { id } = request.query
-      const { assetList } = await getAsset()
+      const { id } = request.params
 
-      const filteredAsset = id
-        ? assetList.filter(asset => asset.id === id)
-        : assetList
+      if (!id) {
+        throw new ValidationError(ERROR_MESSAGES.INVALID_ID)
+      }
+
+      const { asset } = await getAssetById({ id })
 
       return reply.status(200).send({
-        assetList: filteredAsset.map(asset => {
-          return {
-            id: asset.id,
-            serialNumber: asset.serialNumber,
-            name: asset.name,
-            type: asset.type,
-            maker: asset.maker,
-            condition: asset.condition,
-            assignedTo: asset.assignedTo,
-            dateAssigned: asset.dateAssigned,
-            datePurchased: asset.datePurchased,
-            assetNumber: asset.assetNumber,
-            status: asset.status,
-            note: asset.note,
-            createdAt: asset.createdAt.toISOString(),
-            createdBy: asset.createdBy,
-            changeLog: asset.changeLog.map(log => ({
-              updatedBy: log.updatedBy,
-              updatedAt: log.updatedAt,
-              updatedField: log.updatedField,
-              previousValue: log.previousValue,
-              newValue: log.newValue,
-            })),
-          }
-        }),
+        assetDetails: asset.map(asset => ({
+          id: asset.id,
+          serialNumber: asset.serialNumber,
+          name: asset.name,
+          type: asset.type,
+          maker: asset.maker,
+          condition: asset.condition,
+          assignedTo: asset.assignedTo,
+          dateAssigned: asset.dateAssigned,
+          datePurchased: asset.datePurchased,
+          assetNumber: asset.assetNumber,
+          status: asset.status,
+          note: asset.note,
+          createdAt: asset.createdAt.toISOString(),
+          createdBy: asset.createdBy,
+          changeLog: asset.changeLog.map(log => ({
+            updatedBy: log.updatedBy,
+            updatedAt: log.updatedAt,
+            updatedField: log.updatedField,
+            previousValue: log.previousValue,
+            newValue: log.newValue,
+          })),
+        })),
       })
     }
   )

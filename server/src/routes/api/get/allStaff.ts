@@ -1,22 +1,21 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { z } from 'zod'
-import { ERROR_MESSAGES, ValidationError } from '../../errors'
-import { getStaffById } from '../../functions/getStaffById'
+import { getStaff } from '../../../functions/getStaff'
 
-export const staffById: FastifyPluginAsyncZod = async app => {
+export const allStaff: FastifyPluginAsyncZod = async app => {
   app.get(
-    '/staffBy/:id',
+    '/allStaff',
     {
       schema: {
         tags: ['Staff'],
-        description: 'Get staff by ID',
-        params: z.object({
-          id: z.string().uuid(ERROR_MESSAGES.STAFF_ID_REQUIRED),
-        }),
+        description: 'Get all staff or a specific staff member by ID',
+        querystring: z.object({
+          search: z.string().optional(),
+          orderBy: z.enum(['name']).default('name'),}),
         response: {
           200: z
             .object({
-              staffDetails: z.array(
+              staffList: z.array(
                 z.object({
                   id: z.string().uuid(),
                   name: z.string(),
@@ -105,34 +104,33 @@ export const staffById: FastifyPluginAsyncZod = async app => {
       },
     },
     async (request, reply) => {
-      const { id } = request.params
-
-      if (!id) {
-        throw new ValidationError(`${ERROR_MESSAGES.INVALID_ID} ID: ${id}`)
-      }
-
-      const { staff } = await getStaffById({ id })
+      const { search } = request.query
+      const { staffList } = await getStaff({
+        search,
+      })
 
       return reply.status(200).send({
-        staffDetails: staff.map(staff => ({
-          id: staff.id,
-          name: staff.name,
-          email: staff.email,
-          department: staff.department,
-          jobTitle: staff.jobTitle,
-          status: staff.status,
-          note: staff.note,
-          assetHistoryList: staff.assetHistoryList,
-          createdAt: staff.createdAt.toISOString(),
-          createdBy: staff.createdBy,
-          changeLog: staff.changeLog.map(log => ({
-            updatedBy: log.updatedBy,
-            updatedAt: log.updatedAt,
-            updatedField: log.updatedField,
-            previousValue: log.previousValue,
-            newValue: log.newValue,
-          })),
-        })),
+        staffList: staffList.map(staff => {
+          return {
+            id: staff.id,
+            name: staff.name,
+            email: staff.email,
+            department: staff.department,
+            jobTitle: staff.jobTitle,
+            status: staff.status,
+            note: staff.note,
+            assetHistoryList: staff.assetHistoryList,
+            createdAt: staff.createdAt.toISOString(),
+            createdBy: staff.createdBy,
+            changeLog: staff.changeLog.map(log => ({
+              updatedBy: log.updatedBy,
+              updatedAt: log.updatedAt,
+              updatedField: log.updatedField,
+              previousValue: log.previousValue,
+              newValue: log.newValue,
+            })),
+          }
+        }),
       })
     }
   )

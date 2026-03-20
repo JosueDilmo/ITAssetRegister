@@ -10,18 +10,18 @@ import {
 } from 'fastify-type-provider-zod'
 import { env } from './env'
 import { errorHandler } from './errors/errorHandler'
-import { assetById } from './routes/delete/assetById'
-import { allAssets } from './routes/get/allAssets'
-import { allStaff } from './routes/get/allStaff'
-import { assetBySerial } from './routes/get/assetBySerial'
-import { assetWithId } from './routes/get/assetWithId'
-import { assetsByStaffEmail } from './routes/get/assetsByStaffEmail'
-import { staffById } from './routes/get/staffById'
-import { assetDetails } from './routes/patch/assetDetails'
-import { staffDetails } from './routes/patch/staffDetails'
-import { assetToStaff } from './routes/post/assetToStaff'
-import { newAsset } from './routes/post/newAsset'
-import { newStaff } from './routes/post/newStaff'
+import { assetById } from './routes/api/delete/assetById'
+import { allAssets } from './routes/api/get/allAssets'
+import { allStaff } from './routes/api/get/allStaff'
+import { assetBySerial } from './routes/api/get/assetBySerial'
+import { assetWithId } from './routes/api/get/assetWithId'
+import { assetsByStaffEmail } from './routes/api/get/assetsByStaffEmail'
+import { staffById } from './routes/api/get/staffById'
+import { assetDetails } from './routes/api/patch/assetDetails'
+import { staffDetails } from './routes/api/patch/staffDetails'
+import { assetToStaff } from './routes/api/post/assetToStaff'
+import { newAsset } from './routes/api/post/newAsset'
+import { newStaff } from './routes/api/post/newStaff'
 
 const app = fastify({
   logger: {
@@ -58,23 +58,28 @@ if (process.env.NODE_ENV === 'development') {
     transform: jsonSchemaTransform,
   })
   app.register(fastifySwaggerUi, {
-    routePrefix: '/docs',
+    routePrefix: '/api/docs',
   })
 }
 
-// Register routes
-app.register(newAsset) // post route to add a new asset
-app.register(newStaff) // post route to add a new staff
-app.register(allStaff) // get route to fetch all staffs
-app.register(staffById) // get route to fetch staff by ID
-app.register(allAssets) // get route to fetch all assets
-app.register(assetWithId) // get route to fetch an asset by ID
-app.register(assetById) // delete route to remove an asset by ID
-app.register(assetToStaff) // post route to assign an asset to a staff with confirmation
-app.register(assetDetails) // patch route to update asset details
-app.register(staffDetails) // patch route to update staff details
-app.register(assetBySerial) // get route to fetch an asset by serial number
-app.register(assetsByStaffEmail) // get route to fetch assets assigned to a staff by email
+
+// Group all routes into a plugin and register with prefix '/api'
+async function routes(app: any) {
+  app.register(newAsset)
+  app.register(newStaff)
+  app.register(allStaff)
+  app.register(staffById)
+  app.register(allAssets)
+  app.register(assetWithId)
+  app.register(assetById)
+  app.register(assetToStaff)
+  app.register(assetDetails)
+  app.register(staffDetails)
+  app.register(assetBySerial)
+  app.register(assetsByStaffEmail)
+}
+
+app.register(routes, { prefix: '/api' })
 
 // Start the server
 app.listen({ port: env.PORT, host: '0.0.0.0' }).then(() => {

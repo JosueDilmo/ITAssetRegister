@@ -1,35 +1,41 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { z } from 'zod'
-import { ERROR_MESSAGES, ValidationError } from '../../errors'
-import { createAsset } from '../../functions/createAsset'
+import { ERROR_MESSAGES } from '../../../errors'
+import { ValidationError } from '../../../errors/errorTypes'
+import { getAssetBySerial } from '../../../functions/getAssetBySerial'
 
-export const newAsset: FastifyPluginAsyncZod = async app => {
-  app.post(
-    '/newAsset',
+export const assetBySerial: FastifyPluginAsyncZod = async app => {
+  app.get(
+    '/assetBySerial/:serialNumber',
     {
       schema: {
         tags: ['IT Assets'],
-        description: 'Create a new IT asset',
-        body: z.object({
+        description: 'Get an IT asset by its serial number',
+        params: z.object({
           serialNumber: z.string().min(2, ERROR_MESSAGES.INVALID_SERIAL_NUMBER),
-          name: z.string().min(2, ERROR_MESSAGES.INVALID_NAME),
-          type: z.string().min(2, ERROR_MESSAGES.INVALID_ASSET_TYPE),
-          maker: z.string().min(2, ERROR_MESSAGES.INVALID_MAKER),
-          condition: z.string().min(2, ERROR_MESSAGES.INVALID_CONDITION),
-          assignedTo: z.string().email().nullable(),
-          datePurchased: z.string().date(ERROR_MESSAGES.INVALID_DATE),
-          assetNumber: z.string().min(2, ERROR_MESSAGES.INVALID_ASSET_NUMBER),
-          createdBy: z.string().email(),
         }),
         response: {
           200: z
             .object({
-              result: z.object({
-                success: z.boolean(),
-                message: z.string(),
-                staff: z.string().nullable(),
-                assetId: z.string(),
-              }),
+              success: z.boolean(),
+              message: z.string(),
+              assetDetails: z.array(
+                z.object({
+                  id: z.string(),
+                  serialNumber: z.string(),
+                  name: z.string(),
+                  type: z.string(),
+                  maker: z.string(),
+                  condition: z.string(),
+                  assignedTo: z.string().nullable(),
+                  datePurchased: z.string(),
+                  assetNumber: z.string(),
+                  status: z.string(),
+                  note: z.string().nullable(),
+                  createdAt: z.string(),
+                  createdBy: z.string(),
+                })
+              ),
             })
             .describe('Successful'),
           400: z
@@ -96,53 +102,33 @@ export const newAsset: FastifyPluginAsyncZod = async app => {
       },
     },
     async (request, reply) => {
-      // Extract parameters from request body
-      const {
-        serialNumber,
-        name,
-        type,
-        maker,
-        condition,
-        assignedTo,
-        datePurchased,
-        assetNumber,
-        createdBy,
-      } = request.body
-
-      // Validate required fields
+      const { serialNumber } = request.params
       if (!serialNumber.trim()) {
         throw new ValidationError(ERROR_MESSAGES.ASSET_SERIAL_REQUIRED)
       }
-      if (!name.trim()) {
-        throw new ValidationError(ERROR_MESSAGES.ASSET_NAME_REQUIRED)
-      }
-      if (!type.trim()) {
-        throw new ValidationError(ERROR_MESSAGES.ASSET_TYPE_REQUIRED)
-      }
-      if (!maker.trim()) {
-        throw new ValidationError(ERROR_MESSAGES.ASSET_MAKER_REQUIRED)
-      }
-      if (!assetNumber.trim()) {
-        throw new ValidationError(ERROR_MESSAGES.ASSET_NUMBER_REQUIRED)
-      }
-      if (!condition.trim()) {
-        throw new ValidationError(ERROR_MESSAGES.ASSET_CONDITION_REQUIRED)
-      }
-
-      // Call createAsset function with the extracted parameters
-      const result = await createAsset({
+      const { success, message, assetDetails } = await getAssetBySerial({
         serialNumber,
-        name,
-        type,
-        maker,
-        condition,
-        assignedTo,
-        datePurchased,
-        assetNumber,
-        createdBy,
       })
 
-      return reply.status(200).send({ result })
+      return reply.status(200).send({
+        success,
+        message,
+        assetDetails: assetDetails.map(asset => ({
+          id: asset.id,
+          serialNumber: asset.serialNumber,
+          name: asset.name,
+          type: asset.type,
+          maker: asset.maker,
+          condition: asset.condition,
+          assignedTo: asset.assignedTo,
+          datePurchased: asset.datePurchased,
+          assetNumber: asset.assetNumber,
+          status: asset.status,
+          note: asset.note,
+          createdAt: asset.createdAt.toISOString(),
+          createdBy: asset.createdBy,
+        })),
+      })
     }
   )
 }
