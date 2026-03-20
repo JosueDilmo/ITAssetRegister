@@ -117,7 +117,7 @@ export const assetWithId: FastifyPluginAsyncZod = async app => {
 
       const { asset } = await getAssetById({ id })
 
-      return reply.status(201).send({
+      return reply.status(200).send({
         assetDetails: asset.map(asset => ({
           id: asset.id,
           serialNumber: asset.serialNumber,
