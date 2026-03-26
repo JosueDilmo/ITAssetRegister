@@ -4,7 +4,7 @@ import {
   type AssetDetailsParams,
   AssetDetailsSchema,
 } from '@/app/schemas/assetSchema'
-import { patchAssetDetailsId } from '@/http/api'
+import { patchApiAssetDetailsId } from '@/http/api'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -66,7 +66,7 @@ export function EditAssetInfo({
 
     // Update the asset details
     const { success: successDetails, message: messageDetails } =
-      await patchAssetDetailsId(id, {
+      await patchApiAssetDetailsId(id, {
         status: normalizedDetails.status,
         note: normalizedDetails.note,
         condition: normalizedDetails.condition,

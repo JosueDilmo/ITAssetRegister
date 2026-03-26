@@ -11,7 +11,8 @@ export const allAssets: FastifyPluginAsyncZod = async app => {
         tags: ['IT Assets'],
         description: 'Get all IT assets or a specific asset by ID',
         querystring: z.object({
-          id: z.string().uuid(ERROR_MESSAGES.INVALID_ID).optional(),
+          search: z.string().optional(),
+          orderBy: z.enum(['name']).default('name'),
         }),
         response: {
           200: z
@@ -109,15 +110,13 @@ export const allAssets: FastifyPluginAsyncZod = async app => {
       },
     },
     async (request, reply) => {
-      const { id } = request.query
-      const { assetList } = await getAsset()
-
-      const filteredAsset = id
-        ? assetList.filter(asset => asset.id === id)
-        : assetList
+      const { search } = request.query
+      const { assetList } = await getAsset({
+        search,
+      })
 
       return reply.status(200).send({
-        assetList: filteredAsset.map(asset => {
+        assetList: assetList.map(asset => {
           return {
             id: asset.id,
             serialNumber: asset.serialNumber,

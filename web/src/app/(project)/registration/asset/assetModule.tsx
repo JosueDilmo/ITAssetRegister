@@ -1,7 +1,7 @@
 'use client'
 import { normalizeAssetData } from '@/app/actions/normalizeAssetData'
 import type { UserProps } from '@/app/interface/index'
-import { postNewAsset } from '@/http/api'
+import { postApiNewAsset } from '@/http/api'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as Icons from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -45,7 +45,7 @@ export function AssetModule({ userEmail, userRole, staffEmail }: UserProps) {
       createdBy: userEmail,
     })
 
-    const { result } = await postNewAsset(normalizedData)
+    const { result } = await postApiNewAsset(normalizedData)
     toast[result.success ? 'success' : 'error'](result.message)
     if (result.staff) {
       toast.info(`Staff: ${result.staff}`)

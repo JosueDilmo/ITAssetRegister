@@ -1,8 +1,7 @@
 'use client'
-
 import { InputField, InputRoot } from '@/app/components/input'
 import type { StaffList } from '@/app/types'
-import { getAllStaff } from '@/http/api'
+import { getApiAllStaff } from '@/http/api'
 import * as Icons from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { BoxField, BoxIcon, BoxRoot } from '../../../../components/box'
@@ -13,7 +12,7 @@ export function DisplayAllStaff() {
   const [data, setData] = useState<StaffList>([])
 
   useEffect(() => {
-    getAllStaff({ search: search }).then(data => {
+    getApiAllStaff({ search: search }).then(data => {
       setData(data.staffList)
     })
   }, [search])

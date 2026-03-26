@@ -1,7 +1,7 @@
 'use client'
 import { BoxField, BoxRoot } from '@/app/components/box'
 import type { AssetProps, UserProps } from '@/app/interface/index'
-import { deleteAssetById, getAssetByStaffEmail } from '@/http/api'
+import { deleteApiAssetById, getApiAssetByStaffEmail } from '@/http/api'
 import * as Icons from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
@@ -20,7 +20,7 @@ export function EditStaffAssetList({
   const handleRemoveAsset = async (id: string) => {
     console.log('assetId', id)
     const updatedBy = userEmail
-    const { success, message } = await deleteAssetById(id, {
+    const { success, message } = await deleteApiAssetById(id, {
       updatedBy,
       userConfirmed: false,
     })
@@ -29,7 +29,7 @@ export function EditStaffAssetList({
     } else {
       const userConfirmation = window.confirm(message)
       if (userConfirmation) {
-        const { success, message } = await deleteAssetById(id, {
+        const { success, message } = await deleteApiAssetById(id, {
           updatedBy,
           userConfirmed: true,
         })
@@ -42,7 +42,7 @@ export function EditStaffAssetList({
   useEffect(() => {
     async function getAllAssetByEmail() {
       const { success, message, assetList } =
-        await getAssetByStaffEmail(staffEmail)
+        await getApiAssetByStaffEmail(staffEmail)
       setGetResult({ success, message, assetList })
     }
     getAllAssetByEmail()

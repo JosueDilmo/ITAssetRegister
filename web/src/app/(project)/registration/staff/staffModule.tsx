@@ -1,7 +1,7 @@
 'use client'
 import { normalizeStaffData } from '@/app/actions/normalizeStaffData'
 import type { UserProps } from '@/app/interface/index'
-import { postNewStaff } from '@/http/api'
+import { postApiNewStaff } from '@/http/api'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as Icons from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -37,7 +37,7 @@ export function StaffModule({ userEmail, userRole, staffEmail }: UserProps) {
       createdBy: userEmail,
     })
     try {
-      const {result} = await postNewStaff(normalizedData)
+      const { result } = await postApiNewStaff(normalizedData)
       const message = result.message
       const success = result.success
       const staff = result.staff

@@ -47,7 +47,12 @@ export async function removeAssetAssignment({
     // Unassign the asset (clear assignedTo and dateAssigned)
     const assetRemoved = await trx
       .update(assetTab)
-      .set({ assignedTo: null, dateAssigned: null })
+      .set({
+        assignedTo: null,
+        condition: 'IN STOCK',
+        status: 'INACTIVE',
+        dateAssigned: null,
+      })
       .where(eq(assetTab.id, assetId))
       .returning()
 

@@ -1,4 +1,4 @@
-import { postAssetToStaffEmail } from '@/http/api'
+import { postApiAssetToStaffEmail } from '@/http/api'
 import * as Icons from 'lucide-react'
 import { toast } from 'react-toastify'
 import type { UserProps } from '../interface/index'
@@ -15,7 +15,7 @@ export function AddAsset({
     return null
   }
   async function handleAddAsset(id: string) {
-    const { success, message } = await postAssetToStaffEmail(staffEmail, {
+    const { success, message } = await postApiAssetToStaffEmail(staffEmail, {
       assetId: id,
       updatedBy: userEmail,
     })
@@ -24,11 +24,14 @@ export function AddAsset({
     } else {
       const confirmRetry = window.confirm(message)
       if (confirmRetry) {
-        const { success, message } = await postAssetToStaffEmail(staffEmail, {
-          assetId: id,
-          updatedBy: userEmail,
-          userConfirmed: true,
-        })
+        const { success, message } = await postApiAssetToStaffEmail(
+          staffEmail,
+          {
+            assetId: id,
+            updatedBy: userEmail,
+            userConfirmed: true,
+          }
+        )
         toast[success ? 'success' : 'error'](message)
       }
     }

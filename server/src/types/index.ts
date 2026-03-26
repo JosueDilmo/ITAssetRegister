@@ -2,6 +2,10 @@ export interface GetAllStaffParams {
   search?: string
 }
 
+export interface GetAllAssetsParams {
+  search?: string
+}
+
 export type ChangeLogEntry = {
   updatedBy: string
   updatedAt: string

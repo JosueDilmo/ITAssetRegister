@@ -52,5 +52,5 @@ next-env.d.ts
 biome.json
 
 # import files
-/src/functions/import/asset.csv
-/src/functions/import/staff.csv
+/scripts/import/asset.csv
+/scripts/import/staff.csv

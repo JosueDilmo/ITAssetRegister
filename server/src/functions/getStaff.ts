@@ -34,13 +34,13 @@ export async function getStaff({ search }: GetAllStaffParams) {
     createdAt: staff.createdAt,
     createdBy: staff.createdBy,
     changeLog: staff.changeLog as Array<{
-      updatedBy: string,
-      updatedAt: string,
-      updatedField: string,
-      previousValue: string[],
-      newValue: string[],
+      updatedBy: string
+      updatedAt: string
+      updatedField: string
+      previousValue: string[]
+      newValue: string[]
     }>,
-  }));
+  }))
 
-  return { staffList };
+  return { staffList }
 }

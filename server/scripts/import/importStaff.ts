@@ -1,7 +1,13 @@
 import { createReadStream } from 'node:fs'
 import { parse } from 'csv-parse'
-import { db } from '../../drizzle/client'
-import { staffTab } from '../../drizzle/schema/staffTab'
+import { db } from '../../src/drizzle/client'
+import { staffTab } from '../../src/drizzle/schema/staffTab'
+import {
+  normalizeDepartment,
+  normalizeEmail,
+  normalizeJobTitle,
+  normalizeName,
+} from '../../src/functions/utils/normalize'
 
 const filePath = 'src/functions/import/staff.csv' // Adjust path as needed
 
@@ -56,20 +62,28 @@ async function importStaff() {
       continue
     }
     try {
+      // Normalize all fields first
+      const normalizedName = normalizeName(staff[nameKey])
+      const normalizedEmail = normalizeEmail(staff['email'])
+      const normalizedDepartment = normalizeDepartment(staff['department'])
+      const normalizedJobTitle = normalizeJobTitle(staff['jobTitle'])
+      const normalizedStatus = staff['status']?.trim().toUpperCase() || 'ACTIVE'
+      const normalizedNote = staff['note']?.trim() || ''
+
       await db.insert(staffTab).values({
         id: staff['id'],
-        name: staff[nameKey].trim(),
-        email: staff['email'].trim(),
-        department: staff['department'].trim(),
-        jobTitle: staff['jobTitle'].trim(),
-        status: staff['status']?.trim() || 'ACTIVE',
-        note: staff['note']?.trim() || '',
+        name: normalizedName,
+        email: normalizedEmail,
+        department: normalizedDepartment,
+        jobTitle: normalizedJobTitle,
+        status: normalizedStatus,
+        note: normalizedNote,
         assetHistoryList: [],
         createdAt: new Date(),
         createdBy: 'import-script',
         changeLog: [],
       })
-      console.log(`Imported: ${staff['email']}`)
+      console.log(`Imported: ${normalizedEmail}`)
     } catch (err) {
       console.error(
         `Error importing ${staff['email']}:`,

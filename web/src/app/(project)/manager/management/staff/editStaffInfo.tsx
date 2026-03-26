@@ -6,7 +6,7 @@ import {
   type StaffDetailsParams,
   StaffDetailsSchema,
 } from '@/app/schemas/staffSchema'
-import { patchStaffDetailsId } from '@/http/api'
+import { patchApiStaffDetailsId } from '@/http/api'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -66,7 +66,10 @@ export function EditStaffInfo({
       updatedBy: userEmail,
     }
     const id = data[0].id
-    const { success, message } = await patchStaffDetailsId(id, normalizedData)
+    const { success, message } = await patchApiStaffDetailsId(
+      id,
+      normalizedData
+    )
     await new Promise<void>(resolve => {
       toast[success ? 'success' : 'error'](message)
       resolve()

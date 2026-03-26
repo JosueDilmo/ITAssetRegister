@@ -65,7 +65,13 @@ export async function assignAssetToStaffWithConfirmation({
     // Assign asset to new staff (update asset record))
     await trx
       .update(assetTab)
-      .set({ assignedTo: staffEmail, note: `Asset assigned to staff ${staff[0].name}`, dateAssigned: new Date().toISOString() })
+      .set({
+        assignedTo: staffEmail,
+        condition: 'IN USE',
+        status: 'ACTIVE',
+        note: `Asset assigned to staff ${staff[0].name}`,
+        dateAssigned: new Date().toISOString(),
+      })
       .where(eq(assetTab.id, assetId))
 
     // Update staff assetHistoryList to include the new asset ID

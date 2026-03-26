@@ -1,6 +1,6 @@
 import { getCurrentITAssetUser } from '@/app/actions/getCurrentITAssetUser'
 import type { PageProps } from '@/app/interface/index'
-import { getAssetWithId, getStaffById } from '@/http/api'
+import { getApiAssetWithId, getApiStaffById } from '@/http/api'
 import { EditAssetInfo } from '../../manager/management/asset/editAssetInfo'
 import { EditStaffInfo } from '../../manager/management/staff/editStaffInfo'
 import { Menu } from '../../nav/menu'
@@ -14,10 +14,10 @@ export default async function DisplayPage(props: PageProps) {
   const currentUserEmail = currentUser?.email
   const currentUserRole = currentUser?.role
 
-  const { staffDetails } = await getStaffById(id)
+  const { staffDetails } = await getApiStaffById(id)
   const staffData = Array.isArray(staffDetails) ? staffDetails : []
 
-  const { assetDetails } = await getAssetWithId(id)
+  const { assetDetails } = await getApiAssetWithId(id)
   const assetData = Array.isArray(assetDetails) ? assetDetails : []
 
   return (
