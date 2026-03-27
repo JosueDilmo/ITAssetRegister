@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import { Montserrat, Oxanium } from 'next/font/google'
+import { APP_VERSION } from './constants/version'
 
 export const metadata: Metadata = {
   title: 'IT Asset Reg',
@@ -31,6 +32,7 @@ export default function RootLayout({
           <h1 className="flex justify-center p-4 font-bold font-heading text-4xl">
             {' '}
             IT Asset Register
+            <span className="ml-2 text-sm text-gray-400">v{APP_VERSION}</span>
           </h1>
           {children}
         </main>
