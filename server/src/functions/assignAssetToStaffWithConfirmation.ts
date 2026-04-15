@@ -87,10 +87,6 @@ export async function assignAssetToStaffWithConfirmation({
       ? currentAssetHistory
       : [...currentAssetHistory, assetId]
 
-    if (!updatedAssetHistory.includes(assetId)) {
-      updatedAssetHistory.push(assetId)
-    }
-
     await trx
       .update(staffTab)
       .set({ assetHistoryList: updatedAssetHistory })

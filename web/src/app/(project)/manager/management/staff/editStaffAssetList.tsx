@@ -1,7 +1,7 @@
 'use client'
 import { BoxField, BoxRoot } from '@/app/components/box'
 import type { AssetProps, UserProps } from '@/app/interface/index'
-import { deleteApiAssetById, getApiAssetByStaffEmail } from '@/http/api'
+import { deleteApiAssetById, getApiAssetByStaffEmail, PostApiAssetToStaffEmail200, PostApiAssetToStaffEmail409 } from '@/http/api'
 import * as Icons from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
@@ -18,22 +18,25 @@ export function EditStaffAssetList({
   const [getResult, setGetResult] = useState<AssetProps>()
 
   const handleRemoveAsset = async (id: string) => {
-    console.log('assetId', id)
     const updatedBy = userEmail
-    const { success, message } = await deleteApiAssetById(id, {
+    const response = await deleteApiAssetById(id, {
       updatedBy,
       userConfirmed: false,
     })
+    const success = response.success
+    const message = success ? (response as PostApiAssetToStaffEmail200).message : (response as unknown as PostApiAssetToStaffEmail409).error.message
     if (success) {
-      toast[success ? 'success' : 'error'](message)
+      toast.success(message)
     } else {
       const userConfirmation = window.confirm(message)
       if (userConfirmation) {
-        const { success, message } = await deleteApiAssetById(id, {
+        const retryResponse = await deleteApiAssetById(id, {
           updatedBy,
           userConfirmed: true,
         })
-        toast[success ? 'success' : 'error'](message)
+        const retrySuccess = retryResponse.success
+        const retryMessage = retrySuccess ? (retryResponse as PostApiAssetToStaffEmail200).message : (retryResponse as unknown as PostApiAssetToStaffEmail409).error.message
+        toast[retrySuccess ? 'success' : 'error'](retryMessage)
       }
     }
     window.location.reload()

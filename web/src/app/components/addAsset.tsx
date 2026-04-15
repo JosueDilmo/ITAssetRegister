@@ -1,4 +1,4 @@
-import { postApiAssetToStaffEmail } from '@/http/api'
+import { postApiAssetToStaffEmail, PostApiAssetToStaffEmail200, PostApiAssetToStaffEmail409 } from '@/http/api'
 import * as Icons from 'lucide-react'
 import { toast } from 'react-toastify'
 import type { UserProps } from '../interface/index'
@@ -15,16 +15,19 @@ export function AddAsset({
     return null
   }
   async function handleAddAsset(id: string) {
-    const { success, message } = await postApiAssetToStaffEmail(staffEmail, {
+    const response = await postApiAssetToStaffEmail(staffEmail, {
       assetId: id,
       updatedBy: userEmail,
     })
+
+    const success = response.success
+    const message = success ? (response as PostApiAssetToStaffEmail200).message : (response as unknown as PostApiAssetToStaffEmail409).error.message
     if (success) {
-      toast[success ? 'success' : 'error'](message)
+      toast.success(message)
     } else {
       const confirmRetry = window.confirm(message)
       if (confirmRetry) {
-        const { success, message } = await postApiAssetToStaffEmail(
+        const retryResponse = await postApiAssetToStaffEmail(
           staffEmail,
           {
             assetId: id,
@@ -32,7 +35,9 @@ export function AddAsset({
             userConfirmed: true,
           }
         )
-        toast[success ? 'success' : 'error'](message)
+        const retrySuccess = retryResponse.success
+        const retryMessage = retrySuccess ? (retryResponse as PostApiAssetToStaffEmail200).message : (retryResponse as unknown as PostApiAssetToStaffEmail409).error.message
+        toast[retrySuccess ? 'success' : 'error'](retryMessage)
       }
     }
     window.location.reload()

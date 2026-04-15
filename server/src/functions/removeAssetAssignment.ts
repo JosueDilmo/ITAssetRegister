@@ -2,7 +2,7 @@ import { eq } from 'drizzle-orm'
 import { db } from '../drizzle/client'
 import { assetTab } from '../drizzle/schema/assetTab'
 import { staffTab } from '../drizzle/schema/staffTab'
-import { DatabaseError, ERROR_MESSAGES, NotFoundError } from '../errors'
+import { ConflictError, DatabaseError, ERROR_MESSAGES, NotFoundError } from '../errors'
 import type { DeleteAssetParams } from '../types'
 
 export async function removeAssetAssignment({
@@ -12,6 +12,11 @@ export async function removeAssetAssignment({
 }: DeleteAssetParams) {
   // Begin Transaction
   return await db.transaction(async trx => {
+    // Check for user confirmation before proceeding with asset removal
+    if (!userConfirmed) {
+      throw new ConflictError(ERROR_MESSAGES.CONFLICTING_CONFIRM)
+    }
+
     // Get the asset to be removed
     const assetResult = await trx
       .select()
@@ -40,10 +45,10 @@ export async function removeAssetAssignment({
       .where(eq(staffTab.email, prevAssignedTo))
       .limit(1)
 
-    if (!userConfirmed) {
-      throw new DatabaseError(ERROR_MESSAGES.CONFLICTING_CONFIRM)
+    if (staff.length === 0) {
+      throw new NotFoundError(`${ERROR_MESSAGES.STAFF_NOT_FOUND} Email: ${prevAssignedTo}`)
     }
-
+      
     // Unassign the asset (clear assignedTo and dateAssigned)
     const assetRemoved = await trx
       .update(assetTab)
@@ -56,7 +61,7 @@ export async function removeAssetAssignment({
       .where(eq(assetTab.id, assetId))
       .returning()
 
-    // Update the asset's changeLog (appen new entry)
+    // Update the asset's changeLog (append new entry)
     const prevAssetChangeLog = Array.isArray(asset.changeLog)
       ? asset.changeLog
       : []

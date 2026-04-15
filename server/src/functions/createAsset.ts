@@ -85,9 +85,6 @@ export async function createAsset({
         ? currentAssetHistory
         : [...currentAssetHistory, newAsset[0].id]
 
-      if (!updatedAssetHistory.includes(newAsset[0].id)) {
-        updatedAssetHistory.push(newAsset[0].id)
-      }
       await tx
         .update(staffTab)
         .set({ assetHistoryList: updatedAssetHistory })
