@@ -1,9 +1,9 @@
-import { getCurrentITAssetUser } from '@/app/actions/getCurrentITAssetUser'
-import type { PageProps } from '@/app/interface/index'
+import { getCurrentITAssetUser } from '@/features/auth/actions/getCurrentITAssetUser'
+import type { PageProps } from '@/shared/interface/index'
 import { getApiAssetWithId, getApiStaffById } from '@/http/api'
-import { EditAssetInfo } from '../../manager/management/asset/editAssetInfo'
-import { EditStaffInfo } from '../../manager/management/staff/editStaffInfo'
-import { Menu } from '../../nav/menu'
+import { EditAssetInfo } from '@/features/assets/components/editAssetInfo'
+import { EditStaffInfo } from '@/features/staff/components/editStaffInfo'
+import { Menu } from '@/features/nav/components/menu'
 
 export default async function DisplayPage(props: PageProps) {
   const { id } = await props.params
@@ -14,11 +14,19 @@ export default async function DisplayPage(props: PageProps) {
   const currentUserEmail = currentUser?.email
   const currentUserRole = currentUser?.role
 
-  const { staffDetails } = await getApiStaffById(id)
-  const staffData = Array.isArray(staffDetails) ? staffDetails : []
+  const staffData = await getApiStaffById(id)
+    .then(r => (Array.isArray(r.staffDetails) ? r.staffDetails : []))
+    .catch((e: { error?: { code?: string } }) => {
+      if (e?.error?.code === 'NOT_FOUND') return []
+      throw e
+    })
 
-  const { assetDetails } = await getApiAssetWithId(id)
-  const assetData = Array.isArray(assetDetails) ? assetDetails : []
+  const assetData = await getApiAssetWithId(id)
+    .then(r => (Array.isArray(r.assetDetails) ? r.assetDetails : []))
+    .catch((e: { error?: { code?: string } }) => {
+      if (e?.error?.code === 'NOT_FOUND') return []
+      throw e
+    })
 
   return (
     <div className="flex w-full">

@@ -31,7 +31,7 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
-.env*
+.env
 /src/env.ts
 /src/env.js
 
@@ -54,3 +54,6 @@ biome.json
 # import files
 /scripts/import/asset.csv
 /scripts/import/staff.csv
+
+# dist
+/dist

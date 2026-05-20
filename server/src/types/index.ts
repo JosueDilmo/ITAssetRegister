@@ -1,9 +1,13 @@
 export interface GetAllStaffParams {
   search?: string
+  page?: number
+  limit?: number
 }
 
 export interface GetAllAssetsParams {
   search?: string
+  page?: number
+  limit?: number
 }
 
 export type ChangeLogEntry = {

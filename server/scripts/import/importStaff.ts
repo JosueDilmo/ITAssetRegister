@@ -1,13 +1,13 @@
 import { createReadStream } from 'node:fs'
 import { parse } from 'csv-parse'
-import { db } from '../../src/drizzle/client'
-import { staffTab } from '../../src/drizzle/schema/staffTab'
+import { db } from '../../src/drizzle/client.js'
+import { staffTab } from '../../src/drizzle/schema/staffTab.js'
 import {
   normalizeDepartment,
   normalizeEmail,
   normalizeJobTitle,
   normalizeName,
-} from '../../src/functions/utils/normalize'
+} from '../../src/shared/utils/normalize.js'
 
 const filePath = 'src/functions/import/staff.csv' // Adjust path as needed
 

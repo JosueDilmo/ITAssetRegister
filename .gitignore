@@ -6,3 +6,13 @@ SETUP.md
 WINDOWS_AUTOSTART.md
 
 /.github
+/.claude
+/.vscode
+nimbalyst-local/*
+CLAUDE.md
+
+# Keep logs directories but ignore their contents
+server/logs/*
+!server/logs/.gitkeep
+web/logs/*
+!web/logs/.gitkeep

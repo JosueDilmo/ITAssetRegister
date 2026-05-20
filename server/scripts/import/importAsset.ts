@@ -1,13 +1,13 @@
 import { createReadStream } from 'node:fs'
 import { parse } from 'csv-parse'
-import { db } from '../../src/drizzle/client'
-import { assetTab } from '../../src/drizzle/schema/assetTab'
+import { db } from '../../src/drizzle/client.js'
+import { assetTab } from '../../src/drizzle/schema/assetTab.js'
 import {
   normalizeAssetNumber,
   normalizeAssignedTo,
   normalizeName,
   normalizeSerialNumber,
-} from '../../src/functions/utils/normalize'
+} from '../../src/shared/utils/normalize.js'
 
 const filePath = 'src/functions/import/asset.csv' // Adjust path as needed
 

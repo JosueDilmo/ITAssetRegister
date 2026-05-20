@@ -1,6 +1,6 @@
 import type { FastifyError, FastifyReply, FastifyRequest } from 'fastify'
-import { ERROR_MESSAGES } from './errorMessages'
-import { AppError } from './errorTypes'
+import { ERROR_MESSAGES } from './errorMessages.js'
+import { AppError } from './errorTypes.js'
 
 // Converts any error to a standardized response format
 export function formatErrorResponse(error: Error | AppError) {

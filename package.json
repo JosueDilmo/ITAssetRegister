@@ -1,0 +1,16 @@
+{
+  "name": "it-asset-register",
+  "private": true,
+  "scripts": {
+    "build:server": "npm run build --prefix server",
+    "build:web": "npm run build --prefix web",
+    "build": "npm run build:server && npm run build:web",
+    "start:server": "npm run start --prefix server",
+    "start:web": "npm run start --prefix web",
+    "dev:server": "npm run dev --prefix server",
+    "dev:web": "npm run dev --prefix web",
+    "db:migrate": "npm run db:migrate --prefix server",
+    "db:generate": "npm run db:generate --prefix server",
+    "lint": "biome check ."
+  }
+}

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  IIS URL Rewrite config for IT Asset Register.
+  Copy this file to the IIS site physical root as "web.config".
+  Requires: Application Request Routing (ARR) + URL Rewrite modules installed in IIS.
+-->
+<configuration>
+  <system.webServer>
+    <rewrite>
+      <rules>
+        <!-- Proxy all traffic to Next.js running on port 3000 -->
+  <rule name="API Auth to Frontend" stopProcessing="true">
+  <match url="^api/auth/(.*)" />
+  <action type="Rewrite" url="http://localhost:3000/api/auth/{R:1}" />
+</rule>
+<rule name="API to Backend" stopProcessing="true">
+  <match url="^api/(.*)" />
+  <action type="Rewrite" url="http://localhost:3333/api/{R:1}" />
+</rule>
+<rule name="Frontend" stopProcessing="true">
+  <match url=".*" />
+  <action type="Rewrite" url="http://localhost:3000/{R:0}" />
+</rule>
+      </rules>
+    </rewrite>
+    <!-- Pass error responses through from Next.js instead of IIS default error pages -->
+    <httpErrors existingResponse="PassThrough" />
+  </system.webServer>
+</configuration>

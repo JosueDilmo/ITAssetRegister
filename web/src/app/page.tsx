@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
-import { Menu } from './(project)/nav/menu'
-import { auth } from './lib/auth'
+import { Menu } from '@/features/nav/components/menu'
+import { auth } from '@/shared/lib/auth'
 
 export default async function Home() {
   const session = await auth()

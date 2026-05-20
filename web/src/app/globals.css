@@ -6,37 +6,58 @@
 
   --color-*: initial;
 
-  --color-blue: #6F9DE2;
-  --color-blue-500: #2b4a7f;
+  /* Accents */
+  --color-blue: #5C9EFF;
+  --color-blue-500: #162448;
   --color-purple: #9871f3;
-  --color-purple-500: #7851a9   ;
-  --color-red: #F05D6C;
-  --color-red-500: #d94f5a;
+  --color-purple-500: #3A1F7A;
 
-  --color-orange-500: #ff5c3a;
-  --color-orange-900: #6b2718;
+  /* Status */
+  --color-red: #FF3860;
+  --color-red-500: #3A0C1C;
+  --color-green-500: #00D464;
+  --color-green-900: #053A1C;
+  --color-orange-500: #E89820;
+  --color-orange-900: #302008;
+  --color-yellow-500: #FFD060;
+  --color-yellow-900: #3A3008;
 
-  --color-yellow-500: #ffbf40;
-  --color-yellow-900: #6b501b;
-
-  --color-green-500: #04d361;
-  --color-green-900: #025929;
-
-  --color-gray-50:#eaeaea;
-  --color-gray-100:#bebebf;
-  --color-gray-200:#9e9ea0;
-  --color-gray-300:#727275;
-  --color-gray-400:#56565a;
-  --color-gray-500:#2c2c31;
-  --color-gray-600:#28282d;
-  --color-gray-700:#1f1f23;
-  --color-gray-800:#18181b;
-  --color-gray-900:#121215;
+  /* Navy-black palette */
+  --color-gray-50:  #C8DCFF;
+  --color-gray-100: #7090B8;
+  --color-gray-200: #1E3050;
+  --color-gray-300: #4A6280;
+  --color-gray-400: #2A4060;
+  --color-gray-500: #1E2E4A;
+  --color-gray-600: #141E38;
+  --color-gray-700: #0D1526;
+  --color-gray-800: #090E1A;
+  --color-gray-900: #05080F;
 
   --font-heading: var(--font-oxanium);
   --font-sans: var(--font-montserrat);
+  --font-mono: var(--font-ibm-plex-mono);
 
-  --radius-xl: 0.625rem;
-
+  --radius-xl: 0.375rem;
 }
 
+@keyframes status-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes glow-border {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(92, 158, 255, 0); }
+  50% { box-shadow: 0 0 8px 0 rgba(92, 158, 255, 0.3); }
+}
+
+@layer utilities {
+  .animate-status-dot { animation: status-pulse 2.4s ease-in-out infinite; }
+  .animate-entry { animation: fade-in-up 0.25s ease-out forwards; }
+  .font-mono { font-family: var(--font-mono), ui-monospace, monospace; }
+}

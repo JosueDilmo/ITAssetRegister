@@ -1,8 +1,8 @@
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
-import { env } from '../env'
-import { assetTab } from './schema/assetTab'
-import { staffTab } from './schema/staffTab'
+import { env } from '../env.js'
+import { assetTab } from './schema/assetTab.js'
+import { staffTab } from './schema/staffTab.js'
 
 export const pg = postgres(env.POSTGRES_URL)
 export const db = drizzle(pg, {

@@ -1,5 +1,5 @@
-import handleAuth from '@/app/actions/handleAuth'
-import { auth } from '@/app/lib/auth'
+import handleAuth from '@/features/auth/actions/handleAuth'
+import { auth } from '@/shared/lib/auth'
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 

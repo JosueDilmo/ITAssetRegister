@@ -1,8 +1,8 @@
-import { ShowAccessDeniedMessage } from '@/app/actions/accessDenied'
-import { getCurrentITAssetUser } from '@/app/actions/getCurrentITAssetUser'
-import { Menu } from '../../(project)/nav/menu'
-import { AssetModule } from './asset/assetModule'
-import { StaffModule } from './staff/staffModule'
+import { ShowAccessDeniedMessage } from '@/features/auth/components/accessDenied'
+import { getCurrentITAssetUser } from '@/features/auth/actions/getCurrentITAssetUser'
+import { Menu } from '@/features/nav/components/menu'
+import { AssetModule } from '@/features/assets/components/assetModule'
+import { StaffModule } from '@/features/staff/components/staffModule'
 
 export default async function RegisterPage() {
   const currentUser = await getCurrentITAssetUser()

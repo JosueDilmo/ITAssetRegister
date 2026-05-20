@@ -1,6 +1,6 @@
-import { Menu } from '../../(project)/nav/menu'
-import { DisplayAllAssets } from './management/asset/displayAllAssets'
-import { DisplayAllStaff } from './management/staff/displayAllStaff'
+import { Menu } from '@/features/nav/components/menu'
+import { DisplayAllAssets } from '@/features/assets/components/displayAllAssets'
+import { DisplayAllStaff } from '@/features/staff/components/displayAllStaff'
 
 export default function ManagementPage() {
   return (

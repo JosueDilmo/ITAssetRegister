@@ -6,6 +6,10 @@ export const ERROR_MESSAGES = {
 
   // Authorization errors
   UNAUTHORIZED: 'You are not authorized to perform this action.',
+  UNAUTHENTICATED: 'Authentication is required. Please sign in.',
+  MISSING_TOKEN: 'No authentication token provided.',
+  INVALID_TOKEN: 'Invalid or expired authentication token.',
+  INSUFFICIENT_ROLE: 'You do not have the required role to perform this action.',
   MISSING_CONFIRMATION: 'Confirmation is required to proceed.',
 
   // Database errors
