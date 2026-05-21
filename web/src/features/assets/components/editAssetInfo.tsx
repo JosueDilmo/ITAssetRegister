@@ -7,7 +7,11 @@ import {
   AssetDetailsSchema,
 } from '@/features/assets/schemas/assetSchema'
 import { ChangeLogTable } from '@/features/manager/components/ChangeLogTable'
-import { patchApiAssetDetailsId } from '@/http/api'
+import {
+  patchApiAssetDetailsId,
+  type PatchApiAssetDetailsIdBodyStatus,
+  type PatchApiAssetDetailsIdBodyCondition,
+} from '@/http/api'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as Icons from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -48,9 +52,9 @@ export function EditAssetInfo({
   async function updateAssetInfo({ status, condition, note }: AssetDetailsParams) {
     const id = data[0].id
     const { success, message } = await patchApiAssetDetailsId(id, {
-      status: status.toUpperCase(),
+      status: status.toUpperCase() as PatchApiAssetDetailsIdBodyStatus,
       note: !note || note === '' ? null : note.trim(),
-      condition: condition ?? '',
+      condition: (condition ?? '') as PatchApiAssetDetailsIdBodyCondition,
       updatedBy: userEmail,
     })
     await new Promise<void>(resolve => {

@@ -1,3 +1,4 @@
+import type { PostApiNewAssetBodyCondition } from '@/http/api'
 import type { assetNormalizeData } from '@/shared/interface/index'
 
 export function normalizeAssetData({
@@ -16,7 +17,7 @@ export function normalizeAssetData({
     name: name.toUpperCase().trim(),
     type: type.toUpperCase().trim(),
     maker: maker.toUpperCase().trim(),
-    condition: condition.toUpperCase().trim(),
+    condition: condition.toUpperCase().trim() as PostApiNewAssetBodyCondition,
     assignedTo: assignedTo?.toLowerCase().trim() || null,
     datePurchased: datePurchased.trim(),
     assetNumber: assetNumber.toUpperCase().trim(),

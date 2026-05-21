@@ -9,6 +9,10 @@ WINDOWS_AUTOSTART.md
 /.claude
 /.vscode
 nimbalyst-local/*
+nimbalyst-local
+/.playwright-mcp
+.agents
+skills-lock.json
 CLAUDE.md
 
 # Keep logs directories but ignore their contents

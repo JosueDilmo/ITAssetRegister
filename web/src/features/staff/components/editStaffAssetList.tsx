@@ -52,8 +52,8 @@ export function EditStaffAssetList({
   if (userRole !== 'admin') return null
 
   return (
-    <div className="bg-gray-800 border border-gray-600 rounded-lg p-4">
-      <h3 className="text-xs font-mono uppercase tracking-widest text-gray-400 mb-3 flex items-center gap-2">
+    <div className="max-h-[436px] flex flex-col bg-gray-800 border border-gray-600 rounded-lg p-4">
+      <h3 className="text-xs font-mono uppercase tracking-widest text-gray-400 mb-3 flex items-center gap-2 shrink-0">
         <Icons.Package className="w-3.5 h-3.5" />
         Current Asset List
         {getResult?.success === true && (
@@ -61,7 +61,7 @@ export function EditStaffAssetList({
         )}
       </h3>
       {getResult?.success === true && getResult.assetList.length > 0 ? (
-        <div className="flex flex-col gap-1.5 max-h-64 overflow-y-auto scrollbar-hide">
+        <div className="flex flex-col gap-1.5 flex-1 overflow-y-auto scrollbar-hide">
           {getResult.assetList.map((asset, index) => (
             <div
               key={index}
