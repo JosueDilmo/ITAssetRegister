@@ -188,26 +188,27 @@ export function EditStaffInfo({
           userEmail={userEmail}
           userRole={userRole}
         />
-        {data[0].assetHistoryList && data[0].assetHistoryList.filter(Boolean).length > 0 && (
+        {data[0].assetHistoryList && data[0].assetHistoryList.length > 0 && (
           <div className="bg-gray-800 border border-gray-600 rounded-lg p-4">
             <h3 className="text-xs font-mono uppercase tracking-widest text-gray-400 mb-3 flex items-center gap-2">
               <Icons.History className="w-3.5 h-3.5" />
               Asset History
               <span className="ml-auto text-gray-600">
-                {data[0].assetHistoryList.filter(Boolean).length}
+                {data[0].assetHistoryList.length}
               </span>
             </h3>
             <div className="flex flex-col gap-1 max-h-44 overflow-y-auto scrollbar-hide">
-              {data[0].assetHistoryList.filter(Boolean).map((assetId, i) => (
+              {data[0].assetHistoryList.map((asset, i) => (
                 <a
                   key={i}
-                  href={`/manager/${assetId}`}
+                  href={`/manager/${asset.id}`}
                   className="group flex items-center gap-2 px-2.5 py-1.5 rounded bg-gray-700 border border-gray-600 hover:border-blue/50 transition-colors duration-150"
                 >
                   <Icons.Package className="w-3 h-3 text-gray-500 group-hover:text-blue shrink-0 transition-colors" />
-                  <span className="font-mono text-xs text-gray-400 group-hover:text-blue transition-colors flex-1">
-                    {assetId}
-                  </span>
+                  <div className="flex flex-col flex-1 min-w-0">
+                    <span className="text-xs text-gray-300 group-hover:text-blue transition-colors truncate">{asset.name}</span>
+                    <span className="font-mono text-xs text-gray-500">{asset.serialNumber}</span>
+                  </div>
                   <Icons.ArrowUpRight className="w-3 h-3 text-gray-600 group-hover:text-blue shrink-0 transition-colors" />
                 </a>
               ))}

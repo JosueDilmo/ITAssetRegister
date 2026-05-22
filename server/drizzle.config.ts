@@ -1,5 +1,5 @@
 import type { Config } from 'drizzle-kit'
-import { env } from './src/env'
+import { env } from './src/env.js'
 
 export default {
   schema: './src/drizzle/schema/*',

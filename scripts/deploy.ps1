@@ -2,8 +2,8 @@
 .SYNOPSIS
     Rebuilds and restarts both IT Asset Register services on the production server.
 .DESCRIPTION
-    Stops the running NSSM services, rebuilds server and web, runs DB migrations,
-    regenerates the Orval API client, then restarts services. Run as Administrator.
+    Stops the running NSSM services, installs deps, rebuilds server and web, runs DB migrations,
+    then restarts services. api.ts must be copied manually before running. Run as Administrator.
 .PARAMETER BaseDir
     Root deployment folder. Default: C:\ITAssetRegister
 .PARAMETER ServerService
@@ -39,39 +39,27 @@ Write-Host "==> Stopping services..."
 Stop-Service -Name $WebService    -Force -ErrorAction SilentlyContinue
 Stop-Service -Name $ServerService -Force -ErrorAction SilentlyContinue
 
-# ── 2. Server: build + migrate ───────────────────────────────────────────────
+# ── 2. Server: install, build + migrate ─────────────────────────────────────
 Push-Location $serverDir
 try {
+    Write-Host "==> server: install"
+    npm install
     Write-Host "==> server: build"
     npm run build
+    if ($LASTEXITCODE -ne 0) { throw "Server build failed. Aborting." }
     Write-Host "==> server: migrate"
     npx drizzle-kit migrate
 } finally { Pop-Location }
 
-# ── 3. Temporarily start server so orval can fetch the OpenAPI spec ──────────
-Write-Host "==> Starting server temporarily for OpenAPI spec fetch..."
-$serverProc = Start-Process -FilePath "node" `
-    -ArgumentList "$serverDir\dist\src\server.js" `
-    -WorkingDirectory $serverDir `
-    -PassThru -WindowStyle Hidden
-Start-Sleep -Seconds 5
-
+# ── 3. Web: build ────────────────────────────────────────────────────────────
+Push-Location $webDir
 try {
-    # ── 4. Web: orval + build ─────────────────────────────────────────────────
-    Push-Location $webDir
-    try {
-        Write-Host "==> web: generate API client (orval)"
-        $env:NODE_TLS_REJECT_UNAUTHORIZED = "0"
-        npx orval
-        Write-Host "==> web: build"
-        npm run build
-    } finally { Pop-Location }
-} finally {
-    Write-Host "==> Stopping temporary server..."
-    Stop-Process -Id $serverProc.Id -Force -ErrorAction SilentlyContinue
-}
+    Write-Host "==> web: build"
+    npm run build
+    if ($LASTEXITCODE -ne 0) { throw "Web build failed. Aborting." }
+} finally { Pop-Location }
 
-# ── 5. Restart services ──────────────────────────────────────────────────────
+# ── 4. Restart services ──────────────────────────────────────────────────────
 Write-Host "==> Starting services..."
 Start-Service -Name $ServerService
 Start-Sleep -Seconds 3

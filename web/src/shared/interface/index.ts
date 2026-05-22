@@ -38,7 +38,7 @@ export interface StaffInfoProps {
     jobTitle: string
     status: string
     note: string | null
-    assetHistoryList: Array<string | null>
+    assetHistoryList: Array<{ id: string; name: string; serialNumber: string; assetNumber: string }>
     createdAt: string
     changeLog: ChangeLogEntry[]
   }>

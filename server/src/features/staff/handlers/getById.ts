@@ -22,7 +22,12 @@ export const getStaffById: FastifyPluginAsyncZod = async app => {
               jobTitle: z.string(),
               status: z.string(),
               note: z.string().nullable(),
-              assetHistoryList: z.array(z.string().nullable()),
+              assetHistoryList: z.array(z.object({
+                id: z.string(),
+                name: z.string(),
+                serialNumber: z.string(),
+                assetNumber: z.string(),
+              })),
               createdAt: z.string(),
               createdBy: z.string(),
               changeLog: z.array(z.object({

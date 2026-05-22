@@ -41,15 +41,12 @@ export function EditStaffAssetList({
   }
 
   useEffect(() => {
-    if (userRole !== 'admin') return
     async function getAllAssetByEmail() {
       const { success, message, assetList } = await getApiAssetByStaffEmail(staffEmail)
       setGetResult({ success, message, assetList })
     }
     getAllAssetByEmail()
-  }, [staffEmail, userRole])
-
-  if (userRole !== 'admin') return null
+  }, [staffEmail])
 
   return (
     <div className="max-h-[436px] flex flex-col bg-gray-800 border border-gray-600 rounded-lg p-4">
@@ -76,14 +73,16 @@ export function EditStaffAssetList({
                 </Link>
                 <span className="font-mono text-xs text-gray-500">{asset.serialNumber}</span>
               </div>
-              <button
-                className="shrink-0 flex items-center justify-center w-7 h-7 rounded-lg border border-gray-600 text-gray-500 hover:border-red hover:text-red hover:bg-red/10 transition-colors duration-150"
-                type="button"
-                onClick={() => handleRemoveAsset(asset.id)}
-                aria-label="Remove asset"
-              >
-                <Icons.Trash2 className="w-3.5 h-3.5" />
-              </button>
+              {userRole === 'admin' && (
+                <button
+                  className="shrink-0 flex items-center justify-center w-7 h-7 rounded-lg border border-gray-600 text-gray-500 hover:border-red hover:text-red hover:bg-red/10 transition-colors duration-150"
+                  type="button"
+                  onClick={() => handleRemoveAsset(asset.id)}
+                  aria-label="Remove asset"
+                >
+                  <Icons.Trash2 className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
           ))}
         </div>
