@@ -50,6 +50,7 @@ export async function authenticate(
   _reply: FastifyReply
 ) {
   if (request.url.startsWith('/api/docs')) return
+  if (request.url === '/api/tickets/ingest') return
 
   const token =
     request.cookies?.[COOKIE_NAME] ??
