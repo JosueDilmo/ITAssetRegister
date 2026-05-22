@@ -1,9 +1,18 @@
+import striptags from 'striptags'
+import he from 'he'
 import { eq } from 'drizzle-orm'
 import { db } from '../../../drizzle/client.js'
 import { staffTab } from '../../../drizzle/schema/staffTab.js'
 import { ticketsTab } from '../../../drizzle/schema/ticketsTab.js'
 import { env } from '../../../env.js'
 import { sendMail } from '../../../shared/services/graphMailClient.js'
+
+const SIGNATURE_DELIMITERS = /(\r?\n--\s*\r?\n|\r?\n_{3,}\r?\n|kind regards[,.]?|best regards[,.]?|regards[,.]?|many thanks[,.]?|thanks[,.]?)/i
+
+function stripSignature(text: string): string {
+  const match = SIGNATURE_DELIMITERS.exec(text)
+  return match ? text.slice(0, match.index).trim() : text.trim()
+}
 
 interface IngestTicketParams {
   subject: string
@@ -23,9 +32,13 @@ export async function ingestTicket({ subject, description, requesterEmail }: Ing
 
   const requesterStaffId = staffResult[0]?.id ?? null
 
+  const decoded = Buffer.from(description, 'base64').toString('utf-8')
+  const plainText = he.decode(striptags(decoded)).replace(/[​]/g, '').replace(/\s+/g, ' ').trim()
+  const cleanDescription = stripSignature(plainText)
+
   const [ticket] = await db
     .insert(ticketsTab)
-    .values({ subject, description, requesterEmail, requesterStaffId })
+    .values({ subject, description: cleanDescription, requesterEmail, requesterStaffId })
     .returning()
 
   const ticketLabel = formatTicketLabel(ticket.ticketNumber)
@@ -38,9 +51,8 @@ export async function ingestTicket({ subject, description, requesterEmail }: Ing
       <p>Your support ticket has been received. Our team will be in touch shortly.</p>
       <p><strong>Reference:</strong> ${ticketLabel}<br/>
       <strong>Subject:</strong> ${subject}</p>
-      <p><strong>Description:</strong><br/>${description}</p>
+      <p><strong>Description:</strong><br/>${cleanDescription}</p>
       <p>You can track your ticket at: <a href="${env.APP_BASE_URL}/tickets/${ticket.id}">${env.APP_BASE_URL}/tickets/${ticket.id}</a></p>
-      <p>IT Support Team</p>
     `,
   })
 

@@ -12,6 +12,8 @@ nimbalyst-local/*
 nimbalyst-local
 /.playwright-mcp
 .agents
+docs/*
+docs
 skills-lock.json
 CLAUDE.md
 
