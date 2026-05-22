@@ -71,4 +71,8 @@ export const ERROR_MESSAGES = {
   INVALID_ASSIGNED_TO: 'Please provide a valid staff email address.',
   INVALID_DEPARTMENT: 'Please provide a valid department name.',
   INVALID_JOB_TITLE: 'Please provide a valid job title.',
+
+  // Ticket errors
+  TICKET_NOT_FOUND: 'Ticket with this ID not found.',
+  INVALID_API_KEY: 'Invalid or missing API key.',
 }
