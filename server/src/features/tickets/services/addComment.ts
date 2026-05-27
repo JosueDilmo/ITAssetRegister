@@ -25,17 +25,18 @@ export async function addComment({ ticketId, authorEmail, body, source = 'agent'
 
   const ticketLabel = formatTicketLabel(ticket.ticketNumber)
 
-  await sendMail({
-    to: ticket.requesterEmail,
-    subject: `[${ticketLabel}] Update on your ticket: ${ticket.subject}`,
-    htmlBody: `
-      <p>Hi,</p>
-      <p>There is a new update on your support ticket <strong>${ticketLabel}</strong>.</p>
-      <p><strong>${authorEmail} wrote:</strong><br/>${body}</p>
-      <p>View your ticket: <a href="${env.APP_BASE_URL}/tickets/${ticket.id}">${env.APP_BASE_URL}/tickets/${ticket.id}</a></p>
-      <p>IT Support Team</p>
-    `,
-  })
+  if (source !== 'email') {
+    await sendMail({
+      to: ticket.requesterEmail,
+      subject: `[${ticketLabel}] Update on your ticket: ${ticket.subject}`,
+      htmlBody: `
+        <p>Hi,</p>
+        <p>There is a new update on your support ticket <strong>${ticketLabel}</strong>.</p>
+        <p><strong>${authorEmail} wrote:</strong><br/>${body}</p>
+        <p>View your ticket: <a href="${env.APP_BASE_URL}/tickets/${ticket.id}">${env.APP_BASE_URL}/tickets/${ticket.id}</a></p>
+      `,
+    })
+  }
 
   return comment
 }

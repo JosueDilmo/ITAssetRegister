@@ -60,4 +60,41 @@ describe('addComment', () => {
     expect(callArgs.subject).toContain('[TKT-0003]')
     expect(callArgs.htmlBody).toContain('Try restarting the VPN client.')
   })
+
+  it('does not send notification email when source is "email"', async () => {
+    vi.resetModules()
+    vi.clearAllMocks()
+    const { db } = await import('../../../drizzle/client.js')
+    const { sendMail } = await import('../../../shared/services/graphMailClient.js')
+
+    vi.mocked(db.select).mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([{
+          id: 'ticket-uuid-1', ticketNumber: 3, subject: 'VPN issue',
+          requesterEmail: 'staff@mastertech.ie',
+        }]),
+      }),
+    } as any)
+
+    vi.mocked(db.insert).mockReturnValue({
+      values: vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([{
+          id: 'comment-uuid-2', ticketId: 'ticket-uuid-1',
+          authorEmail: 'staff@mastertech.ie', body: 'Still broken.',
+          source: 'email', createdAt: new Date(),
+        }]),
+      }),
+    } as any)
+
+    const { addComment } = await import('./addComment.js')
+    const result = await addComment({
+      ticketId: 'ticket-uuid-1',
+      authorEmail: 'staff@mastertech.ie',
+      body: 'Still broken.',
+      source: 'email',
+    })
+
+    expect(result.source).toBe('email')
+    expect(sendMail).not.toHaveBeenCalled()
+  })
 })

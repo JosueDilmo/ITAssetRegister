@@ -15,6 +15,13 @@
       "when": 1779459290454,
       "tag": "0001_fuzzy_moondragon",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1779724630980,
+      "tag": "0002_far_kree",
+      "breakpoints": true
     }
   ]
 }

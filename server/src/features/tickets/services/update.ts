@@ -45,7 +45,6 @@ export async function updateTicket({ id, priority, status, assignedAgentEmail, c
         <p>Your support ticket <strong>${ticketLabel}</strong> has been resolved.</p>
         <p><strong>Resolution:</strong><br/>${note}</p>
         <p>If you need further help, please open a new ticket by emailing <a href="mailto:${env.SUPPORT_EMAIL}">${env.SUPPORT_EMAIL}</a>.</p>
-        <p>IT Support Team</p>
       `,
     })
   }

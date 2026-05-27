@@ -1,8 +1,7 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { z } from 'zod'
 import { ERROR_MESSAGES } from '../../../errors/index.js'
-import { requireRole } from '../../../hooks/requireRole.js'
-import { getTicketById } from '../services/getById.js'
+import { getMyTicketById } from '../services/getMineById.js'
 
 const commentSchema = z.object({
   id: z.string(),
@@ -27,13 +26,13 @@ const errorResponse = z.object({
   error: z.object({ code: z.string(), message: z.string(), details: z.any().optional() }),
 })
 
-export const getTicketByIdHandler: FastifyPluginAsyncZod = async app => {
+export const getMyTicketByIdHandler: FastifyPluginAsyncZod = async app => {
   app.get(
-    '/tickets/:id',
+    '/tickets/mine/:id',
     {
       schema: {
         tags: ['Tickets'],
-        description: 'Get a single ticket with all comments and attachments',
+        description: 'Get a single ticket with comments and attachments (requester-owned only)',
         params: z.object({ id: z.string().uuid(ERROR_MESSAGES.INVALID_ID) }),
         response: {
           200: z.object({
@@ -53,16 +52,14 @@ export const getTicketByIdHandler: FastifyPluginAsyncZod = async app => {
             attachments: z.array(attachmentSchema),
           }).describe('Successful'),
           401: errorResponse.describe('Unauthorized'),
-          403: errorResponse.describe('Forbidden'),
           404: errorResponse.describe('Not Found'),
           500: errorResponse.describe('Internal Server Error'),
         },
       },
-      preHandler: [requireRole('admin')],
     },
     async (request, reply) => {
-      const result = await getTicketById(request.params.id)
-      return reply.status(200).send(result)
+      const ticket = await getMyTicketById(request.params.id, request.user!.email)
+      return reply.status(200).send(ticket)
     }
   )
 }

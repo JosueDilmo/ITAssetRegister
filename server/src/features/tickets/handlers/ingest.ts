@@ -4,12 +4,16 @@ import { env } from '../../../env.js'
 import { AuthorizationError, ERROR_MESSAGES } from '../../../errors/index.js'
 import { ingestTicket } from '../services/ingest.js'
 
-const errorResponse = z.object({ success: z.literal(false), error: z.object({ code: z.string(), message: z.string(), details: z.any().optional() }) })
+const errorResponse = z.object({
+  success: z.literal(false),
+  error: z.object({ code: z.string(), message: z.string(), details: z.any().optional() }),
+})
 
 export const ingestTicketHandler: FastifyPluginAsyncZod = async app => {
   app.post(
     '/tickets/ingest',
     {
+      bodyLimit: 20 * 1024 * 1024,
       schema: {
         tags: ['Tickets'],
         description: 'Create a ticket from an incoming email (called by Power Automate)',
@@ -17,9 +21,21 @@ export const ingestTicketHandler: FastifyPluginAsyncZod = async app => {
           subject: z.string().min(1),
           description: z.string().min(1),
           requesterEmail: z.string().email(),
+          attachments: z
+            .array(
+              z.object({
+                name: z.string().min(1),
+                contentBytes: z.string().min(1),
+                contentType: z.string().min(1),
+              })
+            )
+            .optional()
+            .default([]),
         }),
         response: {
-          200: z.object({ ticketId: z.string(), ticketNumber: z.number(), ticketLabel: z.string() }).describe('Successful'),
+          200: z
+            .object({ ticketId: z.string(), ticketNumber: z.number(), ticketLabel: z.string() })
+            .describe('Successful'),
           401: errorResponse.describe('Unauthorized'),
           500: errorResponse.describe('Internal Server Error'),
         },
@@ -34,8 +50,8 @@ export const ingestTicketHandler: FastifyPluginAsyncZod = async app => {
       ],
     },
     async (request, reply) => {
-      const { subject, description, requesterEmail } = request.body
-      const result = await ingestTicket({ subject, description, requesterEmail })
+      const { subject, description, requesterEmail, attachments } = request.body
+      const result = await ingestTicket({ subject, description, requesterEmail, attachments })
       return reply.status(200).send(result)
     }
   )

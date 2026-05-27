@@ -51,6 +51,7 @@ export async function authenticate(
 ) {
   if (request.url.startsWith('/api/docs')) return
   if (request.url === '/api/tickets/ingest') return
+  if (request.url.startsWith('/api/tickets/by-number')) return
 
   const token =
     request.cookies?.[COOKIE_NAME] ??

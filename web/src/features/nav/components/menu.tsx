@@ -44,6 +44,22 @@ export async function Menu() {
           <span className="text-sm font-medium">Management</span>
           <Icons.SquareArrowUpRight className="w-4 h-4 opacity-40 group-hover:opacity-100 transition-opacity" />
         </Link>
+        <Link
+          href="/support"
+          className="group flex items-center justify-between px-3 py-2.5 rounded text-gray-200 border-l-2 border-l-transparent hover:border-l-blue hover:text-blue hover:bg-gray-700 transition-all duration-150"
+        >
+          <span className="text-sm font-medium">Support</span>
+          <Icons.SquareArrowUpRight className="w-4 h-4 opacity-40 group-hover:opacity-100 transition-opacity" />
+        </Link>
+        {userCredentials === 'admin' && (
+          <Link
+            href="/tickets"
+            className="group flex items-center justify-between px-3 py-2.5 rounded text-gray-200 border-l-2 border-l-transparent hover:border-l-blue hover:text-blue hover:bg-gray-700 transition-all duration-150"
+          >
+            <span className="text-sm font-medium">Tickets</span>
+            <Icons.SquareArrowUpRight className="w-4 h-4 opacity-40 group-hover:opacity-100 transition-opacity" />
+          </Link>
+        )}
       </nav>
       <div className="p-2 border-t border-gray-600">
         <form action={handleAuth}>
