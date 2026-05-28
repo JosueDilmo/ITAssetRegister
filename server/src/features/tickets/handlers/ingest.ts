@@ -27,6 +27,7 @@ export const ingestTicketHandler: FastifyPluginAsyncZod = async app => {
                 name: z.string().min(1),
                 contentBytes: z.string().min(1),
                 contentType: z.string().min(1),
+                contentId: z.string().optional(),
               })
             )
             .optional()

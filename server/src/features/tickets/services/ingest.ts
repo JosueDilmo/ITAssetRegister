@@ -9,17 +9,18 @@ import { env } from '../../../env.js'
 import { sendMail } from '../../../shared/services/graphMailClient.js'
 import { uploadToSharePoint } from '../../../shared/services/graphSharePointClient.js'
 
-const SIGNATURE_DELIMITERS = /\n(?:kind regards|best regards|warm regards)[,.]?/i
+const SIG_HTML_MARKER = '<!-- SIG_START -->'
 
- function stripSignature(text: string): string {
-     const match = SIGNATURE_DELIMITERS.exec(text)
-     return match ? text.slice(0, match.index).trim() : text.trim()
-   }
+function stripSignature(html: string): string {
+  const markerIdx = html.indexOf(SIG_HTML_MARKER)
+  return markerIdx !== -1 ? html.slice(0, markerIdx) : html
+}
 
 interface AttachmentInput {
   name: string
   contentBytes: string
   contentType: string
+  contentId?: string
 }
 
 interface IngestTicketParams {
@@ -47,11 +48,26 @@ export async function ingestTicket({
   const requesterStaffId = staffResult[0]?.id ?? null
 
   const decoded = Buffer.from(description, 'base64').toString('utf-8')
-  const withNewlines = decoded
+  const bodyHtml = stripSignature(decoded)
+
+  const cidToFilename = new Map<string, string>()
+  for (const att of attachments) {
+    if (att.contentId) cidToFilename.set(att.contentId, att.name)
+  }
+
+  const annotated = bodyHtml.replace(
+    /<img[^>]+src="cid:([^"]+)"[^>]*\/?>/gi,
+    (_, cid) => `[📎 ${cidToFilename.get(cid) ?? cid.split('@')[0]}]`
+  )
+
+  const withNewlines = annotated
     .replace(/<br\s*\/?>/gi, '\n')
     .replace(/<\/(?:p|div|li|tr|h[1-6]|blockquote)>/gi, '\n')
-  const rawText = he.decode(striptags(withNewlines)).replace(/​/g, '')
-  const cleanDescription = stripSignature(rawText).replace(/\s+/g, ' ').trim()
+  const cleanDescription = he.decode(striptags(withNewlines))
+    .replace(/​/g, '')
+    .replace(/[^\S\n]+/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
 
   const [ticket] = await db
     .insert(ticketsTab)
@@ -107,7 +123,7 @@ export async function ingestTicket({
       <p>Your support ticket has been received. Our team will be in touch shortly.</p>
       <p><strong>Reference:</strong> ${ticketLabel}<br/>
       <strong>Subject:</strong> ${subject}</p>
-      <p><strong>Description:</strong><br/>${cleanDescription}</p>
+      <p><strong>Description:</strong><br/>${he.encode(cleanDescription).replace(/\n/g, '<br/>')}</p>
       ${attachmentLinksHtml}
       <p>You can track your ticket at: <a href="${env.APP_BASE_URL}/tickets/${ticket.id}">${env.APP_BASE_URL}/tickets/${ticket.id}</a></p>
     `,
