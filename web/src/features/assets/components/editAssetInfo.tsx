@@ -69,18 +69,18 @@ export function EditAssetInfo({
         <div key={item.id} className="grid grid-cols-2 gap-6">
 
           {/* Asset info card */}
-          <div className={`bg-gray-800 border border-gray-600 rounded-lg overflow-hidden border-l-2 ${
+          <div className={`bg-gray-600 border border-gray-500 rounded-lg overflow-hidden border-l-2 ${
             status === 'ACTIVE' ? 'border-l-green-500' : 'border-l-red'
           }`}>
             {/* Status bar */}
-            <div className="flex items-center gap-2 px-5 py-2.5 border-b border-gray-700 bg-gray-800/80">
+            <div className="flex items-center gap-2 px-5 py-2.5 border-b border-gray-500 bg-gray-700/80">
               <span className={`inline-block w-2 h-2 rounded-full shrink-0 ${
                 status === 'ACTIVE' ? 'bg-green-500 animate-status-dot' : 'bg-red'
               }`} />
-              <span className="text-xs font-mono uppercase tracking-widest text-gray-300">
+              <span className="text-xs font-mono uppercase tracking-widest text-gray-50">
                 {status}
               </span>
-              <span className="ml-auto font-mono text-xs text-gray-600">{item.id.slice(0, 8)}</span>
+              <span className="ml-auto font-mono text-xs text-gray-100/25">{item.id.slice(0, 8)}</span>
             </div>
 
             <div className="px-5 py-5">
@@ -89,7 +89,7 @@ export function EditAssetInfo({
               </h2>
 
               {/* Data rows */}
-              <div className="flex flex-col divide-y divide-gray-700/50 mb-4">
+              <div className="flex flex-col divide-y divide-gray-500/50 mb-4">
                 {[
                   { label: 'Serial', value: item.serialNumber, mono: true },
                   { label: 'Asset#', value: item.assetNumber, mono: true },
@@ -127,12 +127,12 @@ export function EditAssetInfo({
                   },
                 ].map(row => (
                   <div key={row.label} className="flex items-start gap-3 py-2">
-                    <span className="text-xs font-mono uppercase tracking-wider text-gray-500 w-16 shrink-0 pt-0.5">
+                    <span className="text-xs font-mono uppercase tracking-wider text-blue/60 w-16 shrink-0 pt-0.5">
                       {row.label}
                     </span>
                     <span className={`text-sm break-all flex-1 ${
-                      row.mono ? 'font-mono text-gray-300' : 'text-gray-200'
-                    } ${row.muted ? 'text-gray-600 italic' : ''}`}>
+                      row.mono ? 'font-mono text-gray-100' : 'text-gray-50'
+                    } ${row.muted ? 'text-gray-100/25 italic' : ''}`}>
                       {row.value}
                     </span>
                   </div>
@@ -142,10 +142,10 @@ export function EditAssetInfo({
               {userRole === 'admin' && (
                 <form
                   onSubmit={handleSubmit(updateAssetInfo)}
-                  className="flex flex-col gap-3 border-t border-gray-700 pt-4"
+                  className="flex flex-col gap-3 border-t border-gray-500 pt-4"
                 >
-                  <div className="flex items-center gap-2 rounded-lg border border-gray-600 bg-gray-700 px-3 py-2">
-                    <Icons.ListCheck className="w-4 h-4 text-gray-400 shrink-0" />
+                  <div className="flex items-center gap-2 rounded-lg border border-gray-300 bg-gray-500 px-3 py-2">
+                    <Icons.ListCheck className="w-4 h-4 text-gray-100/60 shrink-0" />
                     <select
                       className="flex-1 bg-transparent text-sm text-gray-100 outline-none"
                       value={newCondition || conditionRegistered}
@@ -202,8 +202,8 @@ export function EditAssetInfo({
               )}
 
               {userRole === 'viewer' && (
-                <div className="border-t border-gray-700 mt-4 pt-3">
-                  <span className="text-xs font-mono text-gray-600 uppercase tracking-wider">read-only</span>
+                <div className="border-t border-gray-500 mt-4 pt-3">
+                  <span className="text-xs font-mono text-gray-100/30 uppercase tracking-wider">read-only</span>
                 </div>
               )}
             </div>

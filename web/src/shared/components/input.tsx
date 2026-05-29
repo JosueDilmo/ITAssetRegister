@@ -13,7 +13,7 @@ export function InputRoot({
     <div
       data-error={error}
       className={twMerge(
-        'group flex items-center h-12 w-full gap-2 px-4 bg-gray-800 border border-gray-600 rounded-xl focus-within:border-blue data-[error=true]:border-red',
+        'group flex items-center h-12 w-full gap-2 px-4 bg-gray-200 border border-gray-300 rounded-xl focus-within:border-blue data-[error=true]:border-red',
         className
       )}
       {...props}
@@ -26,7 +26,7 @@ export function InputIcon({ className, ...props }: InputIconProps) {
   return (
     <span
       className={twMerge(
-        'text-gray-300 group-focus-within:text-blue group-[&:not(:has(input:placeholder-shown))]:text-gray-100 group-data-[error=true]:text-red',
+        'text-gray-100/50 group-focus-within:text-blue group-[&:not(:has(input:placeholder-shown))]:text-gray-100 group-data-[error=true]:text-red',
         className
       )}
       {...props}
@@ -38,7 +38,7 @@ interface InputFieldProps extends ComponentProps<'input'> {}
 export function InputField({ className, ...props }: InputFieldProps) {
   return (
     <input
-      className={twMerge('flex-1 outline-0 placeholder-gray-500 text-gray-100', className)}
+      className={twMerge('flex-1 outline-0 placeholder-gray-100/40 text-gray-50', className)}
       {...props}
     />
   )

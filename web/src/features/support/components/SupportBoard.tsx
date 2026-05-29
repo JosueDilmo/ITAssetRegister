@@ -58,7 +58,7 @@ export function SupportBoard() {
       {loading ? (
         <div className="space-y-2">
           {[1, 2, 3].map(i => (
-            <div key={i} className="h-12 rounded border border-gray-700 bg-gray-900 animate-pulse" />
+            <div key={i} className="h-12 rounded border border-gray-500 bg-gray-600 animate-pulse" />
           ))}
         </div>
       ) : tickets.length === 0 ? (

@@ -31,9 +31,9 @@ export function SupportTicketCard({ ticket, onClick }: Props) {
     <button
       type="button"
       onClick={onClick}
-      className="w-full text-left p-3 rounded border border-gray-600 bg-gray-800 hover:border-blue-500 hover:bg-gray-700 transition-all duration-150 flex items-center gap-4"
+      className="w-full text-left p-3 rounded border border-gray-500 bg-gray-600 hover:border-blue hover:bg-gray-500 transition-all duration-150 flex items-center gap-4"
     >
-      <span className="font-mono text-xs text-gray-400 shrink-0 w-20">{label}</span>
+      <span className="font-mono text-xs text-gray-100/60 shrink-0 w-20">{label}</span>
       <p className="flex-1 text-sm text-gray-100 font-medium truncate">{ticket.subject}</p>
       <span
         className={`text-xs font-mono border px-1.5 py-0.5 rounded shrink-0 ${

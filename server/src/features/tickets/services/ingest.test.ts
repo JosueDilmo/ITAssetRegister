@@ -194,6 +194,126 @@ describe('ingestTicket', () => {
     expect(insertedDescription).not.toContain('John Smith')
   })
 
+  it('adds comment to existing ticket when subject contains TKT-XXXX reference', async () => {
+    const { db } = await import('../../../drizzle/client.js')
+    const { sendMail } = await import('../../../shared/services/graphMailClient.js')
+
+    const existingTicket = { id: 'ticket-uuid-existing', ticketNumber: 22 }
+
+    vi.mocked(db.select).mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([existingTicket]),
+      }),
+    } as any)
+
+    vi.mocked(db.insert).mockReturnValue({
+      values: vi.fn().mockResolvedValue(undefined),
+    } as any)
+
+    const { ingestTicket } = await import('./ingest.js')
+    const result = await ingestTicket({
+      subject: 'Re: [TKT-0022] Ticket received: test',
+      description: Buffer.from('<p>Thanks for the update.</p>').toString('base64'),
+      requesterEmail: 'staff@mastertech.ie',
+    })
+
+    expect(result.ticketId).toBe('ticket-uuid-existing')
+    expect(result.ticketLabel).toBe('TKT-0022')
+    expect(result.ticketNumber).toBe(22)
+
+    // comment insert only — no new ticket row
+    expect(db.insert).toHaveBeenCalledOnce()
+    const commentValues = vi.mocked(db.insert).mock.results[0].value.values.mock.calls[0][0]
+    expect(commentValues).toMatchObject({
+      ticketId: 'ticket-uuid-existing',
+      authorEmail: 'staff@mastertech.ie',
+      source: 'email',
+      body: 'Thanks for the update.',
+    })
+
+    // no confirmation email for replies
+    expect(sendMail).not.toHaveBeenCalled()
+  })
+
+  it('uploads attachment to existing ticket folder when replying', async () => {
+    const { db } = await import('../../../drizzle/client.js')
+    const { uploadToSharePoint } = await import('../../../shared/services/graphSharePointClient.js')
+
+    const existingTicket = { id: 'ticket-uuid-existing-2', ticketNumber: 5 }
+
+    vi.mocked(db.select).mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([existingTicket]),
+      }),
+    } as any)
+
+    vi.mocked(db.insert)
+      .mockReturnValueOnce({ values: vi.fn().mockResolvedValue(undefined) } as any)  // comment
+      .mockReturnValueOnce({ values: vi.fn().mockResolvedValue(undefined) } as any)  // attachment
+
+    vi.mocked(uploadToSharePoint).mockResolvedValueOnce(
+      'https://sharepoint.example.com/IT-Tickets/ticket-uuid-existing-2/reply.png'
+    )
+
+    const { ingestTicket } = await import('./ingest.js')
+    await ingestTicket({
+      subject: 'Re: [TKT-0005] Ticket received: Keyboard issue',
+      description: Buffer.from('<p>See attached screenshot.</p>').toString('base64'),
+      requesterEmail: 'staff@mastertech.ie',
+      attachments: [{ name: 'reply.png', contentBytes: 'aGVsbG8=', contentType: 'image/png' }],
+    })
+
+    expect(uploadToSharePoint).toHaveBeenCalledOnce()
+    expect(vi.mocked(uploadToSharePoint).mock.calls[0][0]).toMatchObject({
+      folderPath: 'IT-Tickets/ticket-uuid-existing-2',
+      filename: 'reply.png',
+    })
+
+    expect(db.insert).toHaveBeenCalledTimes(2)
+    const attachmentValues = vi.mocked(db.insert).mock.results[1].value.values.mock.calls[0][0]
+    expect(attachmentValues[0]).toMatchObject({
+      ticketId: 'ticket-uuid-existing-2',
+      filename: 'reply.png',
+    })
+  })
+
+  it('creates new ticket when TKT-XXXX in subject but ticket not found in db', async () => {
+    const { db } = await import('../../../drizzle/client.js')
+    const { sendMail } = await import('../../../shared/services/graphMailClient.js')
+
+    const mockTicket = { id: 'ticket-uuid-new', ticketNumber: 99, subject: 'Re: [TKT-9999] orphaned' }
+
+    vi.mocked(db.select)
+      .mockReturnValueOnce({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([]),  // ticket 9999 not found
+        }),
+      } as any)
+      .mockReturnValueOnce({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([]),  // staff not found
+        }),
+      } as any)
+
+    vi.mocked(db.insert).mockReturnValue({
+      values: vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([mockTicket]),
+      }),
+    } as any)
+
+    const { ingestTicket } = await import('./ingest.js')
+    const result = await ingestTicket({
+      subject: 'Re: [TKT-9999] Ticket received: orphaned',
+      description: Buffer.from('<p>Nobody home.</p>').toString('base64'),
+      requesterEmail: 'staff@mastertech.ie',
+    })
+
+    expect(result.ticketId).toBe('ticket-uuid-new')
+    expect(result.ticketLabel).toBe('TKT-0099')
+    // new ticket created — confirmation email sent
+    expect(sendMail).toHaveBeenCalledOnce()
+  })
+
   it('confirmation email includes attachment links when uploads succeed', async () => {
     const { db } = await import('../../../drizzle/client.js')
     const { uploadToSharePoint } = await import('../../../shared/services/graphSharePointClient.js')

@@ -42,7 +42,7 @@ export function AddCommentForm({ ticketId, onCommentAdded }: Props) {
         {...register('body')}
         rows={3}
         placeholder="Add a comment..."
-        className="w-full px-3 py-2 text-sm bg-gray-800 border border-gray-600 rounded text-gray-100 placeholder-gray-500 focus:outline-none focus:border-blue-500 resize-none"
+        className="w-full px-3 py-2 text-sm bg-gray-500 border border-gray-300 rounded text-gray-50 placeholder-gray-100/40 focus:outline-none focus:border-blue resize-none"
       />
       {errors.body && (
         <p className="text-xs text-red-400">{errors.body.message}</p>

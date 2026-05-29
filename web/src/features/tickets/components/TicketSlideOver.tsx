@@ -104,11 +104,11 @@ export function TicketSlideOver({ ticketId, onClose, onTicketUpdated }: Props) {
         onClick={onClose}
         aria-hidden="true"
       />
-      <div className="fixed right-0 top-0 h-full w-[480px] bg-gray-900 border-l border-gray-700 z-50 flex flex-col">
+      <div className="fixed right-0 top-0 h-full w-[480px] bg-gray-600 border-l border-gray-400 z-50 flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-700 shrink-0">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-500 shrink-0">
           <div className="flex items-center gap-3 min-w-0">
-            <span className="font-mono text-sm text-gray-400 shrink-0">{label}</span>
+            <span className="font-mono text-sm text-gray-100 shrink-0">{label}</span>
             {ticket && (
               <span className="text-sm text-gray-100 font-medium truncate">{ticket.subject}</span>
             )}
@@ -125,7 +125,7 @@ export function TicketSlideOver({ ticketId, onClose, onTicketUpdated }: Props) {
             <button
               type="button"
               onClick={onClose}
-              className="p-1 text-gray-400 hover:text-gray-100 hover:bg-gray-700 rounded transition-colors duration-150"
+              className="p-1 text-gray-400 hover:text-gray-100 hover:bg-gray-500 rounded transition-colors duration-150"
             >
               <X className="w-4 h-4" />
             </button>
@@ -143,11 +143,11 @@ export function TicketSlideOver({ ticketId, onClose, onTicketUpdated }: Props) {
               <section className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="text-xs font-medium text-gray-400">Status</label>
+                    <label className="text-xs font-mono font-medium text-blue/70 uppercase tracking-wider">Status</label>
                     <select
                       value={status}
                       onChange={e => setStatus(e.target.value)}
-                      className="w-full px-2 py-1.5 text-sm bg-gray-800 border border-gray-600 rounded text-gray-100 focus:outline-none focus:border-blue-500"
+                      className="w-full px-2 py-1.5 text-sm bg-gray-500 border border-gray-300 rounded text-gray-50 focus:outline-none focus:border-blue"
                     >
                       <option value="NEW">New</option>
                       <option value="IN_PROGRESS">In Progress</option>
@@ -155,11 +155,11 @@ export function TicketSlideOver({ ticketId, onClose, onTicketUpdated }: Props) {
                     </select>
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-medium text-gray-400">Priority</label>
+                    <label className="text-xs font-mono font-medium text-blue/70 uppercase tracking-wider">Priority</label>
                     <select
                       value={priority}
                       onChange={e => setPriority(e.target.value)}
-                      className="w-full px-2 py-1.5 text-sm bg-gray-800 border border-gray-600 rounded text-gray-100 focus:outline-none focus:border-blue-500"
+                      className="w-full px-2 py-1.5 text-sm bg-gray-500 border border-gray-300 rounded text-gray-50 focus:outline-none focus:border-blue"
                     >
                       <option value="HIGH">High</option>
                       <option value="MEDIUM">Medium</option>
@@ -169,24 +169,24 @@ export function TicketSlideOver({ ticketId, onClose, onTicketUpdated }: Props) {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-gray-400">Assigned Agent</label>
+                  <label className="text-xs font-mono font-medium text-blue/70 uppercase tracking-wider">Assigned Agent</label>
                   <input
                     type="email"
                     value={assignedAgent}
                     onChange={e => setAssignedAgent(e.target.value)}
                     placeholder="agent@company.com"
-                    className="w-full px-2 py-1.5 text-sm bg-gray-800 border border-gray-600 rounded text-gray-100 placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                    className="w-full px-2 py-1.5 text-sm bg-gray-500 border border-gray-300 rounded text-gray-50 placeholder-gray-100/40 focus:outline-none focus:border-blue"
                   />
                 </div>
 
                 {status === 'COMPLETE' && (
                   <div className="space-y-1">
-                    <label className="text-xs font-medium text-gray-400">Completion Note</label>
+                    <label className="text-xs font-mono font-medium text-blue/70 uppercase tracking-wider">Completion Note</label>
                     <textarea
                       value={completionNote}
                       onChange={e => setCompletionNote(e.target.value)}
                       rows={3}
-                      className="w-full px-2 py-1.5 text-sm bg-gray-800 border border-gray-600 rounded text-gray-100 focus:outline-none focus:border-blue-500 resize-none"
+                      className="w-full px-2 py-1.5 text-sm bg-gray-500 border border-gray-300 rounded text-gray-50 focus:outline-none focus:border-blue resize-none"
                     />
                   </div>
                 )}
@@ -204,10 +204,10 @@ export function TicketSlideOver({ ticketId, onClose, onTicketUpdated }: Props) {
               </section>
 
               {/* Requester info */}
-              <section className="border-t border-gray-700 pt-4">
-                <div className="flex justify-between text-xs text-gray-400">
+              <section className="border-t border-gray-500 pt-4">
+                <div className="flex justify-between text-xs text-gray-100">
                   <span>
-                    From: <span className="text-gray-200">{ticket.requesterEmail}</span>
+                    From: <span className="text-gray-50 font-medium">{ticket.requesterEmail}</span>
                   </span>
                   <span>{new Date(ticket.createdAt).toLocaleDateString()}</span>
                 </div>
@@ -215,16 +215,16 @@ export function TicketSlideOver({ ticketId, onClose, onTicketUpdated }: Props) {
 
               {/* Description */}
               <section className="space-y-2">
-                <h3 className="text-xs font-medium text-gray-400 uppercase tracking-wider">
+                <h3 className="text-xs font-mono font-medium text-blue/70 uppercase tracking-wider">
                   Description
                 </h3>
-                <p className="text-sm text-gray-200 whitespace-pre-wrap">{ticket.description}</p>
+                <p className="text-sm text-gray-50 whitespace-pre-wrap">{ticket.description}</p>
               </section>
 
               {/* Attachments */}
               {ticket.attachments.length > 0 && (
                 <section className="space-y-2">
-                  <h3 className="text-xs font-medium text-gray-400 uppercase tracking-wider">
+                  <h3 className="text-xs font-mono font-medium text-blue/70 uppercase tracking-wider">
                     Attachments
                   </h3>
                   <ul className="space-y-1">
@@ -234,7 +234,7 @@ export function TicketSlideOver({ ticketId, onClose, onTicketUpdated }: Props) {
                           href={att.sharePointUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
+                          className="text-sm text-blue hover:opacity-80 transition-opacity"
                         >
                           {att.filename}
                         </a>
@@ -246,20 +246,20 @@ export function TicketSlideOver({ ticketId, onClose, onTicketUpdated }: Props) {
 
               {/* Comments */}
               <section className="space-y-3">
-                <h3 className="text-xs font-medium text-gray-400 uppercase tracking-wider">
+                <h3 className="text-xs font-mono font-medium text-blue/70 uppercase tracking-wider">
                   Comments
                 </h3>
                 {ticket.comments.length === 0 ? (
-                  <p className="text-xs text-gray-500">No comments yet</p>
+                  <p className="text-xs text-gray-100/50">No comments yet</p>
                 ) : (
                   <ul className="space-y-3">
                     {ticket.comments.map(comment => (
-                      <li key={comment.id} className="border border-gray-700 rounded p-3 space-y-1">
-                        <div className="flex justify-between text-xs text-gray-400">
+                      <li key={comment.id} className="border border-gray-500 rounded p-3 space-y-1">
+                        <div className="flex justify-between text-xs text-gray-100">
                           <span>{comment.authorEmail}</span>
                           <span>{new Date(comment.createdAt).toLocaleDateString()}</span>
                         </div>
-                        <p className="text-sm text-gray-200 whitespace-pre-wrap">{comment.body}</p>
+                        <p className="text-sm text-gray-50 whitespace-pre-wrap">{comment.body}</p>
                       </li>
                     ))}
                   </ul>

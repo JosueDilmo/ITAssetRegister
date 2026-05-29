@@ -58,7 +58,7 @@ function AssetDiffCell({
           </a>
         ))}
         {added.length === 0 && removed.length === 0 && (
-          <span className="font-mono text-xs text-gray-500">unchanged</span>
+          <span className="font-mono text-xs text-gray-100/40">unchanged</span>
         )}
       </div>
     </td>
@@ -77,11 +77,11 @@ export function ChangeLogTable({
 }: ChangeLogTableProps) {
   if (!changeLog || changeLog.length === 0) {
     return (
-      <div className="mt-2 rounded-lg border border-gray-700 bg-gray-800/50 p-4">
-        <h3 className="mb-2 text-xs font-mono uppercase tracking-widest text-gray-400">
+      <div className="mt-2 rounded-lg border border-gray-500 bg-gray-600/50 p-4">
+        <h3 className="mb-2 text-xs font-mono uppercase tracking-widest text-blue/70">
           {title}
         </h3>
-        <p className="text-xs text-gray-600">No changes recorded.</p>
+        <p className="text-xs text-gray-100/50">No changes recorded.</p>
       </div>
     )
   }
@@ -91,36 +91,36 @@ export function ChangeLogTable({
   )
 
   return (
-    <div className="mt-2 rounded-lg border border-gray-700 bg-gray-800/50 p-4">
-      <h3 className="mb-3 text-xs font-mono uppercase tracking-widest text-gray-400">
+    <div className="mt-2 rounded-lg border border-gray-500 bg-gray-600/50 p-4">
+      <h3 className="mb-3 text-xs font-mono uppercase tracking-widest text-blue/70">
         {title}
-        <span className="ml-2 text-gray-600">({sortedLog.length})</span>
+        <span className="ml-2 text-gray-100/40">({sortedLog.length})</span>
       </h3>
       <div className="max-h-64 overflow-y-auto scrollbar-hide">
         <table className="w-full text-xs">
-          <thead className="sticky top-0 bg-gray-800">
-            <tr className="border-b border-gray-700 text-left">
-              <th className="px-2 py-1.5 font-mono uppercase tracking-wider text-gray-500">Date</th>
-              <th className="px-2 py-1.5 font-mono uppercase tracking-wider text-gray-500">By</th>
-              <th className="px-2 py-1.5 font-mono uppercase tracking-wider text-gray-500">Field</th>
-              <th className="px-2 py-1.5 font-mono uppercase tracking-wider text-gray-500">Prev</th>
-              <th className="px-2 py-1.5 font-mono uppercase tracking-wider text-gray-500">New</th>
+          <thead className="sticky top-0 bg-gray-600">
+            <tr className="border-b border-gray-500 text-left">
+              <th className="px-2 py-1.5 font-mono uppercase tracking-wider text-blue/60">Date</th>
+              <th className="px-2 py-1.5 font-mono uppercase tracking-wider text-blue/60">By</th>
+              <th className="px-2 py-1.5 font-mono uppercase tracking-wider text-blue/60">Field</th>
+              <th className="px-2 py-1.5 font-mono uppercase tracking-wider text-blue/60">Prev</th>
+              <th className="px-2 py-1.5 font-mono uppercase tracking-wider text-blue/60">New</th>
             </tr>
           </thead>
           <tbody>
             {sortedLog.map((entry, i) => (
               <tr
                 key={`${entry.updatedAt}-${i}`}
-                className={`border-b border-gray-700/50 ${i % 2 === 0 ? 'bg-gray-800/30' : ''}`}
+                className={`border-b border-gray-500/50 ${i % 2 === 0 ? 'bg-gray-600/30' : ''}`}
               >
-                <td className="whitespace-nowrap px-2 py-1.5 font-mono text-gray-500">
+                <td className="whitespace-nowrap px-2 py-1.5 font-mono text-gray-100">
                   {formatDate(entry.updatedAt)}
                 </td>
-                <td className="px-2 py-1.5 text-gray-400 max-w-[80px] truncate" title={entry.updatedBy}>
+                <td className="px-2 py-1.5 text-gray-100/70 max-w-[80px] truncate" title={entry.updatedBy}>
                   {entry.updatedBy.split('@')[0]}
                 </td>
                 <td className="px-2 py-1.5">
-                  <span className="rounded bg-gray-700 px-1.5 py-0.5 font-mono text-blue">
+                  <span className="rounded bg-gray-500 px-1.5 py-0.5 font-mono text-blue">
                     {entry.updatedField}
                   </span>
                 </td>

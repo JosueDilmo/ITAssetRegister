@@ -48,7 +48,7 @@ export function AddAsset({
       {asset.map((item) => (
         <div
           key={item.id}
-          className={`flex items-center gap-3 px-3 py-2 bg-gray-700 border border-gray-600 rounded-md hover:border-blue/50 transition-colors duration-150 border-l-2 ${
+          className={`flex items-center gap-3 px-3 py-2 bg-gray-600 border border-gray-500 rounded-md hover:border-blue/50 transition-colors duration-150 border-l-2 ${
             item.status === 'ACTIVE' ? 'border-l-green-500' : 'border-l-red'
           }`}
         >
@@ -60,24 +60,24 @@ export function AddAsset({
               >
                 {item.name}
               </Link>
-              <span className="font-mono text-xs text-gray-500 shrink-0">
+              <span className="font-mono text-xs text-gray-100/60 shrink-0">
                 {item.type} · {item.maker}
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="font-mono text-xs text-gray-500">{item.serialNumber}</span>
+              <span className="font-mono text-xs text-gray-100/60">{item.serialNumber}</span>
               {item.assignedTo ? (
                 <span className="flex items-center gap-1 text-xs font-mono text-orange-500 truncate">
                   <Icons.AlertTriangle className="w-3 h-3 shrink-0" />
                   {item.assignedTo}
                 </span>
               ) : (
-                <span className="text-xs font-mono text-gray-600 italic">Unassigned</span>
+                <span className="text-xs font-mono text-gray-100/30 italic">Unassigned</span>
               )}
             </div>
           </div>
           <button
-            className="shrink-0 flex items-center justify-center w-7 h-7 rounded-lg border border-gray-600 text-gray-500 hover:border-green-500 hover:text-green-500 hover:bg-green-500/10 transition-colors duration-150"
+            className="shrink-0 flex items-center justify-center w-7 h-7 rounded-lg border border-gray-500 text-gray-100/60 hover:border-green-500 hover:text-green-500 hover:bg-green-500/10 transition-colors duration-150"
             type="button"
             onClick={() => handleAddAsset(item.id)}
             aria-label="Add asset to staff"

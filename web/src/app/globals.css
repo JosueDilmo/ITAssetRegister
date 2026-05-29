@@ -7,8 +7,8 @@
   --color-*: initial;
 
   /* Accents */
-  --color-blue: #5C9EFF;
-  --color-blue-500: #162448;
+  --color-blue: #38BDF8;
+  --color-blue-500: #0F2137;
   --color-purple: #9871f3;
   --color-purple-500: #3A1F7A;
 
@@ -22,17 +22,17 @@
   --color-yellow-500: #FFD060;
   --color-yellow-900: #3A3008;
 
-  /* Navy-black palette */
-  --color-gray-50:  #C8DCFF;
-  --color-gray-100: #7090B8;
-  --color-gray-200: #1E3050;
-  --color-gray-300: #4A6280;
-  --color-gray-400: #2A4060;
-  --color-gray-500: #1E2E4A;
-  --color-gray-600: #141E38;
-  --color-gray-700: #0D1526;
-  --color-gray-800: #090E1A;
-  --color-gray-900: #05080F;
+  /* Steel blue-gray palette */
+  --color-gray-50:  #E8F0FA;
+  --color-gray-100: #A0B4CC;
+  --color-gray-200: #2A3D55;
+  --color-gray-300: #3A5068;
+  --color-gray-400: #2E4460;
+  --color-gray-500: #253447;
+  --color-gray-600: #1A2535;
+  --color-gray-700: #141F2D;
+  --color-gray-800: #0F1923;
+  --color-gray-900: #070D14;
 
   --font-heading: var(--font-oxanium);
   --font-sans: var(--font-montserrat);
@@ -52,8 +52,8 @@
 }
 
 @keyframes glow-border {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(92, 158, 255, 0); }
-  50% { box-shadow: 0 0 8px 0 rgba(92, 158, 255, 0.3); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
+  50% { box-shadow: 0 0 8px 0 rgba(56, 189, 248, 0.3); }
 }
 
 @layer utilities {

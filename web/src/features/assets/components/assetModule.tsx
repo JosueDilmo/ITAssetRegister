@@ -59,7 +59,7 @@ export function AssetModule({ userEmail, userRole, staffEmail }: UserProps) {
   }
 
   return (
-    <div className="max-w-md w-full max-h-fit bg-gray-800 p-6 rounded-xl">
+    <div className="max-w-md w-full max-h-fit bg-gray-600 p-6 rounded-xl">
       <h1 className="text-2xl font-bold mb-4">Asset</h1>
       <form
         onSubmit={handleSubmit(assetRegister)}
@@ -140,20 +140,20 @@ export function AssetModule({ userEmail, userRole, staffEmail }: UserProps) {
         {/* Condition */}
         <div className="space-y-2">
           <div
-            className="flex items-center gap-2 rounded-xl border border-gray-600 bg-gray-800 px-4 py-3"
+            className="flex items-center gap-2 rounded-xl border border-gray-300 bg-gray-200 px-4 py-3"
             data-error={!!errors.condition}
           >
-            <Icons.ListCheck className="text-gray-400" />
+            <Icons.ListCheck className="text-gray-100/60" />
             <select
-              className="w-full bg-gray-800 text-sm text-gray-100 outline-none"
+              className="w-full bg-transparent text-sm text-gray-100 outline-none"
               defaultValue=""
               {...register('condition')}
             >
-              <option className="bg-gray-800 text-gray-100" value="" disabled>
+              <option className="bg-gray-200 text-gray-100" value="" disabled>
                 Select Condition
               </option>
               {ASSET_CONDITION.map(c => (
-                <option className="bg-gray-800 text-gray-100" key={c} value={c}>
+                <option className="bg-gray-200 text-gray-100" key={c} value={c}>
                   {c}
                 </option>
               ))}

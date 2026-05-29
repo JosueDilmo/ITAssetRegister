@@ -54,31 +54,31 @@ export default async function TicketDetailPage(props: PageProps) {
           >
             ← Back to board
           </Link>
-          <span className="font-mono text-sm text-gray-400">{label}</span>
+          <span className="font-mono text-sm text-gray-100">{label}</span>
         </div>
 
         <h1 className="text-xl font-medium text-gray-100">{ticket.subject}</h1>
 
         {/* Meta grid */}
-        <div className="grid grid-cols-2 gap-4 text-sm border border-gray-700 rounded p-4">
+        <div className="grid grid-cols-2 gap-4 text-sm bg-gray-600 border border-gray-500 rounded p-4">
           <div>
-            <span className="text-gray-400">Status: </span>
-            <span className="text-gray-100">{ticket.status}</span>
+            <span className="text-blue/70 font-mono text-xs uppercase tracking-wider">Status </span>
+            <span className="text-gray-50 font-medium">{ticket.status}</span>
           </div>
           <div>
-            <span className="text-gray-400">Priority: </span>
-            <span className="text-gray-100">{ticket.priority}</span>
+            <span className="text-blue/70 font-mono text-xs uppercase tracking-wider">Priority </span>
+            <span className="text-gray-50 font-medium">{ticket.priority}</span>
           </div>
           <div>
-            <span className="text-gray-400">From: </span>
+            <span className="text-blue/70 font-mono text-xs uppercase tracking-wider">From </span>
             <span className="text-gray-100">{ticket.requesterEmail}</span>
           </div>
           <div>
-            <span className="text-gray-400">Assigned: </span>
+            <span className="text-blue/70 font-mono text-xs uppercase tracking-wider">Assigned </span>
             <span className="text-gray-100">{ticket.assignedAgentEmail ?? 'Unassigned'}</span>
           </div>
           <div>
-            <span className="text-gray-400">Created: </span>
+            <span className="text-blue/70 font-mono text-xs uppercase tracking-wider">Created </span>
             <span className="text-gray-100">
               {new Date(ticket.createdAt).toLocaleDateString()}
             </span>
@@ -87,14 +87,14 @@ export default async function TicketDetailPage(props: PageProps) {
 
         {/* Description */}
         <section className="space-y-2">
-          <h2 className="text-xs font-medium text-gray-400 uppercase tracking-wider">Description</h2>
-          <p className="text-sm text-gray-200 whitespace-pre-wrap">{ticket.description}</p>
+          <h2 className="text-xs font-mono font-medium text-blue/70 uppercase tracking-wider">Description</h2>
+          <p className="text-sm text-gray-50 whitespace-pre-wrap">{ticket.description}</p>
         </section>
 
         {/* Attachments */}
         {ticket.attachments.length > 0 && (
           <section className="space-y-2">
-            <h2 className="text-xs font-medium text-gray-400 uppercase tracking-wider">Attachments</h2>
+            <h2 className="text-xs font-mono font-medium text-blue/70 uppercase tracking-wider">Attachments</h2>
             <ul className="space-y-1">
               {ticket.attachments.map(att => (
                 <li key={att.id}>
@@ -102,7 +102,7 @@ export default async function TicketDetailPage(props: PageProps) {
                     href={att.sharePointUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
+                    className="text-sm text-blue hover:opacity-80 transition-opacity"
                   >
                     {att.filename}
                   </a>
@@ -114,18 +114,18 @@ export default async function TicketDetailPage(props: PageProps) {
 
         {/* Comments */}
         <section className="space-y-3">
-          <h2 className="text-xs font-medium text-gray-400 uppercase tracking-wider">Comments</h2>
+          <h2 className="text-xs font-mono font-medium text-blue/70 uppercase tracking-wider">Comments</h2>
           {ticket.comments.length === 0 ? (
-            <p className="text-xs text-gray-500">No comments</p>
+            <p className="text-xs text-gray-100/50">No comments</p>
           ) : (
             <ul className="space-y-3">
               {ticket.comments.map(comment => (
-                <li key={comment.id} className="border border-gray-700 rounded p-3 space-y-1">
-                  <div className="flex justify-between text-xs text-gray-400">
+                <li key={comment.id} className="bg-gray-600 border border-gray-500 rounded p-3 space-y-1">
+                  <div className="flex justify-between text-xs text-gray-100">
                     <span>{comment.authorEmail}</span>
                     <span>{new Date(comment.createdAt).toLocaleDateString()}</span>
                   </div>
-                  <p className="text-sm text-gray-200 whitespace-pre-wrap">{comment.body}</p>
+                  <p className="text-sm text-gray-50 whitespace-pre-wrap">{comment.body}</p>
                 </li>
               ))}
             </ul>
