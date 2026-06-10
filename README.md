@@ -1,145 +1,219 @@
 # IT Asset Register
 
-**IT Asset Register** is an internal full-stack web application designed for managing and registering IT assets within company. This tool provides a centralized system to keep track of all IT assets, as well as the employees currently assigned to each asset.
-
-> **Note:** This tool is still under development.
+**IT Asset Register** is an internal full-stack web application for managing IT assets and staff assignments, with an integrated support ticketing system powered by email ingestion.
 
 ## Why This Project?
 
-As the only employee in the IT department, I found that our company did not have any management system for IT assets. Rather than relying on Excel sheets for manual tracking—which can be error-prone and hard to maintain—I decided to develop my own system. This web app ensures better accountability and makes it easier to provide records if they are ever requested.
+As the sole IT department employee, I needed a proper management system — not Excel sheets. This app provides full accountability, an audit trail for every change, and a support desk workflow, all in one place.
 
 ---
 
-## Key Features
+## Features
 
-- **Asset Management**
-  - Create, edit, and list assets.
-  - Track detailed asset information: serial number, type, status, assigned staff, purchase/assignment dates, asset number, notes, and changelogs.
-  - Assign and unassign assets to staff, with tracking of assignment history.
+### Asset Management
+- Create, edit, and list IT assets.
+- Track serial number, asset number, type, status, condition, purchase date, assignment dates, and notes.
+- Assign and unassign assets to staff with full history tracking.
+- Reassignment confirmation flow to prevent accidental reassignments.
 
-- **Staff Management**
-  - Create, edit, and list staff.
-  - Track staff details: name, email, department, job title, status, note, asset history, and changelog.
-  - Update staff status and notes.
+### Staff Management
+- Create, edit, and list staff members.
+- Track name, email, department, job title, status, and notes.
+- View complete asset history and changelog per staff member.
 
-- **Assignment & Removal**
-  - Assign assets to staff with confirmation for reassignment.
-  - Remove asset assignments with consistent historical tracking.
-  - Assignment and removal logic updates both asset and staff history, and logs all changes.
+### Assignment & History
+- Atomic assign/unassign operations update both asset and staff records in a single transaction.
+- Append-only history — no record is ever overwritten or deleted.
+- Change logs capture who changed what and when for both assets and staff.
 
-- **Authentication & Authorization**
-  - User login via Microsoft Entra ID.
-  - Role-based access: "admin" (full access), "viewer" (read-only).
-  - Only users with organization emails can sign in.
+### Support Ticket System
+- **Email ingestion** — tickets are created automatically when staff email the IT support address.
+- **Email reply detection** — replies containing a `TKT-XXXX` reference in the subject add a comment to the existing ticket instead of creating a duplicate.
+- **Confirmation emails** — requester receives an automated confirmation with their ticket reference and a tracking link.
+- **SharePoint attachment uploads** — email attachments are uploaded to a per-ticket SharePoint folder via Microsoft Graph; inline images are annotated in the ticket description.
+- **Kanban board** (admin only) — drag-and-drop style board for triaging and managing all tickets by status.
+- **Self-service portal** (`/support`) — staff can view their own submitted tickets and read agent responses.
+- **Ticket detail pages** — full thread view with comments from both agents and email replies.
+- **Priority and status tracking** — NEW, IN PROGRESS, RESOLVED, CLOSED with priority levels.
+- **Comment system** — agents can add internal or public comments; email replies are recorded as comments automatically.
 
-- **Audit Trails**
-  - Change logs for both assets and staff, maintaining history of all changes with who, when, and what was changed.
+### Authentication & Authorization
+- Sign-in via **Microsoft Entra ID** (Azure AD) — organisation emails only.
+- Role-based access: `admin` (full access) and `viewer` (read-only).
+- Role enforcement in both frontend UI and backend route guards.
 
-- **User Interface**
-  - Admin dashboard for asset and staff register/ management.
-  - Detail and edit pages for assets and staff, with permissions based on user roles.
+### Audit Trails
+- Every change to an asset or staff record is logged with timestamp, actor, and the specific fields changed.
 
 ---
 
 ## Tech Stack
 
-- **Backend**: Node.js (TypeScript), Fastify, Drizzle ORM, custom route handlers, OpenAPI (with Orval for API client generation).
-- **Frontend**: Next.js (React), TypeScript, Tailwind CSS, React Hook Form, Zod for validation.
-- **Authentication**: next-auth with Microsoft Entra ID provider.
-- **Database**: PostgreSQL, accessed via Drizzle ORM, ensuring type safety and maintainability.
-- **API**: OpenAPI-based, providing a clear contract between frontend and backend.
+| Layer | Technology |
+|---|---|
+| **Backend runtime** | Node.js + TypeScript |
+| **Backend framework** | Fastify 5 |
+| **ORM** | Drizzle ORM |
+| **Database** | PostgreSQL |
+| **Validation** | Zod (via `fastify-type-provider-zod`) |
+| **API contract** | OpenAPI / Swagger (auto-generated) |
+| **API client** | Orval (generates `web/src/http/api.ts` from OpenAPI) |
+| **Frontend framework** | Next.js 15 (App Router) |
+| **UI library** | React 19 |
+| **Styling** | Tailwind CSS v4 |
+| **Forms** | React Hook Form + Zod |
+| **Auth** | next-auth v5 beta — Microsoft Entra ID provider |
+| **Email & files** | Microsoft Graph API (send mail + SharePoint uploads) |
+| **Linting / formatting** | Biome |
+| **Testing** | Vitest |
 
 ---
 
-## Data Integrity & Security
+## Project Structure
 
-- Transactional updates for assignments to prevent data inconsistencies.
-- Role-based access enforced both in frontend and backend.
-- Append-only asset history to preserve all past assignments for audit and compliance.
+```
+ITAssetRegister/
+├── server/          # Fastify backend
+│   └── src/
+│       ├── features/
+│       │   ├── assets/       # Asset CRUD + services
+│       │   ├── staff/        # Staff CRUD + services
+│       │   ├── assignments/  # Assign / unassign logic
+│       │   └── tickets/      # Email ingest, CRUD, comments
+│       ├── drizzle/
+│       │   └── schema/       # DB table definitions
+│       ├── shared/
+│       │   └── services/     # Graph mail + SharePoint clients
+│       └── server.ts         # Fastify bootstrap
+└── web/             # Next.js frontend
+    └── src/
+        ├── app/
+        │   └── (project)/
+        │       ├── manager/   # Admin dashboard
+        │       ├── tickets/   # Kanban board (admin)
+        │       └── support/   # Self-service portal (all staff)
+        ├── features/          # Feature-colocated components
+        └── http/api.ts        # Generated — do not edit
+```
 
 ---
 
-## Test
+## Data Integrity
 
-> **Working on it.** 
+- **Append-only history** — asset and staff history records are never overwritten.
+- **Atomic transactions** — assignment/removal updates both sides in a single DB transaction.
+- **Server-side validation** — Zod schemas enforce all input at the API boundary.
+- **Role-gated mutations** — write operations are guarded in both frontend and backend.
 
 ---
 
-## Getting Started
-
-> **Project is currently under active development.**
-
-## Deployment Guide (Internal Server)
+## Developer Setup
 
 ### Prerequisites
 
-- **Windows Server** (IIS installed, Application Request Routing & URL Rewrite modules)
-- **Node.js** (LTS version)
-- **PostgreSQL** (installed locally or on a dedicated server)
-- **Internal DNS** entry for your app (e.g., `itassetregister.company.local`)
-- **Firewall** rules allowing ports 80 (HTTP), 443 (HTTPS), and 3333 (API)
+- Node.js (LTS)
+- PostgreSQL
+- Microsoft Entra ID app registration (for auth)
+- Microsoft Graph app registration (for email ingest + SharePoint uploads)
+
+### Environment
+
+Copy and fill in the environment files:
+
+```bash
+# server/
+cp server/.env.example server/.env
+
+# web/
+cp web/.env.local.example web/.env.local
+```
+
+### Commands
+
+| Task | Command | Directory |
+|---|---|---|
+| Backend dev (watch) | `npm run dev` | `server/` |
+| Backend build | `npm run build` | `server/` |
+| Backend start | `npm run start` | `server/` |
+| DB generate migration | `npm run db:generate` | `server/` |
+| DB migrate | `npm run db:migrate` | `server/` |
+| DB studio | `npm run db:studio` | `server/` |
+| Run tests | `npm run test` | `server/` |
+| Frontend dev | `npm run dev` | `web/` |
+| Frontend build | `npm run build` | `web/` |
+| Frontend start | `npm run start` | `web/` |
+| Regenerate API client | `npx orval` | `web/` |
+
+> After any backend route or schema change, regenerate the API client with `npx orval` in `web/`.
+
+---
+
+## Testing
+
+Backend unit and integration tests are written with **Vitest**. Run them from `server/`:
+
+```bash
+npm run test          # run once
+npm run test:watch    # watch mode
+npm run test:coverage # coverage report
+```
+
+---
+
+## Deployment (Internal Windows Server)
+
+### Prerequisites
+
+- Windows Server with IIS, Application Request Routing (ARR), and URL Rewrite modules
+- Node.js LTS
+- PostgreSQL (local or remote)
+- Internal DNS entry (e.g. `itassetregister.company.local`)
+- Firewall rules: ports 80, 443, 3333
 
 ### Steps
 
-1. **Build the Frontend**
-   - On your dev machine:
-     ```
-     npm run build
-     ```
-   - Copy the `.next/`, `public/`, Orval-generated files, and all config files to the server’s web folder.
+1. **Build both packages** on your dev machine:
+   ```bash
+   cd server && npm run build
+   cd web    && npm run build
+   ```
 
-2. **Build the Backend**
-   - On your dev machine:
-     ```
-     npm run build
-     ```
-   - Copy the updated files to the server’s backend folder.
+2. **Copy output to the server:**
+   - `server/dist/` → server machine backend folder
+   - `web/.next/standalone/`, `web/public/`, config files → server machine web folder
 
-3. **Configure IIS**
-   - Set up a site with the physical path pointing to your web folder.
-   - Add HTTP (80) and HTTPS (443) bindings for your internal DNS name.
-   - Assign a self-signed certificate (created for your DNS name) to the HTTPS binding.
-   - Enable ARR and URL Rewrite to proxy all requests to your Next.js app (e.g., `http://localhost:3000/{R:0}`).
+3. **Configure IIS:**
+   - Site pointing to the web folder
+   - HTTP (80) + HTTPS (443) bindings for your DNS name
+   - Self-signed certificate on the HTTPS binding
+   - ARR + URL Rewrite rule proxying all traffic to `http://localhost:3000/{R:0}`
+   - Add a separate reverse-proxy rule forwarding `/api/*` to `http://localhost:3333/api/{R:0}`
 
-4. **Configure Internal DNS**
-   - Add an A record for `itassetregister.company.local` pointing to your server’s IP.
+4. **Configure internal DNS:** A record for your hostname pointing to the server IP.
 
-5. **Configure Firewall**
-   - Allow inbound traffic on ports 80, 443, and 3333.
+5. **Start the apps on the server:**
+   ```bash
+   # backend
+   cd server && npm run start
 
-6. **Install and Trust Certificate**
-   > **May not be necessary, do step 8. and try step 9. before**
-   - Export the self-signed certificate and install it in the “Trusted Root Certification Authorities” store on all client machines.
+   # frontend
+   cd web && node .next/standalone/server.js
+   ```
 
-8. **Start the Next.js App**
-   - On the server, run:
-     ```
-     npm run start
-     ```
-   - On the web, run
-     ```
-     npm run start
-     ```
+6. **Test:** Visit `https://itassetregister.company.local` and sign in with a Microsoft Entra ID account.
 
-9. **Test Access**
-   - From a client, visit `https://itassetregister.company.local` and sign in with Microsoft Entra ID.
+> See [SETUP.md](SETUP.md) and [WINDOWS_AUTOSTART.md](WINDOWS_AUTOSTART.md) for full runbook and autostart configuration.
 
 ---
-
-**Notes:**
-- For API client generation (Orval), run it on the server or use a local OpenAPI file if remote fetch fails.
-- Update `.env` and `.env.local` files to match your server’s configuration.
-- Redo IIS after copying new files or changing bindings.
-
 
 ## Contributing
 
-Please open an issue or pull request to discuss any changes.
+Open an issue or pull request to discuss any changes.
 
 ## License
 
-This project is intended for internal use. License details to be determined.
+Intended for internal use. License details to be determined.
 
 ---
 
-*Developed by [JosueDilmo](https://github.com/JosueDilmo) for internal IT asset management within the company.*
+*Developed by [JosueDilmo](https://github.com/JosueDilmo) for internal management.*
