@@ -15,32 +15,36 @@ export function AddAsset({
   if (userRole !== 'admin' || asset.length === 0) return null
 
   async function handleAddAsset(id: string) {
-    const response = await postApiAssetToStaffEmail(staffEmail, {
-      assetId: id,
-      updatedBy: userEmail,
-    })
-    const success = response.success
-    const message = success
-      ? (response as PostApiAssetToStaffEmail200).message
-      : (response as unknown as PostApiAssetToStaffEmail409).error.message
-    if (success) {
-      toast.success(message)
-    } else {
-      const confirmRetry = window.confirm(message)
-      if (confirmRetry) {
-        const retryResponse = await postApiAssetToStaffEmail(staffEmail, {
-          assetId: id,
-          updatedBy: userEmail,
-          userConfirmed: true,
-        })
-        const retrySuccess = retryResponse.success
-        const retryMessage = retrySuccess
-          ? (retryResponse as PostApiAssetToStaffEmail200).message
-          : (retryResponse as unknown as PostApiAssetToStaffEmail409).error.message
-        toast[retrySuccess ? 'success' : 'error'](retryMessage)
+    try {
+      const response = await postApiAssetToStaffEmail(staffEmail, {
+        assetId: id,
+        updatedBy: userEmail,
+      })
+      toast.success((response as PostApiAssetToStaffEmail200).message)
+      window.location.reload()
+    } catch (thrown) {
+      const conflict = thrown as PostApiAssetToStaffEmail409
+      const message = conflict?.error?.message ?? 'An error occurred'
+      if (conflict?.error?.code === 'CONFLICT_ERROR') {
+        const confirmRetry = window.confirm(message)
+        if (confirmRetry) {
+          try {
+            const retryResponse = await postApiAssetToStaffEmail(staffEmail, {
+              assetId: id,
+              updatedBy: userEmail,
+              userConfirmed: true,
+            })
+            toast.success((retryResponse as PostApiAssetToStaffEmail200).message)
+          } catch (retryThrown) {
+            const retryErr = retryThrown as PostApiAssetToStaffEmail409
+            toast.error(retryErr?.error?.message ?? 'Failed to assign asset')
+          }
+          window.location.reload()
+        }
+      } else {
+        toast.error(message)
       }
     }
-    window.location.reload()
   }
 
   return (
