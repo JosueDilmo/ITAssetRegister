@@ -17,7 +17,15 @@ export default async function SignIn() {
   }
 
   return (
-    <div className=" flex flex-col items-center min-h-screen p-24">
+    <div className="flex flex-col items-center gap-6 min-h-screen p-24">
+      <div className="text-center">
+        <h2 className="font-heading font-bold text-2xl tracking-widest uppercase text-gray-50">
+          MasterTech Hub
+        </h2>
+        <p className="mt-2 font-mono text-xs uppercase tracking-widest text-gray-400">
+          One portal. Every process.
+        </p>
+      </div>
       <form action={handleAuth}>
         <button
           type="submit"

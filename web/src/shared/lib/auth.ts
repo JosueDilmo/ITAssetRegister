@@ -2,18 +2,19 @@ import NextAuth from 'next-auth'
 import type { User as NextAuthUser } from 'next-auth'
 import MicrosoftEntraID from 'next-auth/providers/microsoft-entra-id'
 import { env } from './env'
+import { ROLES, highestRole } from './roles'
 
-// Roles
-// - admin: Full access to all resources
-// - viewer: Read-only access to resources
+// Roles come from Entra ID app roles (see web/src/shared/lib/roles.ts):
+// admin | hr | hs_officer | dept_manager | staff (default when unassigned)
 
-// Extend the User and Session types to include 'role'
+// Extend the User and Session types to include role info
 declare module 'next-auth' {
   interface User {
     role?: string
+    roles?: string[]
   }
   interface Session {
-    user: NextAuthUser & { role?: string }
+    user: NextAuthUser & { role?: string; roles?: string[] }
   }
 }
 
@@ -49,29 +50,31 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return true
     },
     async jwt({ token, account }) {
-      // If the user has an account, check for roles
+      // If the user has an account, decode app roles from the id_token
       if (account?.id_token) {
         try {
-          // Decode the JWT to extract roles
           const payload = JSON.parse(
             Buffer.from(account.id_token.split('.')[1], 'base64').toString()
           )
-          // Check if roles exist and assign 'admin' or 'viewer'
           const rolesArr = (payload as { roles?: string[] }).roles
-          token.role =
-            Array.isArray(rolesArr) && rolesArr.includes('admin')
-              ? 'admin'
-              : 'viewer'
+          const roles =
+            Array.isArray(rolesArr) && rolesArr.length > 0
+              ? rolesArr
+              : [ROLES.STAFF]
+          token.roles = roles
+          token.role = highestRole(roles)
         } catch (error) {
           console.error('Error decoding JWT:', error)
-          token.role = 'viewer' // Default to viewer if there's an error
+          token.roles = [ROLES.STAFF]
+          token.role = ROLES.STAFF
         }
       }
       return token
     },
     async session({ session, token }) {
-      // Add role to session
+      // Add role info to session
       session.user.role = token.role as string | undefined
+      session.user.roles = token.roles as string[] | undefined
       return session
     },
   },

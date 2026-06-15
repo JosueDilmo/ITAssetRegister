@@ -201,7 +201,7 @@ export function EditAssetInfo({
                 </form>
               )}
 
-              {userRole === 'viewer' && (
+              {userRole !== 'admin' && (
                 <div className="border-t border-gray-500 mt-4 pt-3">
                   <span className="text-xs font-mono text-gray-100/30 uppercase tracking-wider">read-only</span>
                 </div>
