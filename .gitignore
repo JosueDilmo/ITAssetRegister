@@ -8,13 +8,12 @@ WINDOWS_AUTOSTART.md
 /.github
 /.claude
 /.vscode
-nimbalyst-local/*
-nimbalyst-local
 /.playwright-mcp
-.agents
 docs/*
 docs
 /.superpowers
+/.planning
+/graphify-out
 skills-lock.json
 CLAUDE.md
 
