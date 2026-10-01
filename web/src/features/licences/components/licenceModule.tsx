@@ -5,7 +5,7 @@ import {
   type LicenceSchemaType,
   licenceSchema,
 } from '@/features/licences/schemas/licenceSchema'
-import { postApiNewLicence } from '@/http/api'
+import { type PostApiNewLicence409, postApiNewLicence } from '@/http/api'
 import { Button } from '@/shared/components/button'
 import { InputField, InputIcon, InputRoot } from '@/shared/components/input'
 import type { UserProps } from '@/shared/interface/index'
@@ -29,13 +29,18 @@ export function LicenceModule({ userEmail }: UserProps) {
       ...values,
       createdBy: userEmail,
     })
-    const { result } = await postApiNewLicence(normalizedData)
-    toast[result.success ? 'success' : 'error'](result.message)
-    if (result.staff) {
-      toast.info(`Staff: ${result.staff}`)
+    try {
+      const { result } = await postApiNewLicence(normalizedData)
+      toast[result.success ? 'success' : 'error'](result.message)
+      if (result.staff) {
+        toast.info(`Staff: ${result.staff}`)
+      }
+      await router.push('/registration/licence')
+      reset()
+    } catch (thrown) {
+      const failure = thrown as PostApiNewLicence409
+      toast.error(failure?.error?.message ?? 'Failed to register licence')
     }
-    await router.push('/registration/licence')
-    reset()
   }
 
   return (

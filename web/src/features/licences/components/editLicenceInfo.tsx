@@ -50,15 +50,20 @@ export function EditLicenceInfo({
 
   async function updateLicenceInfo({ status, note }: LicenceDetailsParams) {
     const id = data[0].id
-    const { success, message } = await patchApiLicenceDetailsId(id, {
-      status: status.toUpperCase() as PatchApiLicenceDetailsIdBodyStatus,
-      note: !note || note === '' ? null : note.trim(),
-      updatedBy: userEmail,
-    })
-    await new Promise<void>(resolve => {
-      toast[success ? 'success' : 'error'](message)
-      resolve()
-    })
+    try {
+      const { success, message } = await patchApiLicenceDetailsId(id, {
+        status: status.toUpperCase() as PatchApiLicenceDetailsIdBodyStatus,
+        note: !note || note === '' ? null : note.trim(),
+        updatedBy: userEmail,
+      })
+      await new Promise<void>(resolve => {
+        toast[success ? 'success' : 'error'](message)
+        resolve()
+      })
+    } catch (thrown) {
+      const failure = thrown as { error?: { message?: string } }
+      toast.error(failure?.error?.message ?? 'Failed to update licence')
+    }
   }
 
   return (
