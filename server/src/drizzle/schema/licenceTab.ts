@@ -1,0 +1,30 @@
+import {
+  date,
+  integer,
+  jsonb,
+  numeric,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+} from 'drizzle-orm/pg-core'
+
+export const licenceTab = pgTable('licence', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: text('name').notNull(),
+  vendor: text('vendor').notNull(),
+  licenceType: text('licenceType').notNull(),
+  licenceKey: text('licenceKey'),
+  licenceNumber: text('licenceNumber').notNull().unique(),
+  datePurchased: date('datePurchased', { mode: 'string' }).notNull(),
+  expiryDate: date('expiryDate', { mode: 'string' }),
+  seatsTotal: integer('seatsTotal').notNull().default(1),
+  cost: numeric('cost', { precision: 10, scale: 2 }),
+  assignedTo: text('assignedTo'),
+  dateAssigned: date('dateAssigned', { mode: 'string' }),
+  status: text('status').notNull().default('ACTIVE'),
+  note: text('note').default(''),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  createdBy: text('createdBy').notNull(),
+  changeLog: jsonb('changeLog').default([]),
+})
