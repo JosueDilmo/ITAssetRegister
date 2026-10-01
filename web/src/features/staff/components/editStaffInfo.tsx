@@ -1,6 +1,7 @@
 'use client'
 import { ChangeLogTable } from '@/features/manager/components/ChangeLogTable'
 import { Search } from '@/features/search/components/search'
+import { SearchLicence } from '@/features/search/components/searchLicence'
 import {
   type STAFF_STATUS,
   type StaffDetailsParams,
@@ -254,6 +255,11 @@ export function EditStaffInfo({
 
       <div className="col-span-3 grid grid-cols-2 gap-6">
         <EditStaffLicenceList
+          staffEmail={staffEmail}
+          userEmail={userEmail}
+          userRole={userRole}
+        />
+        <SearchLicence
           staffEmail={staffEmail}
           userEmail={userEmail}
           userRole={userRole}
