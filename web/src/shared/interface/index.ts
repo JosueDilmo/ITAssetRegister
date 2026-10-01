@@ -38,7 +38,12 @@ export interface StaffInfoProps {
     jobTitle: string
     status: string
     note: string | null
-    assetHistoryList: Array<{ id: string; name: string; serialNumber: string; assetNumber: string }>
+    assetHistoryList: Array<{
+      id: string
+      name: string
+      serialNumber: string
+      assetNumber: string
+    }>
     createdAt: string
     changeLog: ChangeLogEntry[]
   }>
@@ -78,4 +83,38 @@ export interface staffNormalizeData {
   department: string
   jobTitle: string
   createdBy: string
+}
+
+export interface licenceNormalizeData {
+  name: string
+  vendor: string
+  licenceType: string
+  licenceKey: string | null
+  licenceNumber: string
+  datePurchased: string
+  expiryDate: string | null
+  cost: string | null
+  assignedTo: string | null
+  createdBy: string
+}
+
+export interface LicenceInfoProps {
+  data: Array<{
+    id: string
+    name: string
+    vendor: string
+    licenceType: string
+    licenceKey: string | null
+    licenceNumber: string
+    datePurchased: string
+    expiryDate: string | null
+    seatsTotal: number
+    cost: string | null
+    assignedTo: string | null
+    dateAssigned: string | null
+    status: string
+    note: string | null
+    createdAt: string
+    changeLog: ChangeLogEntry[]
+  }>
 }

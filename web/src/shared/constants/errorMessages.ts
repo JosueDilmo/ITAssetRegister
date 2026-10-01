@@ -20,3 +20,16 @@ export const ASSET_ERROR_MESSAGES = {
   STATUS: 'Insert valid status',
   NOTE: 'Insert a valid note',
 }
+
+export const LICENCE_ERROR_MESSAGES = {
+  NAME: 'Insert Licence Name',
+  VENDOR: 'Insert Vendor',
+  LICENCE_TYPE: 'Select Licence Type',
+  LICENCE_NUMBER: 'Licence Number = LIC-XXXX',
+  DATE_PURCHASED: 'Valid Date: yyyy-mm-dd',
+  EXPIRY_DATE: 'Valid Date: yyyy-mm-dd',
+  COST: 'Insert a valid cost',
+  ASSIGNED_TO: 'Insert Employee Email',
+  STATUS: 'Insert valid status',
+  NOTE: 'Insert a valid note',
+}
