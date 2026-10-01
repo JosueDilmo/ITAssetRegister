@@ -10,6 +10,7 @@ type LicenceList = Array<{
   id: string
   name: string
   licenceNumber: string
+  serialNumber: string | null
   status: string
 }>
 
@@ -107,8 +108,11 @@ export function DisplayAllLicences() {
                 <h5 className="text-2xl font-bold tracking-tight text-gray-50 mb-1">
                   {licence.name}
                 </h5>
-                <p className="mb-3 font-mono text-sm text-gray-300 overflow-hidden overflow-x-auto scrollbar-hide">
+                <p className="font-mono text-sm text-gray-300 overflow-hidden overflow-x-auto scrollbar-hide">
                   {licence.licenceNumber}
+                </p>
+                <p className="mb-3 font-mono text-xs text-gray-100/60 overflow-hidden overflow-x-auto scrollbar-hide">
+                  Serial#: {licence.serialNumber ?? '—'}
                 </p>
                 <Button className="bg-gray-700" routeId={licence.id}>
                   Manage
