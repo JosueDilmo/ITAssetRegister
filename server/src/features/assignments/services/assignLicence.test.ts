@@ -225,7 +225,7 @@ describe('assignLicence', () => {
           )
       )
       expect(prevOwnerWrite).toBeDefined()
-      const log = prevOwnerWrite.changeLog
+      const log = prevOwnerWrite?.changeLog ?? []
       expect(log).toHaveLength(bobEarlierEntries.length + 1)
       expect(log.slice(0, bobEarlierEntries.length)).toEqual(bobEarlierEntries)
       expect(log[log.length - 1]).toMatchObject({

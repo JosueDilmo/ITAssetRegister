@@ -56,6 +56,22 @@ export async function assignLicence({
       )
     }
 
+    // Reassignment: the previous owner must get an audit entry too (LIC-04).
+    let previousOwner: typeof staffTab.$inferSelect | undefined
+    if (previousAssignedTo && previousAssignedTo !== staffEmail) {
+      const previousOwnerResult = await trx
+        .select()
+        .from(staffTab)
+        .where(eq(staffTab.email, previousAssignedTo))
+        .limit(1)
+      if (previousOwnerResult.length === 0) {
+        throw new NotFoundError(
+          `${ERROR_MESSAGES.STAFF_NOT_FOUND} Email: ${previousAssignedTo}`
+        )
+      }
+      previousOwner = previousOwnerResult[0]
+    }
+
     await trx
       .update(licenceTab)
       .set({
@@ -101,6 +117,27 @@ export async function assignLicence({
         ],
       })
       .where(eq(staffTab.email, staffEmail))
+
+    if (previousOwner && previousAssignedTo) {
+      const prevOwnerChangeLog = Array.isArray(previousOwner.changeLog)
+        ? previousOwner.changeLog
+        : []
+      await trx
+        .update(staffTab)
+        .set({
+          changeLog: [
+            ...prevOwnerChangeLog,
+            {
+              updatedBy,
+              updatedAt: new Date().toISOString(),
+              updatedField: 'licenceHistoryList',
+              previousValue: [String(previousOwner.licenceHistoryList)],
+              newValue: [`Licence reassigned: ${licenceId} to ${staffEmail}`],
+            },
+          ],
+        })
+        .where(eq(staffTab.email, previousAssignedTo))
+    }
 
     const prevLicenceChangeLog = Array.isArray(licence[0].changeLog)
       ? licence[0].changeLog
