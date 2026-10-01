@@ -21,6 +21,7 @@ export const getLicenceById: FastifyPluginAsyncZod = async app => {
                   vendor: z.string(),
                   licenceType: z.string(),
                   licenceKey: z.string().nullable(),
+                  serialNumber: z.string().nullable(),
                   licenceNumber: z.string(),
                   datePurchased: z.string(),
                   expiryDate: z.string().nullable(),

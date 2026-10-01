@@ -75,6 +75,7 @@ export interface CreateLicenceParams {
   vendor: string
   licenceType: string
   licenceKey: string | null
+  serialNumber?: string | null
   licenceNumber: string
   datePurchased: string
   expiryDate: string | null
@@ -91,6 +92,7 @@ export interface PatchLicenceParams {
   id: string
   status: string
   note: string | null
+  serialNumber?: string | null
   updatedBy: string
 }
 

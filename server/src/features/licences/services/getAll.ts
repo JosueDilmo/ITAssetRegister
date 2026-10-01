@@ -20,6 +20,7 @@ export async function getAll({
         name: licenceTab.name,
         vendor: licenceTab.vendor,
         licenceType: licenceTab.licenceType,
+        serialNumber: licenceTab.serialNumber,
         licenceNumber: licenceTab.licenceNumber,
         datePurchased: licenceTab.datePurchased,
         expiryDate: licenceTab.expiryDate,

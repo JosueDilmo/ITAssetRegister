@@ -11,13 +11,14 @@ export const updateLicence: FastifyPluginAsyncZod = async app => {
     {
       schema: {
         tags: ['Licences'],
-        description: 'Update licence status and note',
+        description: 'Update licence status, note and serial number',
         params: z.object({ id: z.string().uuid(ERROR_MESSAGES.INVALID_ID) }),
         body: z.object({
           status: z.enum(LICENCE_STATUS, {
             message: ERROR_MESSAGES.INVALID_STATUS,
           }),
           note: z.string().min(10, ERROR_MESSAGES.INVALID_NOTE).nullable(),
+          serialNumber: z.string().nullable().optional(),
           updatedBy: z.string().email(ERROR_MESSAGES.UPDATED_BY_REQUIRED),
         }),
         response: {
@@ -80,12 +81,18 @@ export const updateLicence: FastifyPluginAsyncZod = async app => {
     },
     async (request, reply) => {
       const licenceId = request.params.id
-      const { status, note, updatedBy } = request.body
+      const { status, note, serialNumber, updatedBy } = request.body
       if (!status.trim())
         throw new ValidationError(ERROR_MESSAGES.INVALID_STATUS)
       if (!updatedBy.trim())
         throw new ValidationError(ERROR_MESSAGES.UPDATED_BY_REQUIRED)
-      const result = await update({ id: licenceId, status, note, updatedBy })
+      const result = await update({
+        id: licenceId,
+        status,
+        note,
+        serialNumber,
+        updatedBy,
+      })
       return reply
         .status(200)
         .send({ success: result.success, message: result.message })

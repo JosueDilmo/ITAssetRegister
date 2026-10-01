@@ -71,4 +71,22 @@ describe('POST /newLicence licence number validation', () => {
     expect(create).not.toHaveBeenCalled()
     await app.close()
   })
+
+  it('treats serialNumber as optional and nullable in validation', async () => {
+    const app = await buildApp()
+
+    for (const payload of [
+      validBody,
+      { ...validBody, serialNumber: null },
+      { ...validBody, serialNumber: 'SN-12345' },
+    ]) {
+      const response = await app.inject({
+        method: 'POST',
+        url: '/newLicence',
+        payload,
+      })
+      expect(response.body).not.toContain('serialNumber')
+    }
+    await app.close()
+  })
 })

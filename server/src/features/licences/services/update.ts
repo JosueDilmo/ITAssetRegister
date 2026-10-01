@@ -12,6 +12,7 @@ export async function update({
   id,
   status,
   note,
+  serialNumber,
   updatedBy,
 }: PatchLicenceParams) {
   return await db.transaction(async trx => {
@@ -27,12 +28,19 @@ export async function update({
 
     await trx
       .update(licenceTab)
-      .set({ status, note })
+      .set({
+        status,
+        note,
+        ...(serialNumber !== undefined ? { serialNumber } : {}),
+      })
       .where(eq(licenceTab.id, id))
 
     const prevChangeLog = Array.isArray(licence[0].changeLog)
       ? licence[0].changeLog
       : []
+    const serialChanged =
+      serialNumber !== undefined &&
+      (serialNumber ?? null) !== (licence[0].serialNumber ?? null)
     const updated = await trx
       .update(licenceTab)
       .set({
@@ -45,6 +53,17 @@ export async function update({
             previousValue: [String(licence[0].status), String(licence[0].note)],
             newValue: [String(status), String(note)],
           },
+          ...(serialChanged
+            ? [
+                {
+                  updatedBy,
+                  updatedAt: new Date().toISOString(),
+                  updatedField: 'serialNumber',
+                  previousValue: [String(licence[0].serialNumber ?? '')],
+                  newValue: [String(serialNumber ?? '')],
+                },
+              ]
+            : []),
         ],
       })
       .where(eq(licenceTab.id, id))

@@ -19,6 +19,7 @@ export const createLicence: FastifyPluginAsyncZod = async app => {
             message: ERROR_MESSAGES.INVALID_LICENCE_TYPE,
           }),
           licenceKey: z.string().nullable(),
+          serialNumber: z.string().nullable().optional(),
           licenceNumber: z
             .string()
             .startsWith('LIC-', ERROR_MESSAGES.INVALID_LICENCE_NUMBER),
@@ -109,6 +110,7 @@ export const createLicence: FastifyPluginAsyncZod = async app => {
         vendor,
         licenceType,
         licenceKey,
+        serialNumber,
         licenceNumber,
         datePurchased,
         expiryDate,
@@ -128,6 +130,7 @@ export const createLicence: FastifyPluginAsyncZod = async app => {
         vendor,
         licenceType,
         licenceKey,
+        serialNumber,
         licenceNumber,
         datePurchased,
         expiryDate,

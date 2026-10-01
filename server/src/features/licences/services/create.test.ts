@@ -77,6 +77,47 @@ describe('createLicence', () => {
     expect(result.staff).toBeNull()
   })
 
+  it('persists an optional serialNumber and defaults it to null', async () => {
+    const { db } = await import('../../../drizzle/client.js')
+    const insertedValues: Array<Record<string, unknown>> = []
+
+    for (let i = 0; i < 2; i++) {
+      vi.mocked(db.select).mockReturnValueOnce({
+        from: vi.fn().mockReturnValue({
+          where: vi
+            .fn()
+            .mockReturnValue({ limit: vi.fn().mockResolvedValue([]) }),
+        }),
+        // biome-ignore lint/suspicious/noExplicitAny: test mock callback
+      } as any)
+    }
+
+    // biome-ignore lint/suspicious/noExplicitAny: test mock callback
+    vi.mocked(db.transaction).mockImplementation(async (cb: any) =>
+      cb({
+        insert: vi.fn().mockReturnValue({
+          values: vi.fn().mockImplementation((v: Record<string, unknown>) => {
+            insertedValues.push(v)
+            return {
+              returning: vi
+                .fn()
+                .mockResolvedValue([
+                  { id: 'lic-1', assignedTo: null, changeLog: [] },
+                ]),
+            }
+          }),
+        }),
+      })
+    )
+
+    const { create } = await import('./create.js')
+    await create({ ...baseParams, serialNumber: 'SN-12345' })
+    await create(baseParams)
+
+    expect(insertedValues[0].serialNumber).toBe('SN-12345')
+    expect(insertedValues[1].serialNumber).toBeNull()
+  })
+
   it('throws ConflictError when licenceNumber already exists', async () => {
     const { db } = await import('../../../drizzle/client.js')
 

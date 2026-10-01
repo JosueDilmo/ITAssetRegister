@@ -12,6 +12,7 @@ export async function getById({ id }: GetByIdParams) {
       vendor: licenceTab.vendor,
       licenceType: licenceTab.licenceType,
       licenceKey: licenceTab.licenceKey,
+      serialNumber: licenceTab.serialNumber,
       licenceNumber: licenceTab.licenceNumber,
       datePurchased: licenceTab.datePurchased,
       expiryDate: licenceTab.expiryDate,
