@@ -16,6 +16,7 @@ import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'react-toastify'
 import { EditStaffAssetList } from './editStaffAssetList'
+import { EditStaffLicenceList } from './editStaffLicenceList'
 
 export function EditStaffInfo({
   data,
@@ -249,6 +250,14 @@ export function EditStaffInfo({
             </div>
           </div>
         )}
+      </div>
+
+      <div className="col-span-3 grid grid-cols-2 gap-6">
+        <EditStaffLicenceList
+          staffEmail={staffEmail}
+          userEmail={userEmail}
+          userRole={userRole}
+        />
       </div>
 
       <div className="col-span-3">
