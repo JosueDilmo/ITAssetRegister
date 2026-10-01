@@ -12,7 +12,7 @@ export function Button({ routeId, className, ...props }: ButtonProps) {
 
   const handleClick = () => {
     if (routeId) {
-      router.push(`manager/${routeId}`)
+      router.push(`/manager/${routeId}`)
     }
   }
   return (
