@@ -1,0 +1,1 @@
+ALTER TABLE "licence" ADD COLUMN "serialNumber" text;

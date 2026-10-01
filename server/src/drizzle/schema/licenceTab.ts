@@ -15,6 +15,7 @@ export const licenceTab = pgTable('licence', {
   vendor: text('vendor').notNull(),
   licenceType: text('licenceType').notNull(),
   licenceKey: text('licenceKey'),
+  serialNumber: text('serialNumber'),
   licenceNumber: text('licenceNumber').notNull().unique(),
   datePurchased: date('datePurchased', { mode: 'string' }).notNull(),
   expiryDate: date('expiryDate', { mode: 'string' }),

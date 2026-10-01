@@ -29,6 +29,13 @@
       "when": 1782230361431,
       "tag": "0003_overconfident_maelstrom",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790871998763,
+      "tag": "0004_fast_hellfire_club",
+      "breakpoints": true
     }
   ]
 }
