@@ -27,11 +27,24 @@ export const MODULES: ModuleDef[] = [
     icon: 'Laptop',
     href: '/registration',
     status: 'live',
-    group: [
-      { name: 'Register', href: '/registration' },
-      { name: 'Management', href: '/manager', roles: [ROLES.ADMIN] },
-      { name: 'Tickets', href: '/tickets', roles: [ROLES.ADMIN] },
-    ],
+  },
+  {
+    id: 'licences',
+    name: 'Licences',
+    description: 'Software licence register and staff assignments',
+    icon: 'KeyRound',
+    href: '/registration/licence',
+    status: 'live',
+    roles: [ROLES.ADMIN],
+  },
+  {
+    id: 'tickets',
+    name: 'Tickets',
+    description: 'IT support ticket queue',
+    icon: 'Ticket',
+    href: '/tickets',
+    status: 'live',
+    roles: [ROLES.ADMIN],
   },
   {
     id: 'support',
@@ -105,4 +118,39 @@ export function visibleNavItems(
   return (module.group ?? []).filter(
     i => !i.roles || i.roles.some(r => userRoles.includes(r))
   )
+}
+
+export interface NavGroupDef {
+  label: string
+  items: ModuleNavItem[]
+}
+
+// Verb-grouped sidebar accordion config. Drives the Register/Management
+// collapsible parents. Role-filtered per item via visibleNavGroups().
+export const NAV_GROUPS: NavGroupDef[] = [
+  {
+    label: 'Register',
+    items: [
+      { name: 'Asset', href: '/registration/asset', roles: [ROLES.ADMIN] },
+      { name: 'Staff', href: '/registration/staff', roles: [ROLES.ADMIN] },
+      { name: 'Licence', href: '/registration/licence', roles: [ROLES.ADMIN] },
+    ],
+  },
+  {
+    label: 'Management',
+    items: [
+      { name: 'IT Assets', href: '/manager/asset', roles: [ROLES.ADMIN] },
+      { name: 'Staff', href: '/manager/staff', roles: [ROLES.ADMIN] },
+      { name: 'Licences', href: '/manager/licence', roles: [ROLES.ADMIN] },
+    ],
+  },
+]
+
+export function visibleNavGroups(userRoles: string[]): NavGroupDef[] {
+  return NAV_GROUPS.map(group => ({
+    label: group.label,
+    items: group.items.filter(
+      i => !i.roles || i.roles.some(r => userRoles.includes(r))
+    ),
+  })).filter(group => group.items.length > 0)
 }
