@@ -21,7 +21,7 @@ export const createLicence: FastifyPluginAsyncZod = async app => {
           licenceKey: z.string().nullable(),
           licenceNumber: z
             .string()
-            .min(2, ERROR_MESSAGES.INVALID_LICENCE_NUMBER),
+            .startsWith('LIC-', ERROR_MESSAGES.INVALID_LICENCE_NUMBER),
           datePurchased: z.string().date(ERROR_MESSAGES.INVALID_DATE),
           expiryDate: z.string().date(ERROR_MESSAGES.INVALID_DATE).nullable(),
           cost: z.string().nullable(),
