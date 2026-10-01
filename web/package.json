@@ -34,5 +34,10 @@
     "dotenv": "^17.2.1",
     "orval": "^7.7.0",
     "typescript": "^5"
+  },
+  "allowScripts": {
+    "esbuild@0.25.1": true,
+    "@biomejs/biome@1.9.4": true,
+    "sharp@0.34.5": true
   }
 }
