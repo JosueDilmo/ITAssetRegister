@@ -221,7 +221,7 @@ describe('ingestTicket', () => {
     const { db } = await import('../../../drizzle/client.js')
 
     const emailHtml =
-      '<div>My laptop screen cracked.</div><div><br></div><div>Kind Regards,</div><div>John Smith</div><div>IT Manager</div>'
+      '<div>My laptop screen cracked.</div><!-- SIG_START --><div><br></div><div>Kind Regards,</div><div>John Smith</div><div>IT Manager</div>'
     const description = Buffer.from(emailHtml).toString('base64')
     const mockTicket = {
       id: 'ticket-uuid-5',
