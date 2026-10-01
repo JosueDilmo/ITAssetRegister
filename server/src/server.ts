@@ -2,7 +2,7 @@ import fastifyCookie from '@fastify/cookie'
 import { fastifyCors } from '@fastify/cors'
 import { fastifySwagger } from '@fastify/swagger'
 import { fastifySwaggerUi } from '@fastify/swagger-ui'
-import { fastify } from 'fastify'
+import { type FastifyInstance, fastify } from 'fastify'
 import {
   type ZodTypeProvider,
   jsonSchemaTransform,
@@ -13,6 +13,7 @@ import { env } from './env.js'
 import { errorHandler } from './errors/errorHandler.js'
 import { assetRoutes } from './features/assets/routes.js'
 import { assignmentRoutes } from './features/assignments/routes.js'
+import { licenceRoutes } from './features/licences/routes.js'
 import { staffRoutes } from './features/staff/routes.js'
 import { ticketRoutes } from './features/tickets/routes.js'
 import { authenticate } from './hooks/authenticate.js'
@@ -67,6 +68,10 @@ if (env.NODE_ENV === 'development') {
           name: 'Staff',
           description: 'Staff member CRUD and lookup operations',
         },
+        {
+          name: 'Licences',
+          description: 'Licence CRUD, search, and staff assignment operations',
+        },
       ],
       components: {
         securitySchemes: {
@@ -86,13 +91,13 @@ if (env.NODE_ENV === 'development') {
   })
 }
 
-
 // Group all routes into a plugin and register with prefix '/api'
-async function routes(app: any) {
+async function routes(app: FastifyInstance) {
   app.register(assetRoutes)
   app.register(staffRoutes)
   app.register(assignmentRoutes)
   app.register(ticketRoutes)
+  app.register(licenceRoutes)
 }
 
 app.register(routes, { prefix: '/api' })

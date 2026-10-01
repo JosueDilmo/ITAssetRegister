@@ -9,7 +9,8 @@ export const ERROR_MESSAGES = {
   UNAUTHENTICATED: 'Authentication is required. Please sign in.',
   MISSING_TOKEN: 'No authentication token provided.',
   INVALID_TOKEN: 'Invalid or expired authentication token.',
-  INSUFFICIENT_ROLE: 'You do not have the required role to perform this action.',
+  INSUFFICIENT_ROLE:
+    'You do not have the required role to perform this action.',
   MISSING_CONFIRMATION: 'Confirmation is required to proceed.',
 
   // Database errors
@@ -75,4 +76,18 @@ export const ERROR_MESSAGES = {
   // Ticket errors
   TICKET_NOT_FOUND: 'Ticket with this ID not found.',
   INVALID_API_KEY: 'Invalid or missing API key.',
+
+  // Licence errors
+  LICENCE_NOT_FOUND: 'Licence not found.',
+  LICENCE_NUMBER_NOT_FOUND: 'Licence not found by number.',
+  LICENCE_ALREADY_EXISTS: 'Licence already registered.',
+  LICENCE_REMOVAL_FAILED: 'Failed to remove licence assignment.',
+  CONFLICTING_LICENCE_ASSIGNMENT: 'Licence is already assigned to',
+  STAFF_LICENCES_NOT_FOUND: 'No licences found for staff.',
+  INVALID_LICENCE_TYPE: 'Invalid licence type.',
+  INVALID_LICENCE_NUMBER: 'Licence Number must start with LIC-.',
+  LICENCE_NAME_REQUIRED: 'Licence name is required.',
+  LICENCE_VENDOR_REQUIRED: 'Licence vendor is required.',
+  LICENCE_NUMBER_REQUIRED: 'Licence number is required.',
+  LICENCE_ID_REQUIRED: 'Licence ID is required.',
 }

@@ -69,3 +69,44 @@ export interface CreateStaffParams {
   jobTitle: string
   createdBy: string
 }
+
+export interface CreateLicenceParams {
+  name: string
+  vendor: string
+  licenceType: string
+  licenceKey: string | null
+  licenceNumber: string
+  datePurchased: string
+  expiryDate: string | null
+  cost: string | null
+  assignedTo: string | null
+  createdBy: string
+}
+
+export interface GetLicenceNumberParams {
+  licenceNumber: string
+}
+
+export interface PatchLicenceParams {
+  id: string
+  status: string
+  note: string | null
+  updatedBy: string
+}
+
+export interface AssignLicenceParams {
+  userConfirmed?: boolean
+  staffEmail: string
+  licenceId: string
+  updatedBy: string
+}
+
+export interface UnassignLicenceParams {
+  licenceId: string
+  updatedBy: string
+  userConfirmed?: boolean
+}
+
+export interface GetLicencesByStaffParams {
+  staffEmail: string
+}
