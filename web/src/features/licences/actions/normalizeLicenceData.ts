@@ -6,6 +6,7 @@ export function normalizeLicenceData({
   vendor,
   licenceType,
   licenceKey,
+  serialNumber,
   licenceNumber,
   datePurchased,
   expiryDate,
@@ -20,6 +21,7 @@ export function normalizeLicenceData({
       .toUpperCase()
       .trim() as PostApiNewLicenceBodyLicenceType,
     licenceKey: licenceKey?.trim() || null,
+    serialNumber: serialNumber?.trim() || null,
     licenceNumber: licenceNumber.toUpperCase().trim(),
     datePurchased: datePurchased.trim(),
     expiryDate: expiryDate?.trim() || null,

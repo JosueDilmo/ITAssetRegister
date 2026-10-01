@@ -25,6 +25,10 @@ export const licenceSchema = z.object({
     value => (value === '' ? null : value),
     z.string().nullable()
   ),
+  serialNumber: z.preprocess(
+    value => (value === '' ? null : value),
+    z.string().nullable().optional()
+  ),
   licenceNumber: z
     .string()
     .min(2, LICENCE_ERROR_MESSAGES.LICENCE_NUMBER)

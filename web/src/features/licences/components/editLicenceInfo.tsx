@@ -101,6 +101,12 @@ export function EditLicenceInfo({
               <div className="flex flex-col divide-y divide-gray-500/50 mb-4">
                 {[
                   { label: 'Licence#', value: item.licenceNumber, mono: true },
+                  {
+                    label: 'Serial#',
+                    value: item.serialNumber || '—',
+                    mono: true,
+                    muted: !item.serialNumber,
+                  },
                   { label: 'Vendor', value: item.vendor, mono: false },
                   { label: 'Type', value: item.licenceType, mono: false },
                   {

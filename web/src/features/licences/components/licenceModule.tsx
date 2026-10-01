@@ -136,6 +136,25 @@ export function LicenceModule({ userEmail }: UserProps) {
           )}
         </div>
 
+        {/* Serial Number */}
+        <div className="space-y-2">
+          <InputRoot data-error={!!errors.serialNumber}>
+            <InputIcon>
+              <Icons.Barcode />
+            </InputIcon>
+            <InputField
+              type="text"
+              placeholder="Serial Number (optional)"
+              {...register('serialNumber')}
+            />
+          </InputRoot>
+          {errors.serialNumber && (
+            <p className="ml-4 text-red text-xs font-semibold">
+              {errors.serialNumber.message}
+            </p>
+          )}
+        </div>
+
         {/* Licence Number */}
         <div className="space-y-2">
           <InputRoot data-error={!!errors.licenceNumber}>

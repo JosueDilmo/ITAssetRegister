@@ -90,6 +90,7 @@ export interface licenceNormalizeData {
   vendor: string
   licenceType: string
   licenceKey: string | null
+  serialNumber?: string | null
   licenceNumber: string
   datePurchased: string
   expiryDate: string | null
@@ -105,6 +106,7 @@ export interface LicenceInfoProps {
     vendor: string
     licenceType: string
     licenceKey: string | null
+    serialNumber?: string | null
     licenceNumber: string
     datePurchased: string
     expiryDate: string | null
