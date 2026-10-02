@@ -1,4 +1,8 @@
-import { moduleHref, visibleModules } from '@/shared/constants/modules'
+import {
+  moduleDisplay,
+  moduleHref,
+  visibleModules,
+} from '@/shared/constants/modules'
 import { auth } from '@/shared/lib/auth'
 import { ModuleCard } from './ModuleCard'
 
@@ -18,7 +22,7 @@ export async function ModuleDashboard() {
         {modules.map(module => (
           <ModuleCard
             key={module.id}
-            module={module}
+            module={moduleDisplay(module, userRoles)}
             href={moduleHref(module, userRoles)}
           />
         ))}
