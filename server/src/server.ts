@@ -14,6 +14,7 @@ import { errorHandler } from './errors/errorHandler.js'
 import { assetRoutes } from './features/assets/routes.js'
 import { assignmentRoutes } from './features/assignments/routes.js'
 import { licenceRoutes } from './features/licences/routes.js'
+import { meRoutes } from './features/me/routes.js'
 import { staffRoutes } from './features/staff/routes.js'
 import { ticketRoutes } from './features/tickets/routes.js'
 import { authenticate } from './hooks/authenticate.js'
@@ -98,6 +99,7 @@ async function routes(app: FastifyInstance) {
   app.register(assignmentRoutes)
   app.register(ticketRoutes)
   app.register(licenceRoutes)
+  app.register(meRoutes)
 }
 
 app.register(routes, { prefix: '/api' })
