@@ -26,51 +26,70 @@ export async function update({
       throw new NotFoundError(`${ERROR_MESSAGES.LICENCE_NOT_FOUND} ID: ${id}`)
     }
 
+    // `note` omitted (undefined) means "leave unchanged"; an explicit null
+    // clears the note.
     await trx
       .update(licenceTab)
       .set({
         status,
-        note,
+        ...(note !== undefined ? { note } : {}),
         ...(serialNumber !== undefined ? { serialNumber } : {}),
       })
       .where(eq(licenceTab.id, id))
 
-    const prevChangeLog = Array.isArray(licence[0].changeLog)
-      ? licence[0].changeLog
-      : []
-    const serialChanged =
+    const updatedAt = new Date().toISOString()
+    const newEntries: Array<{
+      updatedBy: string
+      updatedAt: string
+      updatedField: string
+      previousValue: string[]
+      newValue: string[]
+    }> = []
+
+    if (status !== licence[0].status) {
+      newEntries.push({
+        updatedBy,
+        updatedAt,
+        updatedField: 'status',
+        previousValue: [String(licence[0].status)],
+        newValue: [String(status)],
+      })
+    }
+    if (note !== undefined && (note ?? null) !== (licence[0].note ?? null)) {
+      newEntries.push({
+        updatedBy,
+        updatedAt,
+        updatedField: 'note',
+        previousValue: [String(licence[0].note)],
+        newValue: [String(note)],
+      })
+    }
+    if (
       serialNumber !== undefined &&
       (serialNumber ?? null) !== (licence[0].serialNumber ?? null)
-    const updated = await trx
-      .update(licenceTab)
-      .set({
-        changeLog: [
-          ...prevChangeLog,
-          {
-            updatedBy,
-            updatedAt: new Date().toISOString(),
-            updatedField: 'status and note',
-            previousValue: [String(licence[0].status), String(licence[0].note)],
-            newValue: [String(status), String(note)],
-          },
-          ...(serialChanged
-            ? [
-                {
-                  updatedBy,
-                  updatedAt: new Date().toISOString(),
-                  updatedField: 'serialNumber',
-                  previousValue: [String(licence[0].serialNumber ?? '')],
-                  newValue: [String(serialNumber ?? '')],
-                },
-              ]
-            : []),
-        ],
+    ) {
+      newEntries.push({
+        updatedBy,
+        updatedAt,
+        updatedField: 'serialNumber',
+        previousValue: [String(licence[0].serialNumber ?? '')],
+        newValue: [String(serialNumber ?? '')],
       })
-      .where(eq(licenceTab.id, id))
-      .returning()
+    }
 
-    if (updated.length === 0) {
-      throw new DatabaseError(ERROR_MESSAGES.DATABASE_TRANSACTION_ERROR)
+    if (newEntries.length > 0) {
+      const prevChangeLog = Array.isArray(licence[0].changeLog)
+        ? licence[0].changeLog
+        : []
+      const updated = await trx
+        .update(licenceTab)
+        .set({ changeLog: [...prevChangeLog, ...newEntries] })
+        .where(eq(licenceTab.id, id))
+        .returning()
+
+      if (updated.length === 0) {
+        throw new DatabaseError(ERROR_MESSAGES.DATABASE_TRANSACTION_ERROR)
+      }
     }
 
     return { success: true, message: 'Licence details updated successfully' }

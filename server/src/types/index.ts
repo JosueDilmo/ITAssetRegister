@@ -91,7 +91,8 @@ export interface GetLicenceNumberParams {
 export interface PatchLicenceParams {
   id: string
   status: string
-  note: string | null
+  /** undefined = leave the stored note unchanged; null = clear it. */
+  note?: string | null
   serialNumber?: string | null
   updatedBy: string
 }

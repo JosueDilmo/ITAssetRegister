@@ -32,7 +32,9 @@ export function EditLicenceInfo({
     resolver: zodResolver(LicenceDetailsSchema),
   })
 
-  const [noteRegistered] = useState<string | null>(data[0].note)
+  const [noteRegistered, setNoteRegistered] = useState<string | null>(
+    data[0].note
+  )
 
   useEffect(() => {
     setValue('status', data[0].status as (typeof LICENCE_STATUS)[number])
@@ -50,12 +52,16 @@ export function EditLicenceInfo({
 
   async function updateLicenceInfo({ status, note }: LicenceDetailsParams) {
     const id = data[0].id
+    // An untouched note field must never become `null`: fall back to the
+    // note currently stored so a status-only save preserves it.
+    const noteToSend = note?.trim() ? note.trim() : noteRegistered
     try {
       const { success, message } = await patchApiLicenceDetailsId(id, {
         status: status.toUpperCase() as PatchApiLicenceDetailsIdBodyStatus,
-        note: !note || note === '' ? null : note.trim(),
+        note: noteToSend,
         updatedBy: userEmail,
       })
+      if (success) setNoteRegistered(noteToSend)
       await new Promise<void>(resolve => {
         toast[success ? 'success' : 'error'](message)
         resolve()
@@ -196,7 +202,7 @@ export function EditLicenceInfo({
                         if (value) {
                           setValue('note', value)
                         } else {
-                          setValue('note', noteRegistered as string)
+                          setValue('note', undefined)
                         }
                       }}
                     />
