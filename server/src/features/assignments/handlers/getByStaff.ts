@@ -1,6 +1,7 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { z } from 'zod'
 import { ERROR_MESSAGES, ValidationError } from '../../../errors/index.js'
+import { requireRole } from '../../../hooks/requireRole.js'
 import { getByStaff } from '../services/getByStaff.js'
 
 export const getAssetsByStaff: FastifyPluginAsyncZod = async app => {
@@ -80,6 +81,7 @@ export const getAssetsByStaff: FastifyPluginAsyncZod = async app => {
             .describe('Internal Server Error'),
         },
       },
+      preHandler: [requireRole('admin')],
     },
     async (request, reply) => {
       const { email } = request.params
