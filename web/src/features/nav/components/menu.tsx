@@ -44,6 +44,15 @@ export async function Menu() {
           <Icons.SquareArrowUpRight className="w-4 h-4 opacity-40 group-hover:opacity-100 transition-opacity" />
         </NavLink>
 
+        <NavLink
+          href="/account"
+          className={linkClass}
+          activeClassName={activeClass}
+        >
+          <span className="text-sm font-medium">My Account</span>
+          <Icons.UserRound className="w-4 h-4 opacity-40 group-hover:opacity-100 transition-opacity" />
+        </NavLink>
+
         {navGroups.map(group => (
           <NavGroup key={group.label} label={group.label} items={group.items} />
         ))}
