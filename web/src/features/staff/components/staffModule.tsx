@@ -45,7 +45,7 @@ export function StaffModule({ userEmail, userRole, staffEmail }: UserProps) {
       if (staff) {
         toast.info(`Staff: ${staff}`)
       }
-      await router.push('/registration')
+      await router.push('/registration/staff')
       reset()
     } catch (error) {
       console.error('An error occurred while registering the staff.')

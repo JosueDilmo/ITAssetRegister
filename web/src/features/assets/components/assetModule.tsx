@@ -54,7 +54,7 @@ export function AssetModule({ userEmail, userRole, staffEmail }: UserProps) {
     if (result.staff) {
       toast.info(`Staff: ${result.staff}`)
     }
-    await router.push('/registration')
+    await router.push('/registration/asset')
     reset()
   }
 
