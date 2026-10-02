@@ -1,6 +1,7 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { z } from 'zod'
 import { ERROR_MESSAGES } from '../../../errors/index.js'
+import { requireRole } from '../../../hooks/requireRole.js'
 import { getById } from '../services/getById.js'
 
 export const getLicenceById: FastifyPluginAsyncZod = async app => {
@@ -66,6 +67,16 @@ export const getLicenceById: FastifyPluginAsyncZod = async app => {
               }),
             })
             .describe('Unauthorized'),
+          403: z
+            .object({
+              success: z.boolean(),
+              error: z.object({
+                code: z.string(),
+                message: z.string(),
+                details: z.any().optional(),
+              }),
+            })
+            .describe('Forbidden'),
           404: z
             .object({
               success: z.boolean(),
@@ -88,6 +99,7 @@ export const getLicenceById: FastifyPluginAsyncZod = async app => {
             .describe('Internal Server Error'),
         },
       },
+      preHandler: [requireRole('admin')],
     },
     async (request, reply) => {
       const { id } = request.params
