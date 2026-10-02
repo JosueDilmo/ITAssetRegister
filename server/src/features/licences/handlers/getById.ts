@@ -92,9 +92,13 @@ export const getLicenceById: FastifyPluginAsyncZod = async app => {
     async (request, reply) => {
       const { id } = request.params
       const { licence } = await getById({ id })
+      // The activation key is for IT admins only (least privilege, D-07):
+      // every other caller gets the licence with licenceKey nulled out.
+      const isAdmin = request.user?.role === 'admin'
       return reply.status(200).send({
         licence: licence.map(l => ({
           ...l,
+          licenceKey: isAdmin ? l.licenceKey : null,
           createdAt: l.createdAt.toISOString(),
         })),
       })
