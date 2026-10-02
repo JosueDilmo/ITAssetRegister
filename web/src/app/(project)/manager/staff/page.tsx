@@ -1,7 +1,10 @@
+import { requireAdminOrRedirect } from '@/features/auth/actions/requireAdminOrRedirect'
 import { Menu } from '@/features/nav/components/menu'
 import { DisplayAllStaff } from '@/features/staff/components/displayAllStaff'
 
-export default function ManageStaffPage() {
+export default async function ManageStaffPage() {
+  await requireAdminOrRedirect()
+
   return (
     <div className="flex w-full">
       <Menu />

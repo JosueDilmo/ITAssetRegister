@@ -1,22 +1,9 @@
-import { redirect } from 'next/navigation'
-import { getCurrentITAssetUser } from '@/features/auth/actions/getCurrentITAssetUser'
+import { requireAdminOrRedirect } from '@/features/auth/actions/requireAdminOrRedirect'
 import { Menu } from '@/features/nav/components/menu'
 import { KanbanBoard } from '@/features/tickets/components/KanbanBoard'
 
 export default async function TicketsPage() {
-  const user = await getCurrentITAssetUser()
-  if (!user) redirect('/signin')
-
-  if (user.role !== 'admin') {
-    return (
-      <div className="flex w-full">
-        <Menu />
-        <div className="flex-1 flex items-center justify-center">
-          <p className="text-gray-400 text-sm">Access denied. Admin role required.</p>
-        </div>
-      </div>
-    )
-  }
+  await requireAdminOrRedirect()
 
   return (
     <div className="flex w-full h-dvh">

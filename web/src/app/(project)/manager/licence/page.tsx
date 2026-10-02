@@ -1,7 +1,10 @@
+import { requireAdminOrRedirect } from '@/features/auth/actions/requireAdminOrRedirect'
 import { DisplayAllLicences } from '@/features/licences/components/displayAllLicences'
 import { Menu } from '@/features/nav/components/menu'
 
-export default function ManageLicencePage() {
+export default async function ManageLicencePage() {
+  await requireAdminOrRedirect()
+
   return (
     <div className="flex w-full">
       <Menu />

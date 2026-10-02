@@ -1,5 +1,5 @@
 import { EditAssetInfo } from '@/features/assets/components/editAssetInfo'
-import { getCurrentITAssetUser } from '@/features/auth/actions/getCurrentITAssetUser'
+import { requireAdminOrRedirect } from '@/features/auth/actions/requireAdminOrRedirect'
 import { EditLicenceInfo } from '@/features/licences/components/editLicenceInfo'
 import { Menu } from '@/features/nav/components/menu'
 import { EditStaffInfo } from '@/features/staff/components/editStaffInfo'
@@ -12,12 +12,9 @@ import type { PageProps } from '@/shared/interface/index'
 
 export default async function DisplayPage(props: PageProps) {
   const { id } = await props.params
-  const currentUser = await getCurrentITAssetUser()
-  if (!currentUser) {
-    throw new Error('User not found')
-  }
-  const currentUserEmail = currentUser?.email
-  const currentUserRole = currentUser?.role
+  const currentUser = await requireAdminOrRedirect()
+  const currentUserEmail = currentUser.email
+  const currentUserRole = currentUser.role
 
   const staffData = await getApiStaffById(id)
     .then(r => (Array.isArray(r.staffDetails) ? r.staffDetails : []))
