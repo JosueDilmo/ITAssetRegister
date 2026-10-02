@@ -78,6 +78,119 @@ describe('updateLicence', () => {
     expect(result.success).toBe(true)
   })
 
+  function makeUpdateTrx(row: Record<string, unknown>) {
+    const firstUpdateSet = vi
+      .fn()
+      .mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) })
+    const secondUpdateSet = vi.fn().mockReturnValue({
+      where: vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([{ id: 'lic-1' }]),
+      }),
+    })
+    const updateMock = vi
+      .fn()
+      .mockReturnValueOnce({ set: firstUpdateSet })
+      .mockReturnValueOnce({ set: secondUpdateSet })
+    const trx = {
+      select: vi.fn().mockReturnValue({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            limit: vi.fn().mockResolvedValue([row]),
+          }),
+        }),
+      }),
+      update: updateMock,
+    }
+    return { trx, firstUpdateSet, secondUpdateSet, updateMock }
+  }
+
+  it('keeps the stored note when a status-only update omits the note', async () => {
+    const { db } = await import('../../../drizzle/client.js')
+    const { trx, firstUpdateSet, secondUpdateSet } = makeUpdateTrx({
+      id: 'lic-1',
+      status: 'ACTIVE',
+      note: 'Licence assigned to staff Jane',
+      serialNumber: null,
+      changeLog: [],
+    })
+    // biome-ignore lint/suspicious/noExplicitAny: test mock callback
+    vi.mocked(db.transaction).mockImplementation(async (cb: any) => cb(trx))
+
+    const { update } = await import('./update.js')
+    await update({
+      id: 'lic-1',
+      status: 'INACTIVE',
+      updatedBy: 'admin@mastertech.ie',
+    })
+
+    const set = firstUpdateSet.mock.calls[0][0]
+    expect(set.status).toBe('INACTIVE')
+    expect(set).not.toHaveProperty('note')
+    const log = secondUpdateSet.mock.calls[0][0].changeLog
+    expect(log).toHaveLength(1)
+    expect(log[0]).toMatchObject({
+      updatedField: 'status',
+      previousValue: ['ACTIVE'],
+      newValue: ['INACTIVE'],
+    })
+  })
+
+  it('keeps the status when only the note changes and logs only the note', async () => {
+    const { db } = await import('../../../drizzle/client.js')
+    const { trx, firstUpdateSet, secondUpdateSet } = makeUpdateTrx({
+      id: 'lic-1',
+      status: 'EXPIRED',
+      note: 'previous note value',
+      serialNumber: null,
+      changeLog: [],
+    })
+    // biome-ignore lint/suspicious/noExplicitAny: test mock callback
+    vi.mocked(db.transaction).mockImplementation(async (cb: any) => cb(trx))
+
+    const { update } = await import('./update.js')
+    await update({
+      id: 'lic-1',
+      status: 'EXPIRED',
+      note: 'a brand new note',
+      updatedBy: 'admin@mastertech.ie',
+    })
+
+    const set = firstUpdateSet.mock.calls[0][0]
+    expect(set.status).toBe('EXPIRED')
+    expect(set.note).toBe('a brand new note')
+    const log = secondUpdateSet.mock.calls[0][0].changeLog
+    expect(log).toHaveLength(1)
+    expect(log[0]).toMatchObject({
+      updatedField: 'note',
+      previousValue: ['previous note value'],
+      newValue: ['a brand new note'],
+    })
+  })
+
+  it('writes no changelog entry and no second update when nothing changed', async () => {
+    const { db } = await import('../../../drizzle/client.js')
+    const { trx, updateMock } = makeUpdateTrx({
+      id: 'lic-1',
+      status: 'ACTIVE',
+      note: 'same note here',
+      serialNumber: null,
+      changeLog: [],
+    })
+    // biome-ignore lint/suspicious/noExplicitAny: test mock callback
+    vi.mocked(db.transaction).mockImplementation(async (cb: any) => cb(trx))
+
+    const { update } = await import('./update.js')
+    const result = await update({
+      id: 'lic-1',
+      status: 'ACTIVE',
+      note: 'same note here',
+      updatedBy: 'admin@mastertech.ie',
+    })
+
+    expect(result.success).toBe(true)
+    expect(updateMock).toHaveBeenCalledTimes(1)
+  })
+
   it('updates serialNumber and appends a serialNumber changelog entry', async () => {
     const { db } = await import('../../../drizzle/client.js')
 
@@ -136,11 +249,11 @@ describe('updateLicence', () => {
     expect(result.success).toBe(true)
     expect(firstUpdateSet.mock.calls[0][0].serialNumber).toBe('SN-777')
     const log = secondUpdateSet.mock.calls[0][0].changeLog
-    expect(log).toHaveLength(3)
+    expect(log).toHaveLength(2)
     expect(log[0]).toEqual(existingEntry)
-    expect(log[2].updatedField).toBe('serialNumber')
-    expect(log[2].previousValue).toEqual([''])
-    expect(log[2].newValue).toEqual(['SN-777'])
+    expect(log[1].updatedField).toBe('serialNumber')
+    expect(log[1].previousValue).toEqual([''])
+    expect(log[1].newValue).toEqual(['SN-777'])
   })
 
   it('leaves serialNumber untouched when omitted from the update', async () => {
