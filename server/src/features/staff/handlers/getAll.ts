@@ -1,5 +1,6 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { z } from 'zod'
+import { requireRole } from '../../../hooks/requireRole.js'
 import { getAll } from '../services/getAll.js'
 
 export const getAllStaff: FastifyPluginAsyncZod = async app => {
@@ -16,30 +17,80 @@ export const getAllStaff: FastifyPluginAsyncZod = async app => {
           limit: z.coerce.number().int().positive().max(100).default(25),
         }),
         response: {
-          200: z.object({
-            total: z.number(),
-            page: z.number(),
-            limit: z.number(),
-            staffList: z.array(z.object({
-              id: z.string().uuid(),
-              name: z.string(),
-              email: z.string(),
-              department: z.string(),
-              jobTitle: z.string(),
-              status: z.string(),
-              note: z.string().nullable(),
-              assetHistoryList: z.array(z.string().nullable()),
-              createdAt: z.string(),
-              createdBy: z.string(),
-            })),
-          }).describe('Successful'),
-          400: z.object({ success: z.boolean(), error: z.object({ code: z.string(), message: z.string(), details: z.any().optional() }) }).describe('Bad Request'),
-          401: z.object({ success: z.boolean(), error: z.object({ code: z.string(), message: z.string(), details: z.any().optional() }) }).describe('Unauthorized'),
-          403: z.object({ success: z.boolean(), error: z.object({ code: z.string(), message: z.string(), details: z.any().optional() }) }).describe('Forbidden'),
-          404: z.object({ success: z.boolean(), error: z.object({ code: z.string(), message: z.string(), details: z.any().optional() }) }).describe('Not Found'),
-          500: z.object({ success: z.boolean(), error: z.object({ code: z.string(), message: z.string(), details: z.any().optional() }) }).describe('Internal Server Error'),
+          200: z
+            .object({
+              total: z.number(),
+              page: z.number(),
+              limit: z.number(),
+              staffList: z.array(
+                z.object({
+                  id: z.string().uuid(),
+                  name: z.string(),
+                  email: z.string(),
+                  department: z.string(),
+                  jobTitle: z.string(),
+                  status: z.string(),
+                  note: z.string().nullable(),
+                  assetHistoryList: z.array(z.string().nullable()),
+                  createdAt: z.string(),
+                  createdBy: z.string(),
+                })
+              ),
+            })
+            .describe('Successful'),
+          400: z
+            .object({
+              success: z.boolean(),
+              error: z.object({
+                code: z.string(),
+                message: z.string(),
+                details: z.any().optional(),
+              }),
+            })
+            .describe('Bad Request'),
+          401: z
+            .object({
+              success: z.boolean(),
+              error: z.object({
+                code: z.string(),
+                message: z.string(),
+                details: z.any().optional(),
+              }),
+            })
+            .describe('Unauthorized'),
+          403: z
+            .object({
+              success: z.boolean(),
+              error: z.object({
+                code: z.string(),
+                message: z.string(),
+                details: z.any().optional(),
+              }),
+            })
+            .describe('Forbidden'),
+          404: z
+            .object({
+              success: z.boolean(),
+              error: z.object({
+                code: z.string(),
+                message: z.string(),
+                details: z.any().optional(),
+              }),
+            })
+            .describe('Not Found'),
+          500: z
+            .object({
+              success: z.boolean(),
+              error: z.object({
+                code: z.string(),
+                message: z.string(),
+                details: z.any().optional(),
+              }),
+            })
+            .describe('Internal Server Error'),
         },
       },
+      preHandler: [requireRole('admin')],
     },
     async (request, reply) => {
       const { search, page, limit } = request.query
@@ -48,7 +99,10 @@ export const getAllStaff: FastifyPluginAsyncZod = async app => {
         total,
         page,
         limit,
-        staffList: staffList.map(s => ({ ...s, createdAt: s.createdAt.toISOString() })),
+        staffList: staffList.map(s => ({
+          ...s,
+          createdAt: s.createdAt.toISOString(),
+        })),
       })
     }
   )
