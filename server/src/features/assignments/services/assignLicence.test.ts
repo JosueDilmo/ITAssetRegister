@@ -25,6 +25,7 @@ vi.mock('../../../errors/index.js', () => ({
     STAFF_NOT_FOUND: 'Staff not found.',
     LICENCE_NOT_FOUND: 'Licence not found.',
     CONFLICTING_LICENCE_ASSIGNMENT: 'Licence is already assigned to',
+    LICENCE_NOT_ASSIGNABLE: 'Retired or expired licences cannot be assigned.',
     CONFLICTING_CONFIRM: 'Confirm to proceed.',
     INTERNAL_DB_ERROR: 'DB error.',
   },
@@ -75,7 +76,13 @@ const staffRow = {
   licenceHistoryList: [],
   changeLog: [],
 }
-const licenceRow = { id: 'lic-1', assignedTo: null, changeLog: [] }
+const licenceRow = {
+  id: 'lic-1',
+  assignedTo: null,
+  status: 'INACTIVE',
+  note: null,
+  changeLog: [],
+}
 const bobEarlierEntries = [
   {
     updatedBy: 'a@b.ie',
@@ -194,6 +201,124 @@ describe('assignLicence', () => {
       })
     ).rejects.toThrow('Licence is already assigned to')
   })
+
+  describe('status and note handling (CR-02)', () => {
+    it.each(['RETIRED', 'EXPIRED'])(
+      'rejects assigning a %s licence and writes nothing',
+      async status => {
+        const { db } = await import('../../../drizzle/client.js')
+        const trx = makeTrx({
+          staff: [staffRow],
+          licence: [{ ...licenceRow, status }],
+        })
+        // biome-ignore lint/suspicious/noExplicitAny: test mock callback
+        vi.mocked(db.transaction).mockImplementation(async (cb: any) =>
+          cb(trx)
+        )
+
+        const { assignLicence } = await import('./assignLicence.js')
+        await expect(
+          assignLicence({
+            staffEmail: 'jane@mastertech.ie',
+            licenceId: 'lic-1',
+            updatedBy: 'admin@mastertech.ie',
+            userConfirmed: true,
+          })
+        ).rejects.toThrow('Retired or expired licences cannot be assigned.')
+        expect(trx.update).not.toHaveBeenCalled()
+      }
+    )
+
+    it('sets ACTIVE on assign and logs the status and note change', async () => {
+      const { db } = await import('../../../drizzle/client.js')
+      const earlier = {
+        updatedBy: 'a@b.ie',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+        updatedField: 'status',
+        previousValue: ['ACTIVE'],
+        newValue: ['INACTIVE'],
+      }
+      const trx = makeTrx({
+        staff: [staffRow],
+        licence: [
+          {
+            ...licenceRow,
+            note: 'Admin written note',
+            changeLog: [earlier],
+          },
+        ],
+      })
+      // biome-ignore lint/suspicious/noExplicitAny: test mock callback
+      vi.mocked(db.transaction).mockImplementation(async (cb: any) => cb(trx))
+
+      const { assignLicence } = await import('./assignLicence.js')
+      await assignLicence({
+        staffEmail: 'jane@mastertech.ie',
+        licenceId: 'lic-1',
+        updatedBy: 'admin@mastertech.ie',
+      })
+
+      const licenceWrite = trx.setPayloads.find(p => 'assignedTo' in p)
+      expect(licenceWrite).toMatchObject({
+        assignedTo: 'jane@mastertech.ie',
+        status: 'ACTIVE',
+        note: 'Licence assigned to staff Jane',
+      })
+      const log = trx.setPayloads.find(
+        p =>
+          Array.isArray(p.changeLog) &&
+          p.changeLog.some(
+            (e: { updatedField: string }) => e.updatedField === 'assignedTo'
+          )
+      )?.changeLog
+      expect(log[0]).toEqual(earlier)
+      expect(log).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            updatedBy: 'admin@mastertech.ie',
+            updatedField: 'status',
+            previousValue: ['INACTIVE'],
+            newValue: ['ACTIVE'],
+          }),
+          expect.objectContaining({
+            updatedField: 'note',
+            previousValue: ['Admin written note'],
+            newValue: ['Licence assigned to staff Jane'],
+          }),
+        ])
+      )
+    })
+
+    it('does not log status when it is already ACTIVE', async () => {
+      const { db } = await import('../../../drizzle/client.js')
+      const trx = makeTrx({
+        staff: [staffRow],
+        licence: [{ ...licenceRow, status: 'ACTIVE' }],
+      })
+      // biome-ignore lint/suspicious/noExplicitAny: test mock callback
+      vi.mocked(db.transaction).mockImplementation(async (cb: any) => cb(trx))
+
+      const { assignLicence } = await import('./assignLicence.js')
+      await assignLicence({
+        staffEmail: 'jane@mastertech.ie',
+        licenceId: 'lic-1',
+        updatedBy: 'admin@mastertech.ie',
+      })
+
+      const fields = (
+        trx.setPayloads.find(
+          p =>
+            Array.isArray(p.changeLog) &&
+            p.changeLog.some(
+              (e: { updatedField: string }) => e.updatedField === 'assignedTo'
+            )
+        )?.changeLog ?? []
+      ).map((e: { updatedField: string }) => e.updatedField)
+      expect(fields).not.toContain('status')
+      expect(fields).toContain('note')
+    })
+  })
+
   describe('previous owner history on reassignment (LIC-04)', () => {
     it('appends a reassignment entry to the previous owner changeLog, keeping earlier entries first', async () => {
       const { db } = await import('../../../drizzle/client.js')
