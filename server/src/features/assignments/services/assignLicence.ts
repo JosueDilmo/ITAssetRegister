@@ -39,6 +39,10 @@ export async function assignLicence({
       )
     }
 
+    if (licence[0].status === 'RETIRED' || licence[0].status === 'EXPIRED') {
+      throw new ConflictError(ERROR_MESSAGES.LICENCE_NOT_ASSIGNABLE)
+    }
+
     const previousAssignedTo = licence[0].assignedTo
     if (previousAssignedTo && previousAssignedTo === staffEmail) {
       throw new ConflictError(
@@ -72,12 +76,14 @@ export async function assignLicence({
       previousOwner = previousOwnerResult[0]
     }
 
+    const newStatus = 'ACTIVE'
+    const newNote = `Licence assigned to staff ${staff[0].name}`
     await trx
       .update(licenceTab)
       .set({
         assignedTo: staffEmail,
-        status: 'ACTIVE',
-        note: `Licence assigned to staff ${staff[0].name}`,
+        status: newStatus,
+        note: newNote,
         dateAssigned: new Date().toISOString(),
       })
       .where(eq(licenceTab.id, licenceId))
@@ -154,6 +160,30 @@ export async function assignLicence({
             previousValue: [String(previousAssignedTo)],
             newValue: [String(staffEmail)],
           },
+          // Status/note are rewritten by an assignment; keep the previous
+          // values recoverable (append-only audit).
+          ...(licence[0].status !== newStatus
+            ? [
+                {
+                  updatedBy,
+                  updatedAt: new Date().toISOString(),
+                  updatedField: 'status',
+                  previousValue: [String(licence[0].status)],
+                  newValue: [newStatus],
+                },
+              ]
+            : []),
+          ...((licence[0].note ?? null) !== newNote
+            ? [
+                {
+                  updatedBy,
+                  updatedAt: new Date().toISOString(),
+                  updatedField: 'note',
+                  previousValue: [String(licence[0].note)],
+                  newValue: [newNote],
+                },
+              ]
+            : []),
         ],
       })
       .where(eq(licenceTab.id, licenceId))

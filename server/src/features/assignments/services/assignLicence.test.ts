@@ -212,9 +212,7 @@ describe('assignLicence', () => {
           licence: [{ ...licenceRow, status }],
         })
         // biome-ignore lint/suspicious/noExplicitAny: test mock callback
-        vi.mocked(db.transaction).mockImplementation(async (cb: any) =>
-          cb(trx)
-        )
+        vi.mocked(db.transaction).mockImplementation(async (cb: any) => cb(trx))
 
         const { assignLicence } = await import('./assignLicence.js')
         await expect(

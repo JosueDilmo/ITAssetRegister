@@ -147,9 +147,7 @@ describe('unassignLicence', () => {
           staff: [staffRow],
         })
         // biome-ignore lint/suspicious/noExplicitAny: test mock callback
-        vi.mocked(db.transaction).mockImplementation(async (cb: any) =>
-          cb(trx)
-        )
+        vi.mocked(db.transaction).mockImplementation(async (cb: any) => cb(trx))
 
         const { unassignLicence } = await import('./unassignLicence.js')
         await unassignLicence({

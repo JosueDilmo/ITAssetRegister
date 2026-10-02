@@ -83,6 +83,7 @@ export const ERROR_MESSAGES = {
   LICENCE_ALREADY_EXISTS: 'Licence already registered.',
   LICENCE_REMOVAL_FAILED: 'Failed to remove licence assignment.',
   CONFLICTING_LICENCE_ASSIGNMENT: 'Licence is already assigned to',
+  LICENCE_NOT_ASSIGNABLE: 'Retired or expired licences cannot be assigned.',
   STAFF_LICENCES_NOT_FOUND: 'No licences found for staff.',
   INVALID_LICENCE_TYPE: 'Invalid licence type.',
   INVALID_LICENCE_NUMBER: 'Licence Number must start with LIC-.',

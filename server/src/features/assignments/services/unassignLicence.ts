@@ -53,9 +53,17 @@ export async function unassignLicence({
       )
     }
 
+    // RETIRED/EXPIRED are lifecycle states: unassigning must not overwrite them.
+    const keepStatus =
+      licence.status === 'RETIRED' || licence.status === 'EXPIRED'
+    const statusChanged = !keepStatus && licence.status !== 'INACTIVE'
     const licenceRemoved = await trx
       .update(licenceTab)
-      .set({ assignedTo: null, status: 'INACTIVE', dateAssigned: null })
+      .set({
+        assignedTo: null,
+        dateAssigned: null,
+        ...(keepStatus ? {} : { status: 'INACTIVE' as const }),
+      })
       .where(eq(licenceTab.id, licenceId))
       .returning()
 
@@ -77,6 +85,17 @@ export async function unassignLicence({
             ],
             newValue: ['assignedTo: null', 'dateAssigned: null'],
           },
+          ...(statusChanged
+            ? [
+                {
+                  updatedBy,
+                  updatedAt: new Date().toISOString(),
+                  updatedField: 'status',
+                  previousValue: [String(licence.status)],
+                  newValue: ['INACTIVE'],
+                },
+              ]
+            : []),
         ],
       })
       .where(eq(licenceTab.id, licenceId))
