@@ -1,5 +1,6 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { z } from 'zod'
+import { requireRole } from '../../../hooks/requireRole.js'
 import { getAll } from '../services/getAll.js'
 
 export const getAllLicences: FastifyPluginAsyncZod = async app => {
@@ -95,6 +96,7 @@ export const getAllLicences: FastifyPluginAsyncZod = async app => {
             .describe('Internal Server Error'),
         },
       },
+      preHandler: [requireRole('admin')],
     },
     async (request, reply) => {
       const { search, page, limit } = request.query
