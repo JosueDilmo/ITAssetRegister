@@ -112,3 +112,7 @@ export interface UnassignLicenceParams {
 export interface GetLicencesByStaffParams {
   staffEmail: string
 }
+
+export interface GetStaffByEmailParams {
+  email: string
+}
