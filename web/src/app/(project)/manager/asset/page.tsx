@@ -1,7 +1,10 @@
 import { DisplayAllAssets } from '@/features/assets/components/displayAllAssets'
+import { requireAdminOrRedirect } from '@/features/auth/actions/requireAdminOrRedirect'
 import { Menu } from '@/features/nav/components/menu'
 
-export default function ManageAssetPage() {
+export default async function ManageAssetPage() {
+  await requireAdminOrRedirect()
+
   return (
     <div className="flex w-full">
       <Menu />
