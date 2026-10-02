@@ -3,6 +3,7 @@ import { postApiAssetToStaffEmail, type PostApiAssetToStaffEmail200, type PostAp
 import * as Icons from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'react-toastify'
+import { reloadAfterToast } from '@/shared/lib/reloadAfterToast'
 import type { UserProps } from '@/shared/interface/index'
 import type { AssetList } from '@/shared/types/index'
 
@@ -21,7 +22,7 @@ export function AddAsset({
         updatedBy: userEmail,
       })
       toast.success((response as PostApiAssetToStaffEmail200).message)
-      window.location.reload()
+      reloadAfterToast()
     } catch (thrown) {
       const conflict = thrown as PostApiAssetToStaffEmail409
       const message = conflict?.error?.message ?? 'An error occurred'
@@ -39,7 +40,7 @@ export function AddAsset({
             const retryErr = retryThrown as PostApiAssetToStaffEmail409
             toast.error(retryErr?.error?.message ?? 'Failed to assign asset')
           }
-          window.location.reload()
+          reloadAfterToast()
         }
       } else {
         toast.error(message)

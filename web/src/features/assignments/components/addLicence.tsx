@@ -5,6 +5,7 @@ import {
   postApiLicenceToStaffEmail,
 } from '@/http/api'
 import type { UserProps } from '@/shared/interface/index'
+import { reloadAfterToast } from '@/shared/lib/reloadAfterToast'
 import * as Icons from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'react-toastify'
@@ -32,7 +33,7 @@ export function AddLicence({
         updatedBy: userEmail,
       })
       toast.success((response as PostApiLicenceToStaffEmail200).message)
-      window.location.reload()
+      reloadAfterToast()
     } catch (thrown) {
       const conflict = thrown as PostApiLicenceToStaffEmail409
       const message = conflict?.error?.message ?? 'An error occurred'
@@ -52,7 +53,7 @@ export function AddLicence({
             const retryErr = retryThrown as PostApiLicenceToStaffEmail409
             toast.error(retryErr?.error?.message ?? 'Failed to assign licence')
           }
-          window.location.reload()
+          reloadAfterToast()
         }
       } else {
         toast.error(message)

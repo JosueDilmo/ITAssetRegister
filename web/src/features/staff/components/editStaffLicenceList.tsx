@@ -6,6 +6,7 @@ import {
   getApiLicencesByStaffEmail,
 } from '@/http/api'
 import type { UserProps } from '@/shared/interface/index'
+import { reloadAfterToast } from '@/shared/lib/reloadAfterToast'
 import * as Icons from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
@@ -48,7 +49,7 @@ export function EditStaffLicenceList({
         userConfirmed: false,
       })
       toast.success(response.message)
-      window.location.reload()
+      reloadAfterToast()
     } catch (thrown) {
       const conflict = thrown as DeleteApiLicenceById409
       const message = conflict?.error?.message
@@ -68,7 +69,7 @@ export function EditStaffLicenceList({
           const retryErr = retryThrown as DeleteApiLicenceById409
           toast.error(retryErr?.error?.message ?? 'An error occurred')
         }
-        window.location.reload()
+        reloadAfterToast()
       }
     }
   }
