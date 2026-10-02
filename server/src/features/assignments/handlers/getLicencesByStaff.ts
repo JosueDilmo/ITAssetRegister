@@ -9,7 +9,8 @@ export const getLicencesByStaffHandler: FastifyPluginAsyncZod = async app => {
     {
       schema: {
         tags: ['Licences'],
-        description: 'Get all licences assigned to a staff member',
+        description:
+          'Get all licences assigned to a staff member. An empty list is returned when none are held (404 only for an unknown staff email).',
         params: z.object({
           email: z.string().email(ERROR_MESSAGES.INVALID_EMAIL),
         }),
@@ -56,7 +57,7 @@ export const getLicencesByStaffHandler: FastifyPluginAsyncZod = async app => {
                 details: z.any().optional(),
               }),
             })
-            .describe('Not Found'),
+            .describe('Staff member not found'),
           500: z
             .object({
               success: z.boolean(),
