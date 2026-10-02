@@ -5,6 +5,7 @@ import * as Icons from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
+import { reloadAfterToast } from '@/shared/lib/reloadAfterToast'
 
 export function EditStaffAssetList({
   staffEmail,
@@ -18,7 +19,7 @@ export function EditStaffAssetList({
     try {
       const response = await deleteApiAssetById(id, { updatedBy, userConfirmed: false })
       toast.success(response.message)
-      window.location.reload()
+      reloadAfterToast()
     } catch (err) {
       const conflictErr = err as DeleteApiAssetById409
       const message = conflictErr?.error?.message
@@ -35,15 +36,23 @@ export function EditStaffAssetList({
           const retryError = retryErr as DeleteApiAssetById409
           toast.error(retryError?.error?.message ?? 'An error occurred')
         }
-        window.location.reload()
+        reloadAfterToast()
       }
     }
   }
 
   useEffect(() => {
     async function getAllAssetByEmail() {
-      const { success, message, assetList } = await getApiAssetByStaffEmail(staffEmail)
-      setGetResult({ success, message, assetList })
+      try {
+        const { success, message, assetList } = await getApiAssetByStaffEmail(staffEmail)
+        setGetResult({ success, message, assetList })
+      } catch (thrown) {
+        const body = thrown as { error?: { code?: string; message?: string } }
+        setGetResult({ success: true, message: '', assetList: [] })
+        if (body?.error?.code !== 'NOT_FOUND') {
+          toast.error(body?.error?.message ?? 'Failed to load assets')
+        }
+      }
     }
     getAllAssetByEmail()
   }, [staffEmail])
