@@ -16,6 +16,7 @@ docs
 /graphify-out
 skills-lock.json
 CLAUDE.md
+/.gsd
 
 # Keep logs directories but ignore their contents
 server/logs/*
