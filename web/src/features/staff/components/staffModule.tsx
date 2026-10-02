@@ -1,15 +1,18 @@
 'use client'
 import { normalizeStaffData } from '@/features/staff/actions/normalizeStaffData'
-import type { UserProps } from '@/shared/interface/index'
+import {
+  type StaffSchemaType,
+  staffSchema,
+} from '@/features/staff/schemas/staffSchema'
 import { postApiNewStaff } from '@/http/api'
+import { Button } from '@/shared/components/button'
+import { InputField, InputIcon, InputRoot } from '@/shared/components/input'
+import type { UserProps } from '@/shared/interface/index'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as Icons from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { toast } from 'react-toastify'
-import { Button } from '@/shared/components/button'
-import { InputField, InputIcon, InputRoot } from '@/shared/components/input'
-import { type StaffSchemaType, staffSchema } from '@/features/staff/schemas/staffSchema'
 
 export function StaffModule({ userEmail, userRole, staffEmail }: UserProps) {
   const router = useRouter()
