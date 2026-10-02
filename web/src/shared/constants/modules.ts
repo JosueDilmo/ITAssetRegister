@@ -14,6 +14,7 @@ export interface ModuleDef {
   description: string
   icon: string // lucide-react icon name; unknown names fall back to Box
   href: string // '#' for coming_soon
+  staffHref?: string // target for users without the admin role; omitted = href
   status: ModuleStatus
   roles?: Role[] // omitted = visible to everyone
   group?: ModuleNavItem[] // sidebar sub-items
@@ -26,6 +27,9 @@ export const MODULES: ModuleDef[] = [
     description: 'Asset register, staff assignments and audit history',
     icon: 'Laptop',
     href: '/registration',
+    // /registration is admin-only; everyone else lands on their own staff
+    // detail page (read-only), resolved server-side from the session email.
+    staffHref: '/manager/me',
     status: 'live',
   },
   {
@@ -109,6 +113,11 @@ export function visibleModules(userRoles: string[]): ModuleDef[] {
   return MODULES.filter(
     m => !m.roles || m.roles.some(r => userRoles.includes(r))
   )
+}
+
+export function moduleHref(module: ModuleDef, userRoles: string[]): string {
+  const isAdmin = userRoles.includes(ROLES.ADMIN)
+  return !isAdmin && module.staffHref ? module.staffHref : module.href
 }
 
 export function visibleNavItems(

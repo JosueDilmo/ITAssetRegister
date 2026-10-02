@@ -1,4 +1,4 @@
-import { visibleModules } from '@/shared/constants/modules'
+import { moduleHref, visibleModules } from '@/shared/constants/modules'
 import { auth } from '@/shared/lib/auth'
 import { ModuleCard } from './ModuleCard'
 
@@ -16,7 +16,11 @@ export async function ModuleDashboard() {
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {modules.map(module => (
-          <ModuleCard key={module.id} module={module} />
+          <ModuleCard
+            key={module.id}
+            module={module}
+            href={moduleHref(module, userRoles)}
+          />
         ))}
       </div>
     </section>
