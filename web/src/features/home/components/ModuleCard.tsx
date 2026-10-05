@@ -7,7 +7,13 @@ function getIcon(name: string): Icons.LucideIcon {
   return icon ?? Icons.Box
 }
 
-export function ModuleCard({ module }: { module: ModuleDef }) {
+export function ModuleCard({
+  module,
+  href,
+}: {
+  module: ModuleDef
+  href?: string
+}) {
   const Icon = getIcon(module.icon)
   const isLive = module.status === 'live'
 
@@ -42,7 +48,7 @@ export function ModuleCard({ module }: { module: ModuleDef }) {
 
   if (isLive) {
     return (
-      <Link href={module.href} className="block h-full">
+      <Link href={href ?? module.href} className="block h-full">
         {card}
       </Link>
     )

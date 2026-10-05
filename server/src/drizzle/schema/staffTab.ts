@@ -9,6 +9,7 @@ export const staffTab = pgTable('staff', {
   status: text('status').notNull().default('ACTIVE'),
   note: text('note').default(''),
   assetHistoryList: jsonb('assetHistoryList').default([]),
+  licenceHistoryList: jsonb('licenceHistoryList').default([]),
   createdAt: timestamp('createdAt').notNull().defaultNow(),
   createdBy: text('createdBy').notNull(),
   changeLog: jsonb('changeLog').default([]),

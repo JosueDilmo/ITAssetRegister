@@ -1,6 +1,7 @@
 import handleAuth from '@/features/auth/actions/handleAuth'
+import { NavGroup } from '@/features/nav/components/navGroup'
 import { NavLink } from '@/features/nav/components/navLink'
-import { visibleModules, visibleNavItems } from '@/shared/constants/modules'
+import { visibleModules, visibleNavGroups } from '@/shared/constants/modules'
 import { auth } from '@/shared/lib/auth'
 import * as Icons from 'lucide-react'
 import { redirect } from 'next/navigation'
@@ -23,6 +24,7 @@ export async function Menu() {
   const modules = visibleModules(userRoles)
   const liveModules = modules.filter(m => m.status === 'live')
   const soonModules = modules.filter(m => m.status === 'coming_soon')
+  const navGroups = visibleNavGroups(userRoles)
 
   return (
     <div className="flex flex-col h-dvh w-56 bg-gray-800 border-r border-gray-600 shrink-0">
@@ -41,40 +43,38 @@ export async function Menu() {
           <span className="text-sm font-medium">Home</span>
           <Icons.SquareArrowUpRight className="w-4 h-4 opacity-40 group-hover:opacity-100 transition-opacity" />
         </NavLink>
-        {liveModules.map(module => {
-          const items = visibleNavItems(module, userRoles)
-          if (items.length > 0) {
-            return (
-              <div key={module.id} className="mt-2">
-                <p className="px-3 py-1 text-[10px] font-mono uppercase tracking-widest text-gray-400">
-                  {module.name}
-                </p>
-                {items.map(item => (
-                  <NavLink
-                    key={item.href}
-                    href={item.href}
-                    className={linkClass}
-                    activeClassName={activeClass}
-                  >
-                    <span className="text-sm font-medium">{item.name}</span>
-                    <Icons.SquareArrowUpRight className="w-4 h-4 opacity-40 group-hover:opacity-100 transition-opacity" />
-                  </NavLink>
-                ))}
-              </div>
+
+        <NavLink
+          href="/account"
+          className={linkClass}
+          activeClassName={activeClass}
+        >
+          <span className="text-sm font-medium">My Account</span>
+          <Icons.UserRound className="w-4 h-4 opacity-40 group-hover:opacity-100 transition-opacity" />
+        </NavLink>
+
+        {navGroups.map(group => (
+          <NavGroup key={group.label} label={group.label} items={group.items} />
+        ))}
+
+        <div className="mt-2 flex flex-col gap-0.5">
+          {liveModules
+            .filter(
+              m => m.href !== '#' && !['it-assets', 'licences'].includes(m.id)
             )
-          }
-          return (
-            <NavLink
-              key={module.id}
-              href={module.href}
-              className={linkClass}
-              activeClassName={activeClass}
-            >
-              <span className="text-sm font-medium">{module.name}</span>
-              <Icons.SquareArrowUpRight className="w-4 h-4 opacity-40 group-hover:opacity-100 transition-opacity" />
-            </NavLink>
-          )
-        })}
+            .map(module => (
+              <NavLink
+                key={module.id}
+                href={module.href}
+                className={linkClass}
+                activeClassName={activeClass}
+              >
+                <span className="text-sm font-medium">{module.name}</span>
+                <Icons.SquareArrowUpRight className="w-4 h-4 opacity-40 group-hover:opacity-100 transition-opacity" />
+              </NavLink>
+            ))}
+        </div>
+
         {soonModules.length > 0 && (
           <div className="mt-4 pt-3 border-t border-gray-700">
             <p className="px-3 py-1 text-[10px] font-mono uppercase tracking-widest text-gray-500">

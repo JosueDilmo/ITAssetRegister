@@ -32,20 +32,28 @@ describe('ingestTicket', () => {
 
   it('inserts a ticket and calls sendMail with TKT-formatted subject', async () => {
     const { db } = await import('../../../drizzle/client.js')
-    const { sendMail } = await import('../../../shared/services/graphMailClient.js')
+    const { sendMail } = await import(
+      '../../../shared/services/graphMailClient.js'
+    )
 
-    const mockTicket = { id: 'ticket-uuid-1', ticketNumber: 1, subject: 'My laptop is broken' }
+    const mockTicket = {
+      id: 'ticket-uuid-1',
+      ticketNumber: 1,
+      subject: 'My laptop is broken',
+    }
 
     vi.mocked(db.select).mockReturnValue({
       from: vi.fn().mockReturnValue({
         where: vi.fn().mockResolvedValue([]),
       }),
+      // biome-ignore lint/suspicious/noExplicitAny: test mock
     } as any)
 
     vi.mocked(db.insert).mockReturnValue({
       values: vi.fn().mockReturnValue({
         returning: vi.fn().mockResolvedValue([mockTicket]),
       }),
+      // biome-ignore lint/suspicious/noExplicitAny: test mock
     } as any)
 
     const { ingestTicket } = await import('./ingest.js')
@@ -65,14 +73,21 @@ describe('ingestTicket', () => {
 
   it('uploads attachments to SharePoint and batch-inserts refs when attachments provided', async () => {
     const { db } = await import('../../../drizzle/client.js')
-    const { uploadToSharePoint } = await import('../../../shared/services/graphSharePointClient.js')
+    const { uploadToSharePoint } = await import(
+      '../../../shared/services/graphSharePointClient.js'
+    )
 
-    const mockTicket = { id: 'ticket-uuid-2', ticketNumber: 2, subject: 'Printer issue' }
+    const mockTicket = {
+      id: 'ticket-uuid-2',
+      ticketNumber: 2,
+      subject: 'Printer issue',
+    }
 
     vi.mocked(db.select).mockReturnValue({
       from: vi.fn().mockReturnValue({
         where: vi.fn().mockResolvedValue([]),
       }),
+      // biome-ignore lint/suspicious/noExplicitAny: test mock
     } as any)
 
     vi.mocked(db.insert)
@@ -80,14 +95,20 @@ describe('ingestTicket', () => {
         values: vi.fn().mockReturnValue({
           returning: vi.fn().mockResolvedValue([mockTicket]),
         }),
+        // biome-ignore lint/suspicious/noExplicitAny: test mock
       } as any)
       .mockReturnValueOnce({
         values: vi.fn().mockResolvedValue(undefined),
+        // biome-ignore lint/suspicious/noExplicitAny: test mock
       } as any)
 
     vi.mocked(uploadToSharePoint)
-      .mockResolvedValueOnce('https://sharepoint.example.com/IT-Tickets/ticket-uuid-2/screenshot1.png')
-      .mockResolvedValueOnce('https://sharepoint.example.com/IT-Tickets/ticket-uuid-2/screenshot2.png')
+      .mockResolvedValueOnce(
+        'https://sharepoint.example.com/IT-Tickets/ticket-uuid-2/screenshot1.png'
+      )
+      .mockResolvedValueOnce(
+        'https://sharepoint.example.com/IT-Tickets/ticket-uuid-2/screenshot2.png'
+      )
 
     const { ingestTicket } = await import('./ingest.js')
     await ingestTicket({
@@ -95,8 +116,16 @@ describe('ingestTicket', () => {
       description: 'UHJpbnRlciBub3Qgd29ya2luZw==',
       requesterEmail: 'staff@mastertech.ie',
       attachments: [
-        { name: 'screenshot1.png', contentBytes: 'aGVsbG8=', contentType: 'image/png' },
-        { name: 'screenshot2.png', contentBytes: 'd29ybGQ=', contentType: 'image/png' },
+        {
+          name: 'screenshot1.png',
+          contentBytes: 'aGVsbG8=',
+          contentType: 'image/png',
+        },
+        {
+          name: 'screenshot2.png',
+          contentBytes: 'd29ybGQ=',
+          contentType: 'image/png',
+        },
       ],
     })
 
@@ -110,27 +139,38 @@ describe('ingestTicket', () => {
     })
 
     expect(db.insert).toHaveBeenCalledTimes(2)
-    const attachmentInsertValues = vi.mocked(db.insert).mock.results[1].value.values.mock.calls[0][0]
+    const attachmentInsertValues = vi.mocked(db.insert).mock.results[1].value
+      .values.mock.calls[0][0]
     expect(attachmentInsertValues).toHaveLength(2)
     expect(attachmentInsertValues[0]).toMatchObject({
       ticketId: 'ticket-uuid-2',
       filename: 'screenshot1.png',
       mimeType: 'image/png',
-      sharePointUrl: 'https://sharepoint.example.com/IT-Tickets/ticket-uuid-2/screenshot1.png',
+      sharePointUrl:
+        'https://sharepoint.example.com/IT-Tickets/ticket-uuid-2/screenshot1.png',
     })
   })
 
   it('still creates ticket when one attachment upload fails', async () => {
     const { db } = await import('../../../drizzle/client.js')
-    const { uploadToSharePoint } = await import('../../../shared/services/graphSharePointClient.js')
-    const { sendMail } = await import('../../../shared/services/graphMailClient.js')
+    const { uploadToSharePoint } = await import(
+      '../../../shared/services/graphSharePointClient.js'
+    )
+    const { sendMail } = await import(
+      '../../../shared/services/graphMailClient.js'
+    )
 
-    const mockTicket = { id: 'ticket-uuid-3', ticketNumber: 3, subject: 'Keyboard issue' }
+    const mockTicket = {
+      id: 'ticket-uuid-3',
+      ticketNumber: 3,
+      subject: 'Keyboard issue',
+    }
 
     vi.mocked(db.select).mockReturnValue({
       from: vi.fn().mockReturnValue({
         where: vi.fn().mockResolvedValue([]),
       }),
+      // biome-ignore lint/suspicious/noExplicitAny: test mock
     } as any)
 
     vi.mocked(db.insert)
@@ -138,14 +178,20 @@ describe('ingestTicket', () => {
         values: vi.fn().mockReturnValue({
           returning: vi.fn().mockResolvedValue([mockTicket]),
         }),
+        // biome-ignore lint/suspicious/noExplicitAny: test mock
       } as any)
       .mockReturnValueOnce({
         values: vi.fn().mockResolvedValue(undefined),
+        // biome-ignore lint/suspicious/noExplicitAny: test mock
       } as any)
 
     vi.mocked(uploadToSharePoint)
-      .mockRejectedValueOnce(new Error('SharePoint upload failed: 503 Service Unavailable'))
-      .mockResolvedValueOnce('https://sharepoint.example.com/IT-Tickets/ticket-uuid-3/ok.png')
+      .mockRejectedValueOnce(
+        new Error('SharePoint upload failed: 503 Service Unavailable')
+      )
+      .mockResolvedValueOnce(
+        'https://sharepoint.example.com/IT-Tickets/ticket-uuid-3/ok.png'
+      )
 
     const { ingestTicket } = await import('./ingest.js')
     const result = await ingestTicket({
@@ -153,7 +199,11 @@ describe('ingestTicket', () => {
       description: 'S2V5Ym9hcmQgYnJva2Vu',
       requesterEmail: 'staff@mastertech.ie',
       attachments: [
-        { name: 'fail.png', contentBytes: 'aGVsbG8=', contentType: 'image/png' },
+        {
+          name: 'fail.png',
+          contentBytes: 'aGVsbG8=',
+          contentType: 'image/png',
+        },
         { name: 'ok.png', contentBytes: 'd29ybGQ=', contentType: 'image/png' },
       ],
     })
@@ -161,7 +211,8 @@ describe('ingestTicket', () => {
     expect(result.ticketId).toBe('ticket-uuid-3')
     expect(sendMail).toHaveBeenCalledOnce()
 
-    const attachmentInsertValues = vi.mocked(db.insert).mock.results[1].value.values.mock.calls[0][0]
+    const attachmentInsertValues = vi.mocked(db.insert).mock.results[1].value
+      .values.mock.calls[0][0]
     expect(attachmentInsertValues).toHaveLength(1)
     expect(attachmentInsertValues[0].filename).toBe('ok.png')
   })
@@ -169,26 +220,37 @@ describe('ingestTicket', () => {
   it('strips email signature before storing description', async () => {
     const { db } = await import('../../../drizzle/client.js')
 
-    const emailHtml = '<div>My laptop screen cracked.</div><div><br></div><div>Kind Regards,</div><div>John Smith</div><div>IT Manager</div>'
+    const emailHtml =
+      '<div>My laptop screen cracked.</div><!-- SIG_START --><div><br></div><div>Kind Regards,</div><div>John Smith</div><div>IT Manager</div>'
     const description = Buffer.from(emailHtml).toString('base64')
-    const mockTicket = { id: 'ticket-uuid-5', ticketNumber: 5, subject: 'Cracked screen' }
+    const mockTicket = {
+      id: 'ticket-uuid-5',
+      ticketNumber: 5,
+      subject: 'Cracked screen',
+    }
 
     vi.mocked(db.select).mockReturnValue({
       from: vi.fn().mockReturnValue({
         where: vi.fn().mockResolvedValue([]),
       }),
+      // biome-ignore lint/suspicious/noExplicitAny: test mock
     } as any)
 
     let insertedDescription: string | undefined
     vi.mocked(db.insert).mockReturnValue({
-      values: vi.fn().mockImplementation((vals) => {
+      values: vi.fn().mockImplementation(vals => {
         insertedDescription = vals.description
         return { returning: vi.fn().mockResolvedValue([mockTicket]) }
       }),
+      // biome-ignore lint/suspicious/noExplicitAny: test mock
     } as any)
 
     const { ingestTicket } = await import('./ingest.js')
-    await ingestTicket({ subject: 'Cracked screen', description, requesterEmail: 'staff@mastertech.ie' })
+    await ingestTicket({
+      subject: 'Cracked screen',
+      description,
+      requesterEmail: 'staff@mastertech.ie',
+    })
 
     expect(insertedDescription).toBe('My laptop screen cracked.')
     expect(insertedDescription).not.toContain('John Smith')
@@ -196,7 +258,9 @@ describe('ingestTicket', () => {
 
   it('adds comment to existing ticket when subject contains TKT-XXXX reference', async () => {
     const { db } = await import('../../../drizzle/client.js')
-    const { sendMail } = await import('../../../shared/services/graphMailClient.js')
+    const { sendMail } = await import(
+      '../../../shared/services/graphMailClient.js'
+    )
 
     const existingTicket = { id: 'ticket-uuid-existing', ticketNumber: 22 }
 
@@ -204,16 +268,20 @@ describe('ingestTicket', () => {
       from: vi.fn().mockReturnValue({
         where: vi.fn().mockResolvedValue([existingTicket]),
       }),
+      // biome-ignore lint/suspicious/noExplicitAny: test mock
     } as any)
 
     vi.mocked(db.insert).mockReturnValue({
       values: vi.fn().mockResolvedValue(undefined),
+      // biome-ignore lint/suspicious/noExplicitAny: test mock
     } as any)
 
     const { ingestTicket } = await import('./ingest.js')
     const result = await ingestTicket({
       subject: 'Re: [TKT-0022] Ticket received: test',
-      description: Buffer.from('<p>Thanks for the update.</p>').toString('base64'),
+      description: Buffer.from('<p>Thanks for the update.</p>').toString(
+        'base64'
+      ),
       requesterEmail: 'staff@mastertech.ie',
     })
 
@@ -223,7 +291,8 @@ describe('ingestTicket', () => {
 
     // comment insert only — no new ticket row
     expect(db.insert).toHaveBeenCalledOnce()
-    const commentValues = vi.mocked(db.insert).mock.results[0].value.values.mock.calls[0][0]
+    const commentValues = vi.mocked(db.insert).mock.results[0].value.values.mock
+      .calls[0][0]
     expect(commentValues).toMatchObject({
       ticketId: 'ticket-uuid-existing',
       authorEmail: 'staff@mastertech.ie',
@@ -237,7 +306,9 @@ describe('ingestTicket', () => {
 
   it('uploads attachment to existing ticket folder when replying', async () => {
     const { db } = await import('../../../drizzle/client.js')
-    const { uploadToSharePoint } = await import('../../../shared/services/graphSharePointClient.js')
+    const { uploadToSharePoint } = await import(
+      '../../../shared/services/graphSharePointClient.js'
+    )
 
     const existingTicket = { id: 'ticket-uuid-existing-2', ticketNumber: 5 }
 
@@ -245,11 +316,18 @@ describe('ingestTicket', () => {
       from: vi.fn().mockReturnValue({
         where: vi.fn().mockResolvedValue([existingTicket]),
       }),
+      // biome-ignore lint/suspicious/noExplicitAny: test mock
     } as any)
 
     vi.mocked(db.insert)
-      .mockReturnValueOnce({ values: vi.fn().mockResolvedValue(undefined) } as any)  // comment
-      .mockReturnValueOnce({ values: vi.fn().mockResolvedValue(undefined) } as any)  // attachment
+      .mockReturnValueOnce({
+        values: vi.fn().mockResolvedValue(undefined),
+        // biome-ignore lint/suspicious/noExplicitAny: test mock
+      } as any) // comment
+      .mockReturnValueOnce({
+        values: vi.fn().mockResolvedValue(undefined),
+        // biome-ignore lint/suspicious/noExplicitAny: test mock
+      } as any) // attachment
 
     vi.mocked(uploadToSharePoint).mockResolvedValueOnce(
       'https://sharepoint.example.com/IT-Tickets/ticket-uuid-existing-2/reply.png'
@@ -258,9 +336,17 @@ describe('ingestTicket', () => {
     const { ingestTicket } = await import('./ingest.js')
     await ingestTicket({
       subject: 'Re: [TKT-0005] Ticket received: Keyboard issue',
-      description: Buffer.from('<p>See attached screenshot.</p>').toString('base64'),
+      description: Buffer.from('<p>See attached screenshot.</p>').toString(
+        'base64'
+      ),
       requesterEmail: 'staff@mastertech.ie',
-      attachments: [{ name: 'reply.png', contentBytes: 'aGVsbG8=', contentType: 'image/png' }],
+      attachments: [
+        {
+          name: 'reply.png',
+          contentBytes: 'aGVsbG8=',
+          contentType: 'image/png',
+        },
+      ],
     })
 
     expect(uploadToSharePoint).toHaveBeenCalledOnce()
@@ -270,7 +356,8 @@ describe('ingestTicket', () => {
     })
 
     expect(db.insert).toHaveBeenCalledTimes(2)
-    const attachmentValues = vi.mocked(db.insert).mock.results[1].value.values.mock.calls[0][0]
+    const attachmentValues = vi.mocked(db.insert).mock.results[1].value.values
+      .mock.calls[0][0]
     expect(attachmentValues[0]).toMatchObject({
       ticketId: 'ticket-uuid-existing-2',
       filename: 'reply.png',
@@ -279,26 +366,35 @@ describe('ingestTicket', () => {
 
   it('creates new ticket when TKT-XXXX in subject but ticket not found in db', async () => {
     const { db } = await import('../../../drizzle/client.js')
-    const { sendMail } = await import('../../../shared/services/graphMailClient.js')
+    const { sendMail } = await import(
+      '../../../shared/services/graphMailClient.js'
+    )
 
-    const mockTicket = { id: 'ticket-uuid-new', ticketNumber: 99, subject: 'Re: [TKT-9999] orphaned' }
+    const mockTicket = {
+      id: 'ticket-uuid-new',
+      ticketNumber: 99,
+      subject: 'Re: [TKT-9999] orphaned',
+    }
 
     vi.mocked(db.select)
       .mockReturnValueOnce({
         from: vi.fn().mockReturnValue({
-          where: vi.fn().mockResolvedValue([]),  // ticket 9999 not found
+          where: vi.fn().mockResolvedValue([]), // ticket 9999 not found
         }),
+        // biome-ignore lint/suspicious/noExplicitAny: test mock
       } as any)
       .mockReturnValueOnce({
         from: vi.fn().mockReturnValue({
-          where: vi.fn().mockResolvedValue([]),  // staff not found
+          where: vi.fn().mockResolvedValue([]), // staff not found
         }),
+        // biome-ignore lint/suspicious/noExplicitAny: test mock
       } as any)
 
     vi.mocked(db.insert).mockReturnValue({
       values: vi.fn().mockReturnValue({
         returning: vi.fn().mockResolvedValue([mockTicket]),
       }),
+      // biome-ignore lint/suspicious/noExplicitAny: test mock
     } as any)
 
     const { ingestTicket } = await import('./ingest.js')
@@ -316,15 +412,24 @@ describe('ingestTicket', () => {
 
   it('confirmation email includes attachment links when uploads succeed', async () => {
     const { db } = await import('../../../drizzle/client.js')
-    const { uploadToSharePoint } = await import('../../../shared/services/graphSharePointClient.js')
-    const { sendMail } = await import('../../../shared/services/graphMailClient.js')
+    const { uploadToSharePoint } = await import(
+      '../../../shared/services/graphSharePointClient.js'
+    )
+    const { sendMail } = await import(
+      '../../../shared/services/graphMailClient.js'
+    )
 
-    const mockTicket = { id: 'ticket-uuid-4', ticketNumber: 4, subject: 'Monitor issue' }
+    const mockTicket = {
+      id: 'ticket-uuid-4',
+      ticketNumber: 4,
+      subject: 'Monitor issue',
+    }
 
     vi.mocked(db.select).mockReturnValue({
       from: vi.fn().mockReturnValue({
         where: vi.fn().mockResolvedValue([]),
       }),
+      // biome-ignore lint/suspicious/noExplicitAny: test mock
     } as any)
 
     vi.mocked(db.insert)
@@ -332,9 +437,11 @@ describe('ingestTicket', () => {
         values: vi.fn().mockReturnValue({
           returning: vi.fn().mockResolvedValue([mockTicket]),
         }),
+        // biome-ignore lint/suspicious/noExplicitAny: test mock
       } as any)
       .mockReturnValueOnce({
         values: vi.fn().mockResolvedValue(undefined),
+        // biome-ignore lint/suspicious/noExplicitAny: test mock
       } as any)
 
     vi.mocked(uploadToSharePoint).mockResolvedValueOnce(
@@ -346,11 +453,19 @@ describe('ingestTicket', () => {
       subject: 'Monitor issue',
       description: 'TW9uaXRvciBibGFuaw==',
       requesterEmail: 'staff@mastertech.ie',
-      attachments: [{ name: 'photo.jpg', contentBytes: 'aGVsbG8=', contentType: 'image/jpeg' }],
+      attachments: [
+        {
+          name: 'photo.jpg',
+          contentBytes: 'aGVsbG8=',
+          contentType: 'image/jpeg',
+        },
+      ],
     })
 
     const emailBody = vi.mocked(sendMail).mock.calls[0][0].htmlBody
-    expect(emailBody).toContain('https://sharepoint.example.com/IT-Tickets/ticket-uuid-4/photo.jpg')
+    expect(emailBody).toContain(
+      'https://sharepoint.example.com/IT-Tickets/ticket-uuid-4/photo.jpg'
+    )
     expect(emailBody).toContain('photo.jpg')
   })
 })

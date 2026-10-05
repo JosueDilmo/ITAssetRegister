@@ -1,6 +1,11 @@
 'use client'
+import {
+  type DeleteApiAssetById409,
+  deleteApiAssetById,
+  getApiAssetByStaffEmail,
+} from '@/http/api'
 import type { AssetProps, UserProps } from '@/shared/interface/index'
-import { deleteApiAssetById, getApiAssetByStaffEmail, type DeleteApiAssetById409 } from '@/http/api'
+import { reloadAfterToast } from '@/shared/lib/reloadAfterToast'
 import * as Icons from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
@@ -16,9 +21,12 @@ export function EditStaffAssetList({
   const handleRemoveAsset = async (id: string) => {
     const updatedBy = userEmail
     try {
-      const response = await deleteApiAssetById(id, { updatedBy, userConfirmed: false })
+      const response = await deleteApiAssetById(id, {
+        updatedBy,
+        userConfirmed: false,
+      })
       toast.success(response.message)
-      window.location.reload()
+      reloadAfterToast()
     } catch (err) {
       const conflictErr = err as DeleteApiAssetById409
       const message = conflictErr?.error?.message
@@ -29,21 +37,33 @@ export function EditStaffAssetList({
       const userConfirmation = window.confirm(message)
       if (userConfirmation) {
         try {
-          const retryResponse = await deleteApiAssetById(id, { updatedBy, userConfirmed: true })
+          const retryResponse = await deleteApiAssetById(id, {
+            updatedBy,
+            userConfirmed: true,
+          })
           toast.success(retryResponse.message)
         } catch (retryErr) {
           const retryError = retryErr as DeleteApiAssetById409
           toast.error(retryError?.error?.message ?? 'An error occurred')
         }
-        window.location.reload()
+        reloadAfterToast()
       }
     }
   }
 
   useEffect(() => {
     async function getAllAssetByEmail() {
-      const { success, message, assetList } = await getApiAssetByStaffEmail(staffEmail)
-      setGetResult({ success, message, assetList })
+      try {
+        const { success, message, assetList } =
+          await getApiAssetByStaffEmail(staffEmail)
+        setGetResult({ success, message, assetList })
+      } catch (thrown) {
+        const body = thrown as { error?: { code?: string; message?: string } }
+        setGetResult({ success: true, message: '', assetList: [] })
+        if (body?.error?.code !== 'NOT_FOUND') {
+          toast.error(body?.error?.message ?? 'Failed to load assets')
+        }
+      }
     }
     getAllAssetByEmail()
   }, [staffEmail])
@@ -54,7 +74,9 @@ export function EditStaffAssetList({
         <Icons.Package className="w-3.5 h-3.5" />
         Current Asset List
         {getResult?.success === true && (
-          <span className="ml-auto text-gray-600">{getResult.assetList.length}</span>
+          <span className="ml-auto text-gray-600">
+            {getResult.assetList.length}
+          </span>
         )}
       </h3>
       {getResult?.success === true && getResult.assetList.length > 0 ? (
@@ -71,7 +93,9 @@ export function EditStaffAssetList({
                 >
                   {asset.name}
                 </Link>
-                <span className="font-mono text-xs text-gray-500">{asset.serialNumber}</span>
+                <span className="font-mono text-xs text-gray-500">
+                  {asset.serialNumber}
+                </span>
               </div>
               {userRole === 'admin' && (
                 <button

@@ -14,6 +14,10 @@ export interface ModuleDef {
   description: string
   icon: string // lucide-react icon name; unknown names fall back to Box
   href: string // '#' for coming_soon
+  staffHref?: string // target for users without the admin role; omitted = href
+  staffName?: string // display name for users without the admin role; omitted = name
+  staffDescription?: string // description for users without the admin role; omitted = description
+  staffIcon?: string // lucide icon name for users without the admin role; omitted = icon
   status: ModuleStatus
   roles?: Role[] // omitted = visible to everyone
   group?: ModuleNavItem[] // sidebar sub-items
@@ -26,12 +30,30 @@ export const MODULES: ModuleDef[] = [
     description: 'Asset register, staff assignments and audit history',
     icon: 'Laptop',
     href: '/registration',
+    // Non-admins land on their own Account page; admins keep /registration.
+    staffHref: '/account',
+    staffName: 'Account',
+    staffDescription: 'Your profile, assets, licences and open tickets',
+    staffIcon: 'UserRound',
     status: 'live',
-    group: [
-      { name: 'Register', href: '/registration' },
-      { name: 'Management', href: '/manager', roles: [ROLES.ADMIN] },
-      { name: 'Tickets', href: '/tickets', roles: [ROLES.ADMIN] },
-    ],
+  },
+  {
+    id: 'licences',
+    name: 'Licences',
+    description: 'Software licence register and staff assignments',
+    icon: 'KeyRound',
+    href: '/registration/licence',
+    status: 'live',
+    roles: [ROLES.ADMIN],
+  },
+  {
+    id: 'tickets',
+    name: 'Tickets',
+    description: 'IT support ticket queue',
+    icon: 'Ticket',
+    href: '/tickets',
+    status: 'live',
+    roles: [ROLES.ADMIN],
   },
   {
     id: 'support',
@@ -98,6 +120,25 @@ export function visibleModules(userRoles: string[]): ModuleDef[] {
   )
 }
 
+export function moduleHref(module: ModuleDef, userRoles: string[]): string {
+  const isAdmin = userRoles.includes(ROLES.ADMIN)
+  return !isAdmin && module.staffHref ? module.staffHref : module.href
+}
+
+export function moduleDisplay(
+  module: ModuleDef,
+  userRoles: string[]
+): ModuleDef {
+  const isAdmin = userRoles.includes(ROLES.ADMIN)
+  if (isAdmin) return module
+  return {
+    ...module,
+    name: module.staffName ?? module.name,
+    description: module.staffDescription ?? module.description,
+    icon: module.staffIcon ?? module.icon,
+  }
+}
+
 export function visibleNavItems(
   module: ModuleDef,
   userRoles: string[]
@@ -105,4 +146,39 @@ export function visibleNavItems(
   return (module.group ?? []).filter(
     i => !i.roles || i.roles.some(r => userRoles.includes(r))
   )
+}
+
+export interface NavGroupDef {
+  label: string
+  items: ModuleNavItem[]
+}
+
+// Verb-grouped sidebar accordion config. Drives the Register/Management
+// collapsible parents. Role-filtered per item via visibleNavGroups().
+export const NAV_GROUPS: NavGroupDef[] = [
+  {
+    label: 'Register',
+    items: [
+      { name: 'Asset', href: '/registration/asset', roles: [ROLES.ADMIN] },
+      { name: 'Staff', href: '/registration/staff', roles: [ROLES.ADMIN] },
+      { name: 'Licence', href: '/registration/licence', roles: [ROLES.ADMIN] },
+    ],
+  },
+  {
+    label: 'Management',
+    items: [
+      { name: 'IT Assets', href: '/manager/asset', roles: [ROLES.ADMIN] },
+      { name: 'Staff', href: '/manager/staff', roles: [ROLES.ADMIN] },
+      { name: 'Licences', href: '/manager/licence', roles: [ROLES.ADMIN] },
+    ],
+  },
+]
+
+export function visibleNavGroups(userRoles: string[]): NavGroupDef[] {
+  return NAV_GROUPS.map(group => ({
+    label: group.label,
+    items: group.items.filter(
+      i => !i.roles || i.roles.some(r => userRoles.includes(r))
+    ),
+  })).filter(group => group.items.length > 0)
 }

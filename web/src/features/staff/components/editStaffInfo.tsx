@@ -1,21 +1,23 @@
 'use client'
-import { Search } from '@/features/search/components/search'
-import { Button } from '@/shared/components/button'
-import type { StaffInfoProps, UserProps } from '@/shared/interface/index'
 import { ChangeLogTable } from '@/features/manager/components/ChangeLogTable'
+import { Search } from '@/features/search/components/search'
+import { SearchLicence } from '@/features/search/components/searchLicence'
 import {
-  STAFF_STATUS,
+  type STAFF_STATUS,
   type StaffDetailsParams,
   StaffDetailsSchema,
 } from '@/features/staff/schemas/staffSchema'
 import { patchApiStaffDetailsId } from '@/http/api'
+import { Button } from '@/shared/components/button'
+import { InputField, InputRoot } from '@/shared/components/input'
+import type { StaffInfoProps, UserProps } from '@/shared/interface/index'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as Icons from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'react-toastify'
-import { InputField, InputRoot } from '@/shared/components/input'
 import { EditStaffAssetList } from './editStaffAssetList'
+import { EditStaffLicenceList } from './editStaffLicenceList'
 
 export function EditStaffInfo({
   data,
@@ -32,10 +34,13 @@ export function EditStaffInfo({
     resolver: zodResolver(StaffDetailsSchema),
   })
 
-  const status = watch('status', data[0].status as typeof STAFF_STATUS[number])
+  const status = watch(
+    'status',
+    data[0].status as (typeof STAFF_STATUS)[number]
+  )
 
   useEffect(() => {
-    setValue('status', data[0].status as typeof STAFF_STATUS[number])
+    setValue('status', data[0].status as (typeof STAFF_STATUS)[number])
   }, [data, setValue])
 
   const [staffEmail] = useState<string>(data[0].email)
@@ -53,7 +58,10 @@ export function EditStaffInfo({
       updatedBy: userEmail,
     }
     const id = data[0].id
-    const { success, message } = await patchApiStaffDetailsId(id, normalizedData)
+    const { success, message } = await patchApiStaffDetailsId(
+      id,
+      normalizedData
+    )
     await new Promise<void>(resolve => {
       toast[success ? 'success' : 'error'](message)
       resolve()
@@ -64,20 +72,27 @@ export function EditStaffInfo({
     <div className="grid grid-cols-3 gap-6 w-full h-full p-4 rounded-xl">
       {data.map(item => (
         <div key={item.id} className="flex flex-col gap-4">
-
           {/* Profile card */}
-          <div className={`bg-gray-600 border border-gray-500 rounded-lg overflow-hidden border-l-2 ${
-            status === 'ACTIVE' ? 'border-l-green-500' : 'border-l-red'
-          }`}>
+          <div
+            className={`bg-gray-600 border border-gray-500 rounded-lg overflow-hidden border-l-2 ${
+              status === 'ACTIVE' ? 'border-l-green-500' : 'border-l-red'
+            }`}
+          >
             {/* Status bar */}
             <div className="flex items-center gap-2 px-5 py-2.5 border-b border-gray-500 bg-gray-700/80">
-              <span className={`inline-block w-2 h-2 rounded-full shrink-0 ${
-                status === 'ACTIVE' ? 'bg-green-500 animate-status-dot' : 'bg-red'
-              }`} />
+              <span
+                className={`inline-block w-2 h-2 rounded-full shrink-0 ${
+                  status === 'ACTIVE'
+                    ? 'bg-green-500 animate-status-dot'
+                    : 'bg-red'
+                }`}
+              />
               <span className="text-xs font-mono uppercase tracking-widest text-gray-100">
                 {status}
               </span>
-              <span className="ml-auto font-mono text-xs text-gray-600">{item.id.slice(0, 8)}</span>
+              <span className="ml-auto font-mono text-xs text-gray-600">
+                {item.id.slice(0, 8)}
+              </span>
             </div>
 
             <div className="px-5 py-5">
@@ -93,9 +108,14 @@ export function EditStaffInfo({
                   { label: 'Title', value: item.jobTitle, mono: false },
                   {
                     label: 'Since',
-                    value: new Date(item.createdAt).toLocaleDateString('en-IE', {
-                      day: '2-digit', month: 'short', year: 'numeric',
-                    }),
+                    value: new Date(item.createdAt).toLocaleDateString(
+                      'en-IE',
+                      {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric',
+                      }
+                    ),
                     mono: true,
                   },
                   {
@@ -109,7 +129,9 @@ export function EditStaffInfo({
                     <span className="text-xs font-mono uppercase tracking-wider text-gray-100 w-10 shrink-0 pt-0.5">
                       {row.label}
                     </span>
-                    <span className={`text-sm break-all ${row.mono ? 'font-mono text-gray-100' : 'text-gray-50'} ${row.muted ? 'text-gray-100/40 italic' : ''}`}>
+                    <span
+                      className={`text-sm break-all ${row.mono ? 'font-mono text-gray-100' : 'text-gray-50'} ${row.muted ? 'text-gray-100/40 italic' : ''}`}
+                    >
                       {row.value}
                     </span>
                   </div>
@@ -147,13 +169,21 @@ export function EditStaffInfo({
                       }`}
                     >
                       {status === 'ACTIVE' ? (
-                        <><Icons.UserX className="w-3.5 h-3.5" /> Deactivate</>
+                        <>
+                          <Icons.UserX className="w-3.5 h-3.5" /> Deactivate
+                        </>
                       ) : (
-                        <><Icons.UserCheck className="w-3.5 h-3.5" /> Activate</>
+                        <>
+                          <Icons.UserCheck className="w-3.5 h-3.5" /> Activate
+                        </>
                       )}
                     </button>
 
-                    <Button type="submit" disabled={isSubmitting} className="flex-1 h-10 text-sm">
+                    <Button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="flex-1 h-10 text-sm"
+                    >
                       {isSubmitting ? (
                         <Icons.Loader2 className="animate-spin w-4 h-4" />
                       ) : (
@@ -167,7 +197,9 @@ export function EditStaffInfo({
 
               {userRole !== 'admin' && (
                 <div className="border-t border-gray-500 mt-4 pt-3">
-                  <span className="text-xs font-mono text-gray-600 uppercase tracking-wider">read-only</span>
+                  <span className="text-xs font-mono text-gray-600 uppercase tracking-wider">
+                    read-only
+                  </span>
                 </div>
               )}
             </div>
@@ -206,8 +238,12 @@ export function EditStaffInfo({
                 >
                   <Icons.Package className="w-3 h-3 text-gray-100/50 group-hover:text-blue shrink-0 transition-colors" />
                   <div className="flex flex-col flex-1 min-w-0">
-                    <span className="text-xs text-gray-100 group-hover:text-blue transition-colors truncate">{asset.name}</span>
-                    <span className="font-mono text-xs text-gray-100/50">{asset.serialNumber}</span>
+                    <span className="text-xs text-gray-100 group-hover:text-blue transition-colors truncate">
+                      {asset.name}
+                    </span>
+                    <span className="font-mono text-xs text-gray-100/50">
+                      {asset.serialNumber}
+                    </span>
                   </div>
                   <Icons.ArrowUpRight className="w-3 h-3 text-gray-100/40 group-hover:text-blue shrink-0 transition-colors" />
                 </a>
@@ -215,6 +251,19 @@ export function EditStaffInfo({
             </div>
           </div>
         )}
+      </div>
+
+      <div className="col-span-3 grid grid-cols-2 gap-6">
+        <EditStaffLicenceList
+          staffEmail={staffEmail}
+          userEmail={userEmail}
+          userRole={userRole}
+        />
+        <SearchLicence
+          staffEmail={staffEmail}
+          userEmail={userEmail}
+          userRole={userRole}
+        />
       </div>
 
       <div className="col-span-3">

@@ -1,10 +1,15 @@
 'use client'
-import { postApiAssetToStaffEmail, type PostApiAssetToStaffEmail200, type PostApiAssetToStaffEmail409 } from '@/http/api'
+import {
+  type PostApiAssetToStaffEmail200,
+  type PostApiAssetToStaffEmail409,
+  postApiAssetToStaffEmail,
+} from '@/http/api'
+import type { UserProps } from '@/shared/interface/index'
+import { reloadAfterToast } from '@/shared/lib/reloadAfterToast'
+import type { AssetList } from '@/shared/types/index'
 import * as Icons from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'react-toastify'
-import type { UserProps } from '@/shared/interface/index'
-import type { AssetList } from '@/shared/types/index'
 
 export function AddAsset({
   staffEmail,
@@ -21,7 +26,7 @@ export function AddAsset({
         updatedBy: userEmail,
       })
       toast.success((response as PostApiAssetToStaffEmail200).message)
-      window.location.reload()
+      reloadAfterToast()
     } catch (thrown) {
       const conflict = thrown as PostApiAssetToStaffEmail409
       const message = conflict?.error?.message ?? 'An error occurred'
@@ -34,12 +39,14 @@ export function AddAsset({
               updatedBy: userEmail,
               userConfirmed: true,
             })
-            toast.success((retryResponse as PostApiAssetToStaffEmail200).message)
+            toast.success(
+              (retryResponse as PostApiAssetToStaffEmail200).message
+            )
           } catch (retryThrown) {
             const retryErr = retryThrown as PostApiAssetToStaffEmail409
             toast.error(retryErr?.error?.message ?? 'Failed to assign asset')
           }
-          window.location.reload()
+          reloadAfterToast()
         }
       } else {
         toast.error(message)
@@ -49,7 +56,7 @@ export function AddAsset({
 
   return (
     <div className="flex flex-col gap-1.5 mt-3">
-      {asset.map((item) => (
+      {asset.map(item => (
         <div
           key={item.id}
           className={`flex items-center gap-3 px-3 py-2 bg-gray-600 border border-gray-500 rounded-md hover:border-blue/50 transition-colors duration-150 border-l-2 ${
@@ -69,14 +76,18 @@ export function AddAsset({
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="font-mono text-xs text-gray-100/60">{item.serialNumber}</span>
+              <span className="font-mono text-xs text-gray-100/60">
+                {item.serialNumber}
+              </span>
               {item.assignedTo ? (
                 <span className="flex items-center gap-1 text-xs font-mono text-orange-500 truncate">
                   <Icons.AlertTriangle className="w-3 h-3 shrink-0" />
                   {item.assignedTo}
                 </span>
               ) : (
-                <span className="text-xs font-mono text-gray-100/30 italic">Unassigned</span>
+                <span className="text-xs font-mono text-gray-100/30 italic">
+                  Unassigned
+                </span>
               )}
             </div>
           </div>

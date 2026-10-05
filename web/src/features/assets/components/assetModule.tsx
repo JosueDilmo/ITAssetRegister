@@ -1,19 +1,19 @@
 'use client'
 import { normalizeAssetData } from '@/features/assets/actions/normalizeAssetData'
-import type { UserProps } from '@/shared/interface/index'
-import { postApiNewAsset } from '@/http/api'
-import { zodResolver } from '@hookform/resolvers/zod'
-import * as Icons from 'lucide-react'
-import { useRouter } from 'next/navigation'
-import { useForm } from 'react-hook-form'
-import { toast } from 'react-toastify'
-import { Button } from '@/shared/components/button'
-import { InputField, InputIcon, InputRoot } from '@/shared/components/input'
 import {
   ASSET_CONDITION,
   type AssetSchemaType,
   assetSchema,
 } from '@/features/assets/schemas/assetSchema'
+import { postApiNewAsset } from '@/http/api'
+import { Button } from '@/shared/components/button'
+import { InputField, InputIcon, InputRoot } from '@/shared/components/input'
+import type { UserProps } from '@/shared/interface/index'
+import { zodResolver } from '@hookform/resolvers/zod'
+import * as Icons from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { useForm } from 'react-hook-form'
+import { toast } from 'react-toastify'
 
 export function AssetModule({ userEmail, userRole, staffEmail }: UserProps) {
   const router = useRouter()
@@ -54,7 +54,7 @@ export function AssetModule({ userEmail, userRole, staffEmail }: UserProps) {
     if (result.staff) {
       toast.info(`Staff: ${result.staff}`)
     }
-    await router.push('/registration')
+    await router.push('/registration/asset')
     reset()
   }
 
