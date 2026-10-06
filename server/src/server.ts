@@ -14,11 +14,13 @@ import { errorHandler } from './errors/errorHandler.js'
 import { assetRoutes } from './features/assets/routes.js'
 import { assignmentRoutes } from './features/assignments/routes.js'
 import { hsRoutes } from './features/hs/routes.js'
+import { listProjects } from './features/hs/services/listProjects.js'
 import { licenceRoutes } from './features/licences/routes.js'
 import { meRoutes } from './features/me/routes.js'
 import { staffRoutes } from './features/staff/routes.js'
 import { ticketRoutes } from './features/tickets/routes.js'
 import { authenticate } from './hooks/authenticate.js'
+import { hsConfigured } from './hsEnv.js'
 
 const app = fastify({
   logger: {
@@ -113,4 +115,15 @@ app.register(routes, { prefix: '/api' })
 // Start the server
 app.listen({ port: env.PORT, host: '0.0.0.0' }).then(() => {
   console.log('HTTP SERVER RUNNING, ON PORT', env.PORT)
+
+  // Pre-warm the H&S project cache so the first tablet rarely waits on Graph.
+  // A failure is logged and never crashes boot.
+  if (hsConfigured) {
+    listProjects().catch(err =>
+      console.warn(
+        'hs projects pre-warm failed:',
+        err instanceof Error ? err.message : err
+      )
+    )
+  }
 })
