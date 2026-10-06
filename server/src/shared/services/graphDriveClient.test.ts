@@ -9,6 +9,7 @@ const mockFetch = vi.fn()
 vi.stubGlobal('fetch', mockFetch)
 
 import {
+  convertToPdf,
   deleteItem,
   encodePath,
   ensureFolder,
@@ -371,5 +372,95 @@ describe('deleteItem', () => {
   it('returns false on 404', async () => {
     mockFetch.mockResolvedValueOnce(graphErr(404, 'itemNotFound'))
     expect(await deleteItem('d', 'i1', { sleep })).toBe(false)
+  })
+})
+
+describe('convertToPdf', () => {
+  const PDF_URL =
+    'https://graph.microsoft.com/v1.0/drives/d/items/i1/content?format=pdf'
+  const LOCATION = 'https://masterair-my.sharepoint.com/x.pdf'
+
+  beforeEach(() => {
+    mockFetch.mockReset()
+  })
+
+  function redirect(location?: string, status = 302) {
+    return new Response(null, {
+      status,
+      headers: location ? { location } : {},
+    })
+  }
+
+  it('requests ?format=pdf with redirect manual, then fetches the Location with no headers', async () => {
+    mockFetch
+      .mockResolvedValueOnce(redirect(LOCATION))
+      .mockResolvedValueOnce(new Response('%PDF-1.7 body', { status: 200 }))
+    const out = await convertToPdf('d', 'i1', { sleep })
+    expect(out.viaRedirect).toBe(true)
+    expect(out.pdf.subarray(0, 4).toString('latin1')).toBe('%PDF')
+    expect(out.elapsedMs).toBeGreaterThanOrEqual(0)
+
+    const [firstUrl, firstInit] = mockFetch.mock.calls[0]
+    expect(firstUrl).toBe(PDF_URL)
+    expect(firstInit.redirect).toBe('manual')
+
+    const [secondUrl, secondInit] = mockFetch.mock.calls[1]
+    expect(secondUrl).toBe(LOCATION)
+    expect(secondInit.headers).toBeUndefined()
+    expect(JSON.stringify(secondInit)).not.toMatch(/authorization|bearer/i)
+  })
+
+  it('accepts a direct 200 PDF body', async () => {
+    mockFetch.mockResolvedValueOnce(new Response('%PDF-1.4 x', { status: 200 }))
+    const out = await convertToPdf('d', 'i1', { sleep })
+    expect(out.viaRedirect).toBe(false)
+    expect(mockFetch).toHaveBeenCalledTimes(1)
+  })
+
+  it.each([
+    ['a zip (PK) body', 'PK\u0003\u0004zip'],
+    ['an empty body', ''],
+  ])('throws invalidPdf for %s', async (_label, body) => {
+    mockFetch.mockResolvedValueOnce(new Response(body, { status: 200 }))
+    const err = await convertToPdf('d', 'i1', { sleep }).catch(e => e)
+    expect(err).toBeInstanceOf(GraphError)
+    expect(err.code).toBe('invalidPdf')
+  })
+
+  it('throws invalidPdf when the redirected body is not a PDF', async () => {
+    mockFetch
+      .mockResolvedValueOnce(redirect(LOCATION))
+      .mockResolvedValueOnce(new Response('', { status: 200 }))
+    const err = await convertToPdf('d', 'i1', { sleep }).catch(e => e)
+    expect(err.code).toBe('invalidPdf')
+  })
+
+  it('refuses a non-https Location without fetching it', async () => {
+    mockFetch.mockResolvedValueOnce(
+      redirect('http://masterair-my.sharepoint.com/x.pdf')
+    )
+    await expect(convertToPdf('d', 'i1', { sleep })).rejects.toThrow()
+    expect(mockFetch).toHaveBeenCalledTimes(1)
+  })
+
+  it('throws on a redirect without Location', async () => {
+    mockFetch.mockResolvedValueOnce(redirect(undefined))
+    await expect(convertToPdf('d', 'i1', { sleep })).rejects.toThrow()
+    expect(mockFetch).toHaveBeenCalledTimes(1)
+  })
+
+  it('throws when the Location fetch is not ok', async () => {
+    mockFetch
+      .mockResolvedValueOnce(redirect(LOCATION))
+      .mockResolvedValueOnce(new Response('', { status: 500 }))
+    await expect(convertToPdf('d', 'i1', { sleep })).rejects.toThrow()
+  })
+
+  it('surfaces a 403 as GraphError status 403 for the D-12 fallback decision', async () => {
+    mockFetch.mockResolvedValueOnce(graphErr(403, 'accessDenied'))
+    const err = await convertToPdf('d', 'i1', { sleep }).catch(e => e)
+    expect(err).toBeInstanceOf(GraphError)
+    expect(err.status).toBe(403)
+    expect(err.code).toBe('accessDenied')
   })
 })

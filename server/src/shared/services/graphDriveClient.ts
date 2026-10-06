@@ -248,3 +248,52 @@ export async function deleteItem(
     throw err
   }
 }
+
+const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308])
+
+/**
+ * Converts a drive item to PDF via Graph (?format=pdf). Graph answers with a
+ * redirect to a pre-authenticated URL; that URL is fetched with NO headers because
+ * sending the bearer to another host would leak it. Only a non-empty body that
+ * starts with %PDF is accepted.
+ */
+export async function convertToPdf(
+  driveId: string,
+  itemId: string,
+  opts: GraphFetchOptions & { timeoutMs?: number } = {}
+): Promise<{ pdf: Buffer; viaRedirect: boolean; elapsedMs: number }> {
+  const started = performance.now()
+  const signal = AbortSignal.timeout(opts.timeoutMs ?? 60_000)
+
+  let res = await graphFetch(
+    `${GRAPH_BASE}/drives/${encodeURIComponent(driveId)}/items/${encodeURIComponent(itemId)}/content?format=pdf`,
+    { redirect: 'manual', signal },
+    opts
+  )
+
+  let viaRedirect = false
+  if (REDIRECT_STATUSES.has(res.status)) {
+    const location = res.headers.get('location')
+    if (!location) throw new Error('convertToPdf: redirect without Location')
+    let target: URL
+    try {
+      target = new URL(location)
+    } catch {
+      throw new Error('convertToPdf: invalid redirect Location')
+    }
+    if (target.protocol !== 'https:') {
+      throw new Error('convertToPdf: refusing non-https redirect Location')
+    }
+    viaRedirect = true
+    res = await fetch(target.toString(), { signal })
+    if (!res.ok) {
+      throw new GraphError(res.status, 'pdfDownloadFailed', null, false)
+    }
+  }
+
+  const pdf = Buffer.from(await res.arrayBuffer())
+  if (pdf.length === 0 || pdf.subarray(0, 4).toString('latin1') !== '%PDF') {
+    throw new GraphError(res.status, 'invalidPdf', null, false)
+  }
+  return { pdf, viaRedirect, elapsedMs: performance.now() - started }
+}
