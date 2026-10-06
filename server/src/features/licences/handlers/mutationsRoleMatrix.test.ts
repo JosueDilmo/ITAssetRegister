@@ -92,7 +92,7 @@ const cases: Case[] = [
 
 async function buildApp(
   plugin: never,
-  user?: { email: string; role: string }
+  user?: { email: string; role: string; roles?: string[] }
 ) {
   const app = fastify().withTypeProvider<ZodTypeProvider>()
   app.setValidatorCompiler(validatorCompiler)
@@ -100,6 +100,8 @@ async function buildApp(
   app.setErrorHandler(errorHandler)
   app.addHook('onRequest', async request => {
     request.user = user
+      ? { ...user, roles: user.roles ?? [user.role] }
+      : undefined
   })
   await app.register(plugin)
   await app.ready()
@@ -111,7 +113,11 @@ describe.each(cases)('$name admin-only mutation', c => {
     vi.clearAllMocks()
   })
 
-  async function setup(user?: { email: string; role: string }) {
+  async function setup(user?: {
+    email: string
+    role: string
+    roles?: string[]
+  }) {
     const { plugin, service } = await c.load()
     service.mockResolvedValue({
       ...ok,
@@ -137,7 +143,14 @@ describe.each(cases)('$name admin-only mutation', c => {
     await app.close()
   })
 
-  it.each(['viewer', 'staff', 'hr', 'hs_officer', 'dept_manager'])(
+  it.each([
+    'viewer',
+    'staff',
+    'hr',
+    'hs_officer',
+    'dept_manager',
+    'site_supervisor',
+  ])(
     '%s gets 403 AUTHORIZATION_ERROR and the service is not called',
     async role => {
       const { app, service } = await setup({
