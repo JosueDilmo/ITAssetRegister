@@ -56,6 +56,25 @@ export class ConflictError extends AppError {
   }
 }
 
+// For 503 Service Unavailable - an upstream dependency (e.g. Graph) failed
+export class ExternalServiceError extends AppError {
+  constructor(message: string) {
+    super(message, 503, 'EXTERNAL_SERVICE_ERROR', null)
+  }
+}
+
+// For 503 Service Unavailable - H&S SharePoint env group is not set (D-24)
+export class HsNotConfiguredError extends AppError {
+  constructor() {
+    super(
+      'H&S SharePoint access is not configured on this server.',
+      503,
+      'HS_NOT_CONFIGURED',
+      null
+    )
+  }
+}
+
 // For 500 Internal Server Error - unexpected errors
 export class DatabaseError extends AppError {
   constructor(message: string, details?: unknown) {
