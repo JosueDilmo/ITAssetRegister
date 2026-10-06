@@ -5,10 +5,13 @@ import {
   ensureFolder,
   getItem,
   getItemByPath,
+  listChildren,
+  putFile,
 } from '../../../shared/services/graphDriveClient.js'
 import { GraphError } from '../../../shared/services/graphFetch.js'
 import { renderPdf } from '../../../shared/services/renderPdf.js'
 import type { SharePointTargets } from '../config/sharePointTargets.js'
+import { findHsFolder } from './hsFolder.js'
 
 /**
  * D-07 Graph smoke run: orchestration, report model and markdown rendering.
@@ -27,6 +30,10 @@ export const BROAD_SCOPES = [
   'Sites.Manage.All',
   'Sites.FullControl.All',
 ] as const
+
+// A real-style project folder name (D-20b): spaces, dots, '&', apostrophe and a
+// double space. Proves such names round-trip through create and list.
+const REAL_NAME_PROBE = "PR9999 Test & Co. St. Andrew's  Double"
 
 export function smokeFolderName(runId: string): string {
   return `_hs-smoke-${runId}`
@@ -165,6 +172,16 @@ export async function runSmoke(opts: SmokeOptions): Promise<SmokeReport> {
     return folder
   }
 
+  let rootChildren: DriveItemRef[] | undefined
+  async function loadRootChildren(rootId: string): Promise<DriveItemRef[]> {
+    rootChildren ??= await listChildren(
+      me.driveId,
+      { itemId: rootId },
+      { top: 200 }
+    )
+    return rootChildren
+  }
+
   async function step<T>(
     target: SmokeTarget,
     name: string,
@@ -252,7 +269,87 @@ export async function runSmoke(opts: SmokeOptions): Promise<SmokeReport> {
             `PDF ${out.pdf.length} bytes in ${Math.round(out.elapsedMs)} ms via route ${out.route}`
           )
         })
+
+        // D-20b names probe: real-style folder name, upload by id, and the
+        // 1. Cons/5. H&S chain beneath it (D-20d detection).
+        const named = await step(
+          'M&E',
+          'real-style folder name round trip',
+          true,
+          async () => {
+            assertOwnParent(me.driveId, smoke.id)
+            const folder = await ensureFolder(
+              me.driveId,
+              smoke.id,
+              REAL_NAME_PROBE
+            )
+            register(me.driveId, folder, 'folder', REAL_NAME_PROBE)
+            const listed = await listChildren(me.driveId, {
+              itemId: smoke.id,
+            })
+            const found = listed.some(c => c.name === REAL_NAME_PROBE)
+            return found
+              ? good('listing returned the identical name', folder)
+              : bad('listing did not return the identical name', folder)
+          }
+        )
+
+        if (named) {
+          await step('M&E', 'upload probe file by id', false, async () => {
+            assertOwnParent(me.driveId, named.id)
+            const file = await putFile({
+              driveId: me.driveId,
+              parentItemId: named.id,
+              fileName: 'probe.txt',
+              content: Buffer.from('hs smoke probe'),
+              contentType: 'text/plain',
+              conflictBehavior: 'fail',
+            })
+            register(me.driveId, file, 'file', 'probe.txt')
+            return good('uploaded probe.txt by parent id')
+          })
+
+          await step(
+            'M&E',
+            'detect 1. Cons/5. H&S (D-20d)',
+            false,
+            async () => {
+              let parent = named
+              for (const name of me.projectHsPath.split('/')) {
+                assertOwnParent(me.driveId, parent.id)
+                parent = await ensureFolder(me.driveId, parent.id, name)
+                register(me.driveId, parent, 'folder', name)
+              }
+              const withHs = await findHsFolder(named.id, targets)
+              const without = await findHsFolder(smoke.id, targets)
+              const ok = withHs !== null && without === null
+              return {
+                ok,
+                detail: `with chain: ${withHs ? 'found' : 'null'}; without chain: ${without ? 'found' : 'null'}`,
+              }
+            }
+          )
+        }
       }
+    }
+
+    // ---- Audit (read-only, opt-in; D-20c) ----------------------------------
+    if (opts.auditHsFolders) {
+      await step('Audit', 'projects with 1. Cons/5. H&S', false, async () => {
+        if (!meRoot) return bad('projects root unavailable')
+        const children = await loadRootChildren(meRoot.id)
+        const projects = children.filter(c => c.folder && /^PR/i.test(c.name))
+        const audit = { withHsFolder: 0, withoutHsFolder: [] as string[] }
+        report.audit = audit
+        for (const project of projects) {
+          if (signal?.aborted) break
+          if (await findHsFolder(project.id, targets)) audit.withHsFolder++
+          else audit.withoutHsFolder.push(project.name)
+        }
+        return good(
+          `${audit.withHsFolder} of ${projects.length} open PR projects have ${me.projectHsPath}`
+        )
+      })
     }
   } finally {
     await cleanup()
@@ -280,6 +377,18 @@ export function renderSmokeMarkdown(report: SmokeReport): string {
     lines.push(
       `| ${cell(s.target)} | ${cell(s.step)} | ${ok} | ${cell(s.detail)} |`
     )
+  }
+  if (report.audit) {
+    const total =
+      report.audit.withHsFolder + report.audit.withoutHsFolder.length
+    lines.push('')
+    lines.push(
+      `1. Cons/5. H&S present: ${report.audit.withHsFolder} of ${total}`
+    )
+    if (report.audit.withoutHsFolder.length > 0) {
+      lines.push('Without it:')
+      for (const name of report.audit.withoutHsFolder) lines.push(`- ${name}`)
+    }
   }
   lines.push('')
   const leftovers =
