@@ -25,8 +25,16 @@ export async function getGraphAccessToken(): Promise<string> {
     throw new Error(`Graph token fetch failed: ${res.status} ${text}`)
   }
 
-  const data = (await res.json()) as { access_token: string; expires_in: number }
+  const data = (await res.json()) as {
+    access_token: string
+    expires_in: number
+  }
   cachedToken = data.access_token
   tokenExpiresAt = Date.now() + data.expires_in * 1000
   return cachedToken
+}
+
+export function clearGraphTokenCache(): void {
+  cachedToken = null
+  tokenExpiresAt = 0
 }
