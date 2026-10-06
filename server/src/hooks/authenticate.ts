@@ -1,5 +1,5 @@
-import { jwtDecrypt } from 'jose'
 import type { FastifyReply, FastifyRequest } from 'fastify'
+import { jwtDecrypt } from 'jose'
 import { env } from '../env.js'
 import { AuthenticationError, ERROR_MESSAGES } from '../errors/index.js'
 
@@ -8,13 +8,17 @@ declare module 'fastify' {
     user?: {
       email: string
       role: string
+      roles: string[]
     }
   }
 }
 
 const COOKIE_NAME = 'authjs.session-token'
 
-async function deriveEncryptionKey(secret: string, salt: string): Promise<Uint8Array> {
+async function deriveEncryptionKey(
+  secret: string,
+  salt: string
+): Promise<Uint8Array> {
   const encoder = new TextEncoder()
   const keyMaterial = await crypto.subtle.importKey(
     'raw',
@@ -72,7 +76,20 @@ export async function authenticate(
       throw new AuthenticationError(ERROR_MESSAGES.INVALID_TOKEN)
     }
 
-    request.user = { email, role }
+    const rawRoles: unknown = payload.roles
+    const decodedRoles = Array.isArray(rawRoles)
+      ? [
+          ...new Set(
+            rawRoles.filter(
+              (entry): entry is string =>
+                typeof entry === 'string' && entry.length > 0
+            )
+          ),
+        ]
+      : []
+    const roles = decodedRoles.length > 0 ? decodedRoles : [role]
+
+    request.user = { email, role, roles }
   } catch (error) {
     if (error instanceof AuthenticationError) throw error
     throw new AuthenticationError(ERROR_MESSAGES.INVALID_TOKEN)
