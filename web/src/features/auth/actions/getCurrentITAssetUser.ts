@@ -9,6 +9,7 @@ export async function getCurrentITAssetUser() {
   const user = {
     id: session.user?.id,
     role: session.user?.role,
+    roles: session.user?.roles,
     email: session.user?.email,
     name: session.user?.name,
     image: session.user?.image,
