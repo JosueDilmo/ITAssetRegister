@@ -2,11 +2,28 @@ import { requireHsRoleOrRedirect } from '@/features/auth/actions/requireHsRoleOr
 import { ProjectPicker } from '@/features/hs/components/ProjectPicker'
 import { Menu } from '@/features/nav/components/menu'
 import { getApiHsProjects } from '@/http/api'
+import Link from 'next/link'
+
+const NOT_CONFIGURED =
+  'H&S SharePoint access is not configured on the server. Contact IT.'
+const UNREACHABLE =
+  'SharePoint is unreachable and no saved project list is available yet. Try again in a few minutes.'
+
+// customFetch throws the parsed JSON body, so a failure carries error.code.
+function errorCode(err: unknown): string | undefined {
+  return (err as { error?: { code?: string } } | null)?.error?.code
+}
 
 export default async function NewPermitPage() {
   await requireHsRoleOrRedirect()
 
-  const data = await getApiHsProjects().catch(() => null)
+  let data: Awaited<ReturnType<typeof getApiHsProjects>> | null = null
+  let failureCode: string | undefined
+  try {
+    data = await getApiHsProjects()
+  } catch (err) {
+    failureCode = errorCode(err)
+  }
 
   // Formatted on the server so client hydration cannot disagree (D-17).
   const cachedAtLabel = data
@@ -26,12 +43,26 @@ export default async function NewPermitPage() {
             New W@H permit
           </h1>
           <p className="text-gray-100">Step 1: choose the project</p>
-          {data && (
+          {data ? (
             <ProjectPicker
               projects={data.projects}
               stale={data.stale}
               cachedAtLabel={cachedAtLabel}
             />
+          ) : (
+            <div className="flex flex-col gap-4 border border-red text-red rounded p-4">
+              <p>
+                {failureCode === 'HS_NOT_CONFIGURED'
+                  ? NOT_CONFIGURED
+                  : UNREACHABLE}
+              </p>
+              <Link
+                href="/hs/new"
+                className="inline-flex items-center min-h-12 self-start px-6 rounded border border-blue text-blue hover:bg-gray-700"
+              >
+                Try again
+              </Link>
+            </div>
           )}
         </div>
       </main>
