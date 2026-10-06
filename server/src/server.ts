@@ -13,6 +13,7 @@ import { env } from './env.js'
 import { errorHandler } from './errors/errorHandler.js'
 import { assetRoutes } from './features/assets/routes.js'
 import { assignmentRoutes } from './features/assignments/routes.js'
+import { hsRoutes } from './features/hs/routes.js'
 import { licenceRoutes } from './features/licences/routes.js'
 import { meRoutes } from './features/me/routes.js'
 import { staffRoutes } from './features/staff/routes.js'
@@ -73,6 +74,10 @@ if (env.NODE_ENV === 'development') {
           name: 'Licences',
           description: 'Licence CRUD, search, and staff assignment operations',
         },
+        {
+          name: 'H&S',
+          description: 'H&S permits: project picker (Phase 3)',
+        },
       ],
       components: {
         securitySchemes: {
@@ -100,6 +105,7 @@ async function routes(app: FastifyInstance) {
   app.register(ticketRoutes)
   app.register(licenceRoutes)
   app.register(meRoutes)
+  app.register(hsRoutes)
 }
 
 app.register(routes, { prefix: '/api' })
