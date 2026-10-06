@@ -2,15 +2,20 @@
 // Role meanings:
 // - admin: full access to all modules
 // - hr: Training Hub management (future phase)
-// - hs_officer: H&S module management (future phase)
+// - hs_officer: H&S module management and permit approval
 // - dept_manager: department-scoped views (future phase)
+// - site_supervisor: raises H&S permits for projects
 // - staff: default for users with no app role assignment (read-only)
+//
+// ROLE_PRIORITY only drives the single display badge. Access decisions
+// (module visibility, /hs guard) always use the full roles array (D-02).
 
 export const ROLES = {
   ADMIN: 'admin',
   HR: 'hr',
   HS_OFFICER: 'hs_officer',
   DEPT_MANAGER: 'dept_manager',
+  SITE_SUPERVISOR: 'site_supervisor',
   STAFF: 'staff',
 } as const
 
@@ -22,7 +27,15 @@ export const ROLE_PRIORITY: Role[] = [
   ROLES.HR,
   ROLES.HS_OFFICER,
   ROLES.DEPT_MANAGER,
+  ROLES.SITE_SUPERVISOR,
   ROLES.STAFF,
+]
+
+// Roles allowed into the H&S Permits module
+export const HS_ROLES: Role[] = [
+  ROLES.SITE_SUPERVISOR,
+  ROLES.HS_OFFICER,
+  ROLES.ADMIN,
 ]
 
 export function highestRole(roles: string[]): Role {

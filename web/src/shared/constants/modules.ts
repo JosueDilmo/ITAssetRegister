@@ -1,4 +1,4 @@
-import { ROLES, type Role } from '@/shared/lib/roles'
+import { HS_ROLES, ROLES, type Role } from '@/shared/lib/roles'
 
 export type ModuleStatus = 'live' | 'coming_soon'
 
@@ -106,11 +106,12 @@ export const MODULES: ModuleDef[] = [
   },
   {
     id: 'hs',
-    name: 'Health & Safety',
-    description: 'Inductions, RAMS sign-off and accident reporting',
+    name: 'H&S Permits',
+    description: 'Work at height permits: raise, approve and file',
     icon: 'ShieldCheck',
-    href: '#',
-    status: 'coming_soon',
+    href: '/hs',
+    status: 'live',
+    roles: HS_ROLES,
   },
 ]
 
