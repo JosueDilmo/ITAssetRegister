@@ -36,7 +36,11 @@ const serviceResult = {
   ],
 }
 
-async function buildApp(user?: { email: string; role: string }) {
+async function buildApp(user?: {
+  email: string
+  role: string
+  roles?: string[]
+}) {
   const app = fastify().withTypeProvider<ZodTypeProvider>()
   app.setValidatorCompiler(validatorCompiler)
   app.setSerializerCompiler(serializerCompiler)
@@ -44,6 +48,8 @@ async function buildApp(user?: { email: string; role: string }) {
   // Stand-in for the real authenticate hook: sets request.user for the test.
   app.addHook('onRequest', async request => {
     request.user = user
+      ? { ...user, roles: user.roles ?? [user.role] }
+      : undefined
   })
   const { getLicenceById } = await import('./getById.js')
   await app.register(getLicenceById)
@@ -70,7 +76,46 @@ describe('GET /licenceWithId/:id admin-only access', () => {
     await app.close()
   })
 
-  it.each(['staff', 'viewer', 'hr', 'hs_officer', 'dept_manager'])(
+  it('returns the real licenceKey to a multi-role admin', async () => {
+    const app = await buildApp({
+      email: 'a@mastertech.ie',
+      role: 'admin',
+      roles: ['hs_officer', 'admin'],
+    })
+    const response = await app.inject({
+      method: 'GET',
+      url: `/licenceWithId/${LICENCE_ID}`,
+    })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.json().licence[0].licenceKey).toBe('AAAA-BBBB-CCCC-DDDD')
+    await app.close()
+  })
+
+  it('decides from roles, not the badge: role hr with roles [hr, admin] sees the key', async () => {
+    const app = await buildApp({
+      email: 'a@mastertech.ie',
+      role: 'hr',
+      roles: ['hr', 'admin'],
+    })
+    const response = await app.inject({
+      method: 'GET',
+      url: `/licenceWithId/${LICENCE_ID}`,
+    })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.json().licence[0].licenceKey).toBe('AAAA-BBBB-CCCC-DDDD')
+    await app.close()
+  })
+
+  it.each([
+    'staff',
+    'viewer',
+    'hr',
+    'hs_officer',
+    'dept_manager',
+    'site_supervisor',
+  ])(
     '%s gets 403 AUTHORIZATION_ERROR, no licence key, and the service is not called',
     async role => {
       const { getById } = await import('../services/getById.js')
