@@ -11,11 +11,36 @@ import { ZodError } from 'zod'
 
 const DEFAULT_DOCX = '../docs/design/hs-templates/PM005-W@H Permit v02.docx'
 
+const HS_OPTIONAL_KEYS = [
+  'HS_ME_PROJECTS_ROOT',
+  'HS_ME_PROJECT_HS_PATH',
+  'HS_ME_PERMITS_FOLDER',
+  'HS_QHSE_PREAPPROVED_ROOT',
+  'HS_QHSE_CONTROL_ROOT',
+] as const
+
 function printZodPaths(err: ZodError): void {
   // Variable names only: never values (T-03-24).
   const paths = [...new Set(err.issues.map(i => i.path.join('.') || '(root)'))]
   console.error('Environment configuration is invalid. Check these variables:')
   for (const path of paths) console.error(`  ${path}`)
+}
+
+function isSet(name: string): boolean {
+  return (process.env[name] ?? '').trim() !== ''
+}
+
+/** Prints set/unset per HS variable (never values); 0 only when configured. */
+async function checkConfig(): Promise<number> {
+  const { HS_REQUIRED_KEYS, hsConfigured } = await import('../../src/hsEnv.js')
+  for (const name of [...HS_REQUIRED_KEYS, ...HS_OPTIONAL_KEYS]) {
+    console.log(`${name}: ${isSet(name) ? 'set' : 'unset'}`)
+  }
+  if (!hsConfigured) {
+    console.error('H&S SharePoint env group is not configured.')
+    return 1
+  }
+  return 0
 }
 
 async function main(): Promise<number> {
@@ -29,6 +54,18 @@ async function main(): Promise<number> {
     },
     strict: true,
   })
+
+  if (values['check-config']) {
+    try {
+      return await checkConfig()
+    } catch (err) {
+      if (err instanceof ZodError) {
+        printZodPaths(err)
+        return 2
+      }
+      throw err
+    }
+  }
 
   const docxPath = resolve(process.cwd(), values.file ?? DEFAULT_DOCX)
   let docxBytes: Buffer
@@ -49,6 +86,7 @@ async function main(): Promise<number> {
   let targets: import(
     '../../src/features/hs/config/sharePointTargets.js'
   ).SharePointTargets
+  let tickets: { siteId: string; driveId: string } | null = null
   try {
     // Dynamic imports: the env modules throw on a partial HS group, so they
     // are loaded inside this try to report variable names only.
@@ -64,6 +102,13 @@ async function main(): Promise<number> {
         return 2
       }
       throw err
+    }
+    if (values['tickets-probe']) {
+      const { env } = await import('../../src/env.js')
+      tickets = {
+        siteId: env.SHAREPOINT_SITE_ID,
+        driveId: env.SHAREPOINT_DRIVE_ID,
+      }
     }
     ;({ runSmoke, renderSmokeMarkdown } = await import(
       '../../src/features/hs/services/graphSmoke.js'
@@ -86,6 +131,9 @@ async function main(): Promise<number> {
     targets,
     docx: { bytes: docxBytes, fileName: basename(docxPath) },
     signal: controller.signal,
+    auditHsFolders: values['audit-hs-folders'],
+    expectSelectedOnly: values['expect-selected-only'],
+    tickets,
     log: line => console.error(line),
   })
 
