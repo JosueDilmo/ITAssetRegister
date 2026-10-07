@@ -26,7 +26,13 @@ vi.mock('next/link', () => ({
 import { ModuleDashboard } from '@/features/home/components/ModuleDashboard'
 import { Menu } from '@/features/nav/components/menu'
 import { MODULES, moduleHref, visibleModules } from '@/shared/constants/modules'
-import { HS_ROLES, ROLE_PRIORITY, highestRole } from '@/shared/lib/roles'
+import {
+  HS_ROLES,
+  ROLE_LABELS,
+  ROLE_PRIORITY,
+  highestRole,
+  roleLabel,
+} from '@/shared/lib/roles'
 
 describe('roles', () => {
   it('maps a lone site_supervisor to site_supervisor, not staff (D-01)', () => {
@@ -58,6 +64,35 @@ describe('roles', () => {
   it('exposes HS_ROLES as site_supervisor, hs_officer, admin', () => {
     expect(HS_ROLES).toEqual(['site_supervisor', 'hs_officer', 'admin'])
   })
+
+  it.each([
+    ['admin', 'Admin'],
+    ['hr', 'HR'],
+    ['hs_officer', 'H&S Officer'],
+    ['dept_manager', 'Department Manager'],
+    ['site_supervisor', 'Site Supervisor'],
+    ['staff', 'Staff'],
+  ])('roleLabel maps %s to %s', (role, label) => {
+    expect(roleLabel(role)).toBe(label)
+  })
+
+  it('has a label for exactly the roles in ROLE_PRIORITY', () => {
+    expect(Object.keys(ROLE_LABELS).sort()).toEqual([...ROLE_PRIORITY].sort())
+  })
+
+  it.each([['viewer'], ['unknown'], ['']])(
+    'roleLabel returns unknown value %j unchanged',
+    role => {
+      expect(roleLabel(role)).toBe(role)
+    }
+  )
+
+  it.each([['constructor'], ['toString'], ['__proto__']])(
+    'roleLabel returns inherited key %s unchanged',
+    role => {
+      expect(roleLabel(role)).toBe(role)
+    }
+  )
 })
 
 describe('H&S Permits module registry', () => {
@@ -99,6 +134,24 @@ describe('H&S Permits in the sidebar', () => {
     expect(screen.queryByText('site_supervisor')).not.toBeInTheDocument()
     const link = screen.getByText('H&S Permits').closest('a')
     expect(link).toHaveAttribute('href', '/hs')
+  })
+
+  it('falls back to the raw value for a legacy viewer role badge', async () => {
+    auth.mockResolvedValue({
+      user: { name: 'N', role: 'viewer', roles: ['viewer'] },
+    })
+    render(await Menu())
+    const badge = screen.getByText('viewer')
+    expect(badge).toBeInTheDocument()
+    expect(badge).not.toHaveClass('uppercase')
+  })
+
+  it('keeps the all-caps class on the MasterTech Hub label', async () => {
+    auth.mockResolvedValue({
+      user: { name: 'N', role: 'staff', roles: ['staff'] },
+    })
+    render(await Menu())
+    expect(screen.getByText('MasterTech Hub')).toHaveClass('uppercase')
   })
 
   it('hides H&S Permits from staff everywhere', async () => {
