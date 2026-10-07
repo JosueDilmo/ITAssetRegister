@@ -3,6 +3,7 @@ import { NavGroup } from '@/features/nav/components/navGroup'
 import { NavLink } from '@/features/nav/components/navLink'
 import { visibleModules, visibleNavGroups } from '@/shared/constants/modules'
 import { auth } from '@/shared/lib/auth'
+import { roleLabel } from '@/shared/lib/roles'
 import * as Icons from 'lucide-react'
 import { redirect } from 'next/navigation'
 import { ToastContainer } from 'react-toastify'
@@ -34,8 +35,8 @@ export async function Menu() {
           MasterTech Hub
         </p>
         <p className="text-sm text-gray-100 truncate font-medium">{userName}</p>
-        <span className="inline-block mt-1.5 px-2 py-0.5 text-xs font-mono uppercase tracking-widest border border-blue text-blue rounded">
-          {userRole}
+        <span className="inline-block mt-1.5 px-2 py-0.5 text-xs font-mono tracking-widest border border-blue text-blue rounded">
+          {roleLabel(userRole ?? '')}
         </span>
       </div>
       <nav className="flex-1 flex flex-col gap-0.5 p-2 overflow-y-auto">

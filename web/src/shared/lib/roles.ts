@@ -31,6 +31,23 @@ export const ROLE_PRIORITY: Role[] = [
   ROLES.STAFF,
 ]
 
+// Display names for the sidebar badge. Like ROLE_PRIORITY, labels are display
+// only; access decisions use the full roles array (D-02).
+export const ROLE_LABELS: Record<Role, string> = {
+  admin: 'Admin',
+  hr: 'HR',
+  hs_officer: 'H&S Officer',
+  dept_manager: 'Department Manager',
+  site_supervisor: 'Site Supervisor',
+  staff: 'Staff',
+}
+
+// Unknown values (legacy 'viewer', inherited keys such as 'constructor', '')
+// come back unchanged.
+export function roleLabel(role: string): string {
+  return Object.hasOwn(ROLE_LABELS, role) ? ROLE_LABELS[role as Role] : role
+}
+
 // Roles allowed into the H&S Permits module
 export const HS_ROLES: Role[] = [
   ROLES.SITE_SUPERVISOR,

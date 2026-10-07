@@ -88,12 +88,15 @@ describe('H&S Permits module registry', () => {
 describe('H&S Permits in the sidebar', () => {
   beforeEach(() => vi.clearAllMocks())
 
-  it('shows the site_supervisor badge and the H&S Permits link', async () => {
+  it('shows the Site Supervisor badge and the H&S Permits link', async () => {
     auth.mockResolvedValue({
       user: { name: 'N', role: 'site_supervisor', roles: ['site_supervisor'] },
     })
     render(await Menu())
-    expect(screen.getByText('site_supervisor')).toBeInTheDocument()
+    const badge = screen.getByText('Site Supervisor')
+    expect(badge).toBeInTheDocument()
+    expect(badge).not.toHaveClass('uppercase')
+    expect(screen.queryByText('site_supervisor')).not.toBeInTheDocument()
     const link = screen.getByText('H&S Permits').closest('a')
     expect(link).toHaveAttribute('href', '/hs')
   })
@@ -107,7 +110,7 @@ describe('H&S Permits in the sidebar', () => {
     expect(screen.queryByText('Health & Safety')).not.toBeInTheDocument()
   })
 
-  it('shows one badge (dept_manager) and still the module for site_supervisor+dept_manager (D-02)', async () => {
+  it('shows one badge (Department Manager) and still the module for site_supervisor+dept_manager (D-02)', async () => {
     auth.mockResolvedValue({
       user: {
         name: 'N',
@@ -116,8 +119,9 @@ describe('H&S Permits in the sidebar', () => {
       },
     })
     render(await Menu())
-    expect(screen.getByText('dept_manager')).toBeInTheDocument()
-    expect(screen.queryByText('site_supervisor')).not.toBeInTheDocument()
+    expect(screen.getByText('Department Manager')).toBeInTheDocument()
+    expect(screen.queryByText('Site Supervisor')).not.toBeInTheDocument()
+    expect(screen.queryByText('dept_manager')).not.toBeInTheDocument()
     expect(screen.getByText('H&S Permits').closest('a')).toHaveAttribute(
       'href',
       '/hs'
