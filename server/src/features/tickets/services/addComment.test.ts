@@ -59,6 +59,43 @@ describe('addComment', () => {
     expect(callArgs.to).toBe('staff@mastertech.ie')
     expect(callArgs.subject).toContain('[TKT-0003]')
     expect(callArgs.htmlBody).toContain('Try restarting the VPN client.')
+    expect(callArgs.htmlBody).toContain('https://app.example.com/support')
+    expect(callArgs.htmlBody).not.toContain('/tickets/')
+  })
+
+  it('escapes HTML in the comment body of the notification email', async () => {
+    vi.resetModules()
+    vi.clearAllMocks()
+    const { db } = await import('../../../drizzle/client.js')
+    const { sendMail } = await import('../../../shared/services/graphMailClient.js')
+
+    vi.mocked(db.select).mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([{
+          id: 'ticket-uuid-1', ticketNumber: 3, subject: 'VPN issue',
+          requesterEmail: 'staff@mastertech.ie',
+        }]),
+      }),
+    } as any)
+
+    vi.mocked(db.insert).mockReturnValue({
+      values: vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([{ id: 'comment-uuid-2' }]),
+      }),
+    } as any)
+
+    const { addComment } = await import('./addComment.js')
+    await addComment({
+      ticketId: 'ticket-uuid-1',
+      authorEmail: 'agent@mastertech.ie',
+      body: '<a href="https://evil.example">click</a>\nline two',
+    })
+
+    const html = vi.mocked(sendMail).mock.calls[0][0].htmlBody
+    expect(html).not.toContain('<a href="https://evil.example">')
+    expect(html).toContain('&#x3C;a href=')
+    expect(html).toContain('line two')
+    expect(html).toContain('<br/>line two')
   })
 
   it('does not send notification email when source is "email"', async () => {

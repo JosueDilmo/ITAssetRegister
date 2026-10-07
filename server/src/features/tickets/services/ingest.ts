@@ -156,7 +156,7 @@ export async function ingestTicket({
       <strong>Subject:</strong> ${subject}</p>
       <p><strong>Description:</strong><br/>${he.encode(cleanDescription).replace(/\n/g, '<br/>')}</p>
       ${attachmentLinksHtml}
-      <p>You can track your ticket at: <a href="${env.APP_BASE_URL}/tickets/${ticket.id}">${env.APP_BASE_URL}/tickets/${ticket.id}</a></p>
+      <p>You can track your ticket at: <a href="${env.APP_BASE_URL}/support">${env.APP_BASE_URL}/support</a></p>
     `,
   })
 
