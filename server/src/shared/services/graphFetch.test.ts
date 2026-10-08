@@ -113,6 +113,50 @@ describe('graphFetch', () => {
     expect(waited).toBeLessThanOrEqual(750)
   })
 
+  it.each(['POST', 'PUT', 'PATCH'])(
+    'does not replay a %s after a 503/504 (outcome unknown)',
+    async method => {
+      for (const status of [503, 504]) {
+        mockFetch.mockReset()
+        sleep.mockClear()
+        mockFetch.mockResolvedValueOnce(new Response('', { status }))
+        const err = await graphFetch(URL_OK, { method }, { sleep }).catch(
+          e => e
+        )
+        expect(err).toBeInstanceOf(GraphError)
+        expect(err.status).toBe(status)
+        expect(err.retryable).toBe(false)
+        expect(mockFetch).toHaveBeenCalledTimes(1)
+        expect(sleep).not.toHaveBeenCalled()
+      }
+    }
+  )
+
+  it('still replays a POST after a 429 (rejected before processing)', async () => {
+    mockFetch
+      .mockResolvedValueOnce(new Response('', { status: 429 }))
+      .mockResolvedValueOnce(json({ ok: true }))
+    const res = await graphFetch(URL_OK, { method: 'POST' }, { sleep })
+    expect(res.status).toBe(200)
+    expect(mockFetch).toHaveBeenCalledTimes(2)
+  })
+
+  it('replays a DELETE after a 503', async () => {
+    mockFetch
+      .mockResolvedValueOnce(new Response('', { status: 503 }))
+      .mockResolvedValueOnce(json({ ok: true }))
+    await graphFetch(URL_OK, { method: 'DELETE' }, { sleep })
+    expect(mockFetch).toHaveBeenCalledTimes(2)
+  })
+
+  it('replays a POST after a 503 only with retryUnsafe', async () => {
+    mockFetch
+      .mockResolvedValueOnce(new Response('', { status: 503 }))
+      .mockResolvedValueOnce(json({ ok: true }))
+    await graphFetch(URL_OK, { method: 'POST' }, { sleep, retryUnsafe: true })
+    expect(mockFetch).toHaveBeenCalledTimes(2)
+  })
+
   it('throws a retryable GraphError after maxRetries throttled attempts', async () => {
     mockFetch.mockImplementation(async () => new Response('', { status: 429 }))
     const err = await graphFetch(URL_OK, {}, { sleep, maxRetries: 3 }).catch(

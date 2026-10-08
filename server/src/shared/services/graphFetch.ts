@@ -4,6 +4,7 @@ export const GRAPH_ORIGIN = 'https://graph.microsoft.com'
 export const GRAPH_BASE = `${GRAPH_ORIGIN}/v1.0`
 
 const THROTTLE_STATUSES = new Set([429, 503, 504])
+const IDEMPOTENT_METHODS = new Set(['GET', 'HEAD', 'OPTIONS', 'DELETE'])
 
 /**
  * Error raised for any failed Graph call. Holds status, Graph error code and
@@ -34,6 +35,12 @@ export interface GraphFetchOptions {
   maxRetries?: number
   maxWaitMs?: number
   sleep?: (ms: number) => Promise<void>
+  /**
+   * Replay POST/PUT/PATCH after a 503/504. Defaults to false: the gateway may
+   * have processed the write before timing out, so a replay can fail with 409
+   * or create a duplicate. 429 is always replayed (Graph rejected it unprocessed).
+   */
+  retryUnsafe?: boolean
 }
 
 /** Parses a Retry-After header (seconds or HTTP-date) into milliseconds. */
@@ -77,8 +84,10 @@ async function toGraphError(
  * Single transport for every Microsoft Graph call (app-only token).
  * - Refuses any URL outside https://graph.microsoft.com/ before a token is requested,
  *   so a foreign @odata.nextLink never receives the bearer.
- * - Retries 429/503/504 up to maxRetries, honouring Retry-After, else exponential
- *   backoff with jitter; a required wait above maxWaitMs fails fast (retryable).
+ * - Retries 429 for every method, and 503/504 only for idempotent methods
+ *   (GET/HEAD/OPTIONS/DELETE) unless opts.retryUnsafe, up to maxRetries, honouring
+ *   Retry-After, else exponential backoff with jitter; a required wait above
+ *   maxWaitMs fails fast (retryable).
  * - A 401 clears the cached token and retries once with a fresh one.
  */
 export async function graphFetch(
@@ -93,6 +102,8 @@ export async function graphFetch(
   const maxRetries = opts.maxRetries ?? 3
   const maxWaitMs = opts.maxWaitMs ?? 15_000
   const sleep = opts.sleep ?? defaultSleep
+  const method = (init.method ?? 'GET').toUpperCase()
+  const replaySafe = opts.retryUnsafe === true || IDEMPOTENT_METHODS.has(method)
 
   let attempt = 0
   let refreshed = false
@@ -113,7 +124,10 @@ export async function graphFetch(
       continue
     }
 
-    if (THROTTLE_STATUSES.has(res.status)) {
+    if (
+      THROTTLE_STATUSES.has(res.status) &&
+      (res.status === 429 || replaySafe)
+    ) {
       if (attempt >= maxRetries) throw await toGraphError(res, true)
       const wait =
         retryAfterMs(res.headers.get('retry-after')) ??
@@ -124,6 +138,7 @@ export async function graphFetch(
       continue
     }
 
+    // 503/504 on a non-idempotent write: outcome unknown, so never replay it.
     throw await toGraphError(res, false)
   }
 }
