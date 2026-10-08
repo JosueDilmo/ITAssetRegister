@@ -1,4 +1,4 @@
-import { convertToPdf, putFile } from './graphDriveClient.js'
+import { convertToPdf, deleteItem, putFile } from './graphDriveClient.js'
 import type { GraphFetchOptions } from './graphFetch.js'
 
 /**
@@ -46,11 +46,23 @@ export async function renderPdf(
     },
     opts
   )
-  const { pdf } = await convertToPdf(input.staging.driveId, staged.id, opts)
-  return {
-    pdf,
-    route: 'graph',
-    stagedItemId: staged.id,
-    elapsedMs: performance.now() - started,
+  try {
+    const { pdf } = await convertToPdf(input.staging.driveId, staged.id, opts)
+    return {
+      pdf,
+      route: 'graph',
+      stagedItemId: staged.id,
+      elapsedMs: performance.now() - started,
+    }
+  } catch (err) {
+    // The thrown error does not carry staged.id, so the caller cannot clean up.
+    // Best-effort delete here so a failed render never strands a docx in the
+    // (permanent) staging library; the original error is what the caller sees.
+    try {
+      await deleteItem(input.staging.driveId, staged.id, opts)
+    } catch {
+      // Cleanup failed too: surface the conversion error, not this one.
+    }
+    throw err
   }
 }

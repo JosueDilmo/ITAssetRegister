@@ -8,9 +8,10 @@ vi.mock('./graphAuth.js', () => ({
 vi.mock('./graphDriveClient.js', () => ({
   putFile: vi.fn(),
   convertToPdf: vi.fn(),
+  deleteItem: vi.fn(),
 }))
 
-import { convertToPdf, putFile } from './graphDriveClient.js'
+import { convertToPdf, deleteItem, putFile } from './graphDriveClient.js'
 import { GraphError } from './graphFetch.js'
 import { DOCX_MIME, renderPdf } from './renderPdf.js'
 
@@ -21,6 +22,7 @@ describe('renderPdf', () => {
   beforeEach(() => {
     vi.mocked(putFile).mockReset()
     vi.mocked(convertToPdf).mockReset()
+    vi.mocked(deleteItem).mockReset().mockResolvedValue(true)
   })
 
   it('stages the docx with rename conflict behaviour then converts it through Graph', async () => {
@@ -93,5 +95,43 @@ describe('renderPdf', () => {
     await expect(renderPdf({ docx, fileName: 'a.docx', staging })).rejects.toBe(
       err
     )
+  })
+
+  it('deletes the staged docx when conversion fails, then rethrows the original error', async () => {
+    const err = new GraphError(504, 'timeout')
+    const opts = { maxRetries: 1 }
+    vi.mocked(putFile).mockResolvedValueOnce({
+      id: 'staged9',
+      name: 'n',
+      webUrl: 'u',
+    })
+    vi.mocked(convertToPdf).mockRejectedValueOnce(err)
+    vi.mocked(deleteItem).mockResolvedValueOnce(true)
+
+    await expect(
+      renderPdf({ docx, fileName: 'a.docx', staging }, opts)
+    ).rejects.toBe(err)
+    expect(deleteItem).toHaveBeenCalledWith('d', 'staged9', opts)
+  })
+
+  it('still rethrows the conversion error when the cleanup delete also fails', async () => {
+    const err = new GraphError(403, 'accessDenied')
+    vi.mocked(putFile).mockResolvedValueOnce({
+      id: 's',
+      name: 'n',
+      webUrl: 'u',
+    })
+    vi.mocked(convertToPdf).mockRejectedValueOnce(err)
+    vi.mocked(deleteItem).mockRejectedValueOnce(new GraphError(500, 'x'))
+
+    await expect(renderPdf({ docx, fileName: 'a.docx', staging })).rejects.toBe(
+      err
+    )
+  })
+
+  it('does not delete anything on success or when the upload fails', async () => {
+    vi.mocked(putFile).mockRejectedValueOnce(new GraphError(409, 'x'))
+    await renderPdf({ docx, fileName: 'a.docx', staging }).catch(() => {})
+    expect(deleteItem).not.toHaveBeenCalled()
   })
 })
