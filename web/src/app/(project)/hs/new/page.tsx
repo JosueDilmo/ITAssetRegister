@@ -3,6 +3,7 @@ import { ProjectPicker } from '@/features/hs/components/ProjectPicker'
 import { Menu } from '@/features/nav/components/menu'
 import { getApiHsProjects } from '@/http/api'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 
 const NOT_CONFIGURED =
   'H&S SharePoint access is not configured on the server. Contact IT.'
@@ -23,7 +24,23 @@ export default async function NewPermitPage() {
     data = await getApiHsProjects()
   } catch (err) {
     failureCode = errorCode(err)
+    // Only auth, config and outage failures have a dedicated outcome below;
+    // log the cause of anything else so it is diagnosable on the web server.
+    if (
+      failureCode !== 'AUTHENTICATION_ERROR' &&
+      failureCode !== 'AUTHORIZATION_ERROR' &&
+      failureCode !== 'HS_NOT_CONFIGURED' &&
+      failureCode !== 'EXTERNAL_SERVICE_ERROR'
+    ) {
+      console.error('hs/new: project list failed', failureCode ?? 'no code')
+    }
   }
+
+  // Outside the try block: redirect() works by throwing.
+  // An expired session or unforwarded cookie: sign in again.
+  if (failureCode === 'AUTHENTICATION_ERROR') redirect('/signin')
+  // Role claim mismatch with the server guard: silent redirect home (D-06).
+  if (failureCode === 'AUTHORIZATION_ERROR') redirect('/')
 
   // Formatted on the server so client hydration cannot disagree (D-17).
   const cachedAtLabel = data
