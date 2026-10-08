@@ -8,7 +8,9 @@ vi.mock('./graphAuth.js', () => ({
 const mockFetch = vi.fn()
 vi.stubGlobal('fetch', mockFetch)
 
+import { ValidationError } from '../../errors/index.js'
 import {
+  assertValidItemName,
   convertToPdf,
   deleteItem,
   encodePath,
@@ -256,6 +258,30 @@ describe('ensureFolder', () => {
     await expect(ensureFolder('d', 'p1', 'x', { sleep })).rejects.toThrow()
   })
 
+  it('throws a typed ValidationError naming the rule, not a plain Error', () => {
+    const err = (() => {
+      try {
+        assertValidItemName('Permit #12')
+      } catch (e) {
+        return e
+      }
+    })()
+    expect(err).toBeInstanceOf(ValidationError)
+    expect((err as ValidationError).statusCode).toBe(400)
+    expect((err as ValidationError).details).toEqual({
+      reason: 'reserved character',
+    })
+  })
+
+  it.each([
+    'Permit 12.docx',
+    'WAH-2026-001.pdf',
+    'Contract.v2',
+    'PR1234 Foo & Bar',
+  ])('accepts valid name %j', name => {
+    expect(() => assertValidItemName(name)).not.toThrow()
+  })
+
   it('throws when the 409 lookup finds nothing', async () => {
     mockFetch
       .mockResolvedValueOnce(graphErr(409, 'nameAlreadyExists'))
@@ -263,28 +289,44 @@ describe('ensureFolder', () => {
     await expect(ensureFolder('d', 'p1', 'x', { sleep })).rejects.toThrow()
   })
 
-  it.each(['', 'a/b', 'x.', '~x', 'a#b', 'a%b', 'a:b', ' x', 'x '])(
-    'rejects invalid name %j before any fetch',
-    async name => {
-      await expect(ensureFolder('d', 'p1', name, { sleep })).rejects.toThrow(
-        'Invalid SharePoint item name'
+  it.each([
+    '',
+    'a/b',
+    'x.',
+    '~x',
+    'a#b',
+    'a%b',
+    'a:b',
+    ' x',
+    'x ',
+    '..',
+    'a..b',
+    'a\u0000b',
+    'a\tb',
+    '_vti_x',
+    '.lock',
+    'CON',
+    'nul.docx',
+    'desktop.ini',
+  ])('rejects invalid name %j before any fetch', async name => {
+    await expect(ensureFolder('d', 'p1', name, { sleep })).rejects.toThrow(
+      'Invalid SharePoint item name'
+    )
+    await expect(
+      putFile(
+        {
+          driveId: 'd',
+          parentItemId: 'p1',
+          fileName: name,
+          content: Buffer.from('x'),
+          contentType: 'text/plain',
+          conflictBehavior: 'fail',
+        },
+        { sleep }
       )
-      await expect(
-        putFile(
-          {
-            driveId: 'd',
-            parentItemId: 'p1',
-            fileName: name,
-            content: Buffer.from('x'),
-            contentType: 'text/plain',
-            conflictBehavior: 'fail',
-          },
-          { sleep }
-        )
-      ).rejects.toThrow('Invalid SharePoint item name')
-      expect(mockFetch).not.toHaveBeenCalled()
-    }
-  )
+    ).rejects.toThrow('Invalid SharePoint item name')
+    expect(mockFetch).not.toHaveBeenCalled()
+  })
 })
 
 describe('putFile', () => {

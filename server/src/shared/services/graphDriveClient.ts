@@ -1,3 +1,4 @@
+import { ValidationError } from '../../errors/index.js'
 import {
   GRAPH_BASE,
   GraphError,
@@ -66,23 +67,40 @@ const ITEM_SELECT = '$select=id,name,webUrl,eTag,folder,file'
 
 export type ConflictBehavior = 'fail' | 'replace' | 'rename'
 
+// '#' and '%' are valid in SharePoint Online but are banned on purpose (plan 03-03):
+// callers must sanitise names derived from project or permit data first.
 const INVALID_NAME_CHARS = /["*:<>?/\\|#%]/
+// biome-ignore lint/suspicious/noControlCharactersInRegex: control chars are exactly what is rejected
+const CONTROL_CHARS = /[\u0000-\u001f\u007f]/
+// Names SharePoint reserves (case-insensitive, with or without an extension).
+const RESERVED_NAMES =
+  /^(\.lock|con|prn|aux|nul|com\d|lpt\d|desktop\.ini)(\..*)?$/i
+
+function invalidNameReason(name: string): string | null {
+  if (name === '') return 'empty'
+  if (CONTROL_CHARS.test(name)) return 'control character'
+  if (INVALID_NAME_CHARS.test(name)) return 'reserved character'
+  if (name === '.' || name === '..') return 'dot segment'
+  if (name.startsWith('~')) return 'leading ~'
+  if (/^\s/.test(name)) return 'leading whitespace'
+  if (name.endsWith('.') || /\s$/.test(name))
+    return 'trailing dot or whitespace'
+  if (name.includes('..')) return 'consecutive dots'
+  if (name.toLowerCase().startsWith('_vti_')) return 'reserved prefix _vti_'
+  if (RESERVED_NAMES.test(name)) return 'reserved name'
+  return null
+}
 
 /**
- * SharePoint item-name rules: rejects empty names, reserved characters, a leading
- * '~' or whitespace, and a trailing '.' or whitespace. Also blocks path injection
- * through names.
+ * SharePoint item-name rules: rejects empty names, control and reserved characters
+ * ('#' and '%' by decision), dot segments, a leading '~' or whitespace, a trailing
+ * '.' or whitespace, and reserved names. Also blocks path injection through names.
+ * Throws a typed ValidationError (400) naming the rule, never an untyped 500.
  */
 export function assertValidItemName(name: string): void {
-  if (
-    name === '' ||
-    INVALID_NAME_CHARS.test(name) ||
-    name.startsWith('~') ||
-    /^\s/.test(name) ||
-    name.endsWith('.') ||
-    /\s$/.test(name)
-  ) {
-    throw new Error('Invalid SharePoint item name')
+  const reason = invalidNameReason(name)
+  if (reason !== null) {
+    throw new ValidationError('Invalid SharePoint item name', { reason })
   }
 }
 
