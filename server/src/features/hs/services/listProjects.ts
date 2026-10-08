@@ -35,7 +35,13 @@ function compareProjects(a: HsProject, b: HsProject): number {
 // D-17: how long a fetched list is served without asking Graph again.
 export const PROJECTS_TTL_MS = 10 * 60_000
 
+// After a failed refresh, serve the stale list without calling Graph for this
+// long, so an outage is not amplified by every page load (each Graph attempt can
+// block for tens of seconds across graphFetch retries).
+export const REFRESH_FAILURE_BACKOFF_MS = 45_000
+
 let cache: { projects: HsProject[]; fetchedAt: number } | null = null
+let lastFailureAt: number | null = null
 let inflight: Promise<void> | null = null
 
 async function fetchProjects(): Promise<HsProject[]> {
@@ -77,6 +83,7 @@ function refresh(): Promise<void> {
   inflight ??= (async () => {
     const projects = await fetchProjects()
     cache = { projects, fetchedAt: Date.now() }
+    lastFailureAt = null
   })().finally(() => {
     inflight = null
   })
@@ -103,10 +110,20 @@ export async function listProjects(): Promise<ProjectList> {
     return toList(cache)
   }
 
+  // Recent refresh failure with a list to fall back on: answer from it now.
+  if (
+    cache &&
+    lastFailureAt !== null &&
+    Date.now() - lastFailureAt < REFRESH_FAILURE_BACKOFF_MS
+  ) {
+    return { ...toList(cache), stale: true }
+  }
+
   try {
     await refresh()
   } catch (err) {
     if (err instanceof HsNotConfiguredError) throw err
+    lastFailureAt = Date.now()
     // Server-side log only: Graph status, code and request id (T-03-30).
     if (err instanceof GraphError) {
       console.warn('hs projects: SharePoint listing failed', {

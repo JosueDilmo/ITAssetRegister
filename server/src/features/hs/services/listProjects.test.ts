@@ -180,9 +180,46 @@ describe('listProjects cache', () => {
     await expect(listProjects()).rejects.toBeInstanceOf(HsNotConfiguredError)
   })
 
+  it('backs off after a failed refresh: serves stale without calling Graph until the window ends', async () => {
+    const {
+      listProjects,
+      listChildren,
+      GraphError,
+      PROJECTS_TTL_MS,
+      REFRESH_FAILURE_BACKOFF_MS,
+    } = await load()
+    listChildren.mockResolvedValueOnce(FIXTURE)
+    const first = await listProjects()
+
+    vi.advanceTimersByTime(PROJECTS_TTL_MS + 1)
+    listChildren.mockRejectedValueOnce(new GraphError(503, 'down', null, true))
+    expect((await listProjects()).stale).toBe(true)
+    expect(listChildren).toHaveBeenCalledTimes(2)
+
+    // Inside the window: no new Graph call, still stale, original cachedAt.
+    vi.advanceTimersByTime(REFRESH_FAILURE_BACKOFF_MS - 1000)
+    const during = await listProjects()
+    expect(during.stale).toBe(true)
+    expect(during.cachedAt).toBe(first.cachedAt)
+    expect(listChildren).toHaveBeenCalledTimes(2)
+
+    // After the window: Graph is asked again, and a failure restarts the window.
+    vi.advanceTimersByTime(2000)
+    listChildren.mockRejectedValueOnce(new GraphError(503, 'down', null, true))
+    expect((await listProjects()).stale).toBe(true)
+    expect(listChildren).toHaveBeenCalledTimes(3)
+    await listProjects()
+    expect(listChildren).toHaveBeenCalledTimes(3)
+  })
+
   it('clears stale after a later successful refresh', async () => {
-    const { listProjects, listChildren, GraphError, PROJECTS_TTL_MS } =
-      await load()
+    const {
+      listProjects,
+      listChildren,
+      GraphError,
+      PROJECTS_TTL_MS,
+      REFRESH_FAILURE_BACKOFF_MS,
+    } = await load()
     listChildren.mockResolvedValueOnce(FIXTURE)
     await listProjects()
 
@@ -190,6 +227,7 @@ describe('listProjects cache', () => {
     listChildren.mockRejectedValueOnce(new GraphError(503, 'down', null, true))
     expect((await listProjects()).stale).toBe(true)
 
+    vi.advanceTimersByTime(REFRESH_FAILURE_BACKOFF_MS + 1)
     listChildren.mockResolvedValueOnce(FIXTURE)
     const recovered = await listProjects()
 
