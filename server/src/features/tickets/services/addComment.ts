@@ -1,4 +1,5 @@
 import { eq } from 'drizzle-orm'
+import he from 'he'
 import { db } from '../../../drizzle/client.js'
 import { ticketCommentsTab } from '../../../drizzle/schema/ticketCommentsTab.js'
 import { ticketsTab } from '../../../drizzle/schema/ticketsTab.js'
@@ -32,8 +33,8 @@ export async function addComment({ ticketId, authorEmail, body, source = 'agent'
       htmlBody: `
         <p>Hi,</p>
         <p>There is a new update on your support ticket <strong>${ticketLabel}</strong>.</p>
-        <p><strong>${authorEmail} wrote:</strong><br/>${body}</p>
-        <p>View your ticket: <a href="${env.APP_BASE_URL}/tickets/${ticket.id}">${env.APP_BASE_URL}/tickets/${ticket.id}</a></p>
+        <p><strong>${he.encode(authorEmail)} wrote:</strong><br/>${he.encode(body).replace(/\n/g, '<br/>')}</p>
+        <p>View your tickets: <a href="${env.APP_BASE_URL}/support">${env.APP_BASE_URL}/support</a></p>
       `,
     })
   }

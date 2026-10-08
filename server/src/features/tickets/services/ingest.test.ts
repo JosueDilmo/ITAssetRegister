@@ -467,5 +467,7 @@ describe('ingestTicket', () => {
       'https://sharepoint.example.com/IT-Tickets/ticket-uuid-4/photo.jpg'
     )
     expect(emailBody).toContain('photo.jpg')
+    expect(emailBody).toContain('https://app.example.com/support')
+    expect(emailBody).not.toContain('app.example.com/tickets/')
   })
 })
