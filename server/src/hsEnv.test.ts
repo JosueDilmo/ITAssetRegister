@@ -86,12 +86,62 @@ describe('hsEnvSchema', () => {
     expect(isHsConfigured(result.data)).toBe(false)
   })
 
-  it('rejects an empty HS_ME_PROJECTS_ROOT', async () => {
+  it('treats blank defaulted path vars as unset so the default applies', async () => {
+    const { hsEnvSchema } = await import('./hsEnv.js')
+    const result = hsEnvSchema.safeParse({
+      HS_ME_PROJECTS_ROOT: '',
+      HS_ME_PROJECT_HS_PATH: '   ',
+      HS_ME_PERMITS_FOLDER: '',
+    })
+
+    expect(result.success).toBe(true)
+    if (!result.success) return
+    expect(result.data.HS_ME_PROJECTS_ROOT).toBe('01_Proj/Open')
+    expect(result.data.HS_ME_PROJECT_HS_PATH).toBe('1. Cons/5. H&S')
+    expect(result.data.HS_ME_PERMITS_FOLDER).toBe('Permits')
+  })
+
+  it('boots (import resolves) with blank defaulted path vars in process.env', async () => {
+    for (const key of HS_KEYS) vi.stubEnv(key, undefined)
+    vi.stubEnv('HS_ME_PROJECTS_ROOT', '')
+    vi.stubEnv('HS_ME_PERMITS_FOLDER', '')
+    vi.resetModules()
+
+    const { hsEnv } = await import('./hsEnv.js')
+    expect(hsEnv.HS_ME_PROJECTS_ROOT).toBe('01_Proj/Open')
+    expect(hsEnv.HS_ME_PERMITS_FOLDER).toBe('Permits')
+  })
+
+  it.each([
+    '/01_Proj/Open/',
+    '/01_Proj/Open',
+    '01_Proj/Open/',
+    '01_Proj//Open',
+    '01_Proj/../Open',
+    './Open',
+  ])('rejects malformed folder path %j at boot', async bad => {
     const { hsEnvSchema } = await import('./hsEnv.js')
 
-    expect(hsEnvSchema.safeParse({ HS_ME_PROJECTS_ROOT: '' }).success).toBe(
-      false
-    )
+    for (const key of [
+      'HS_ME_PROJECTS_ROOT',
+      'HS_ME_PROJECT_HS_PATH',
+      'HS_ME_PERMITS_FOLDER',
+      'HS_QHSE_PREAPPROVED_ROOT',
+      'HS_QHSE_CONTROL_ROOT',
+    ]) {
+      expect(hsEnvSchema.safeParse({ [key]: bad }).success).toBe(false)
+    }
+  })
+
+  it('accepts well-formed nested paths and an empty QHSE root', async () => {
+    const { hsEnvSchema } = await import('./hsEnv.js')
+    const result = hsEnvSchema.safeParse({
+      HS_ME_PROJECTS_ROOT: 'A/B c/D',
+      HS_QHSE_PREAPPROVED_ROOT: '',
+      HS_QHSE_CONTROL_ROOT: 'Control docs',
+    })
+
+    expect(result.success).toBe(true)
   })
 
   it('refuses to boot (import rejects) when only HS_ME_SITE_ID is in process.env', async () => {

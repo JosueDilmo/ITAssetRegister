@@ -9,6 +9,38 @@ const optionalId = z.preprocess(
   z.string().trim().min(1).optional()
 )
 
+// A drive-relative folder path: no leading/trailing slash, no empty segment and
+// no '.' or '..' segment. graphDriveClient.encodePath throws on these at call
+// time, which would surface a config typo as a SharePoint outage; failing at
+// boot makes the typo visible instead.
+const isValidFolderPath = (value: string): boolean =>
+  value
+    .split('/')
+    .every(segment => segment !== '' && segment !== '.' && segment !== '..')
+
+const FOLDER_PATH_MESSAGE =
+  'must be a relative folder path with no leading/trailing "/", empty segment, "." or ".." segment'
+
+// An empty value counts as unset, so the default applies (D-24).
+const defaultedFolderPath = (fallback: string) =>
+  z.preprocess(
+    v => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+    z
+      .string()
+      .trim()
+      .refine(isValidFolderPath, { message: FOLDER_PATH_MESSAGE })
+      .default(fallback)
+  )
+
+// Optional drive-root path: empty means the drive root.
+const optionalFolderPath = z
+  .string()
+  .trim()
+  .refine(v => v === '' || isValidFolderPath(v), {
+    message: FOLDER_PATH_MESSAGE,
+  })
+  .default('')
+
 // The five SharePoint IDs are all-or-nothing: none set = H&S not configured
 // (routes answer 503), all set = configured, partial = refuse to boot.
 export const HS_REQUIRED_KEYS = [
@@ -26,11 +58,11 @@ export const hsEnvSchema = z
     HS_QHSE_SITE_ID: optionalId,
     HS_QHSE_PREAPPROVED_DRIVE_ID: optionalId,
     HS_QHSE_CONTROL_DRIVE_ID: optionalId,
-    HS_ME_PROJECTS_ROOT: z.string().trim().min(1).default('01_Proj/Open'),
-    HS_ME_PROJECT_HS_PATH: z.string().trim().min(1).default('1. Cons/5. H&S'),
-    HS_ME_PERMITS_FOLDER: z.string().trim().min(1).default('Permits'),
-    HS_QHSE_PREAPPROVED_ROOT: z.string().trim().default(''),
-    HS_QHSE_CONTROL_ROOT: z.string().trim().default(''),
+    HS_ME_PROJECTS_ROOT: defaultedFolderPath('01_Proj/Open'),
+    HS_ME_PROJECT_HS_PATH: defaultedFolderPath('1. Cons/5. H&S'),
+    HS_ME_PERMITS_FOLDER: defaultedFolderPath('Permits'),
+    HS_QHSE_PREAPPROVED_ROOT: optionalFolderPath,
+    HS_QHSE_CONTROL_ROOT: optionalFolderPath,
   })
   .superRefine((value, ctx) => {
     const present = HS_REQUIRED_KEYS.filter(key => value[key] !== undefined)
