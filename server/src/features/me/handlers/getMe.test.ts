@@ -63,7 +63,11 @@ const overPosted = {
   ],
 }
 
-async function buildApp(user?: { email: string; role: string }) {
+async function buildApp(user?: {
+  email: string
+  role: string
+  roles?: string[]
+}) {
   const app = fastify().withTypeProvider<ZodTypeProvider>()
   app.setValidatorCompiler(validatorCompiler)
   app.setSerializerCompiler(serializerCompiler)
@@ -71,6 +75,8 @@ async function buildApp(user?: { email: string; role: string }) {
   // Stand-in for the real authenticate hook: sets request.user for the test.
   app.addHook('onRequest', async request => {
     request.user = user
+      ? { ...user, roles: user.roles ?? [user.role] }
+      : undefined
   })
   const { getMeHandler } = await import('./getMe.js')
   await app.register(getMeHandler)
@@ -98,17 +104,22 @@ describe('GET /me', () => {
     await app.close()
   })
 
-  it.each(['admin', 'staff', 'viewer', 'hr', 'hs_officer', 'dept_manager'])(
-    'answers 200 for a %s user (no role gate)',
-    async role => {
-      const app = await buildApp({ email: 'jane@mastertech.ie', role })
+  it.each([
+    'admin',
+    'staff',
+    'viewer',
+    'hr',
+    'hs_officer',
+    'dept_manager',
+    'site_supervisor',
+  ])('answers 200 for a %s user (no role gate)', async role => {
+    const app = await buildApp({ email: 'jane@mastertech.ie', role })
 
-      const response = await app.inject({ method: 'GET', url: '/me' })
+    const response = await app.inject({ method: 'GET', url: '/me' })
 
-      expect(response.statusCode).toBe(200)
-      await app.close()
-    }
-  )
+    expect(response.statusCode).toBe(200)
+    await app.close()
+  })
 
   it('answers 200 with staff null and empty lists when the user has no staff record', async () => {
     const { getMe } = await import('../services/getMe.js')

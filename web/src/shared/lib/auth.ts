@@ -5,7 +5,7 @@ import { env } from './env'
 import { ROLES, highestRole } from './roles'
 
 // Roles come from Entra ID app roles (see web/src/shared/lib/roles.ts):
-// admin | hr | hs_officer | dept_manager | staff (default when unassigned)
+// admin | hr | hs_officer | dept_manager | site_supervisor | staff (default when unassigned)
 
 // Extend the User and Session types to include role info
 declare module 'next-auth' {
@@ -26,6 +26,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       issuer: env.AUTH_MICROSOFT_ENTRA_ID_ISSUER!,
     }),
   ],
+  // One working shift; role changes in Azure apply at the next sign-in. The
+  // lifetime is absolute because nothing renews the cookie (RESEARCH Pattern 2).
+  session: { strategy: 'jwt', maxAge: 8 * 60 * 60 },
   cookies: {
     sessionToken: {
       name: 'authjs.session-token',

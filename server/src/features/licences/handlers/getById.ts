@@ -106,7 +106,8 @@ export const getLicenceById: FastifyPluginAsyncZod = async app => {
       const { licence } = await getById({ id })
       // The activation key is for IT admins only (least privilege, D-07):
       // every other caller gets the licence with licenceKey nulled out.
-      const isAdmin = request.user?.role === 'admin'
+      // Decided from the full roles array, not the collapsed badge role (D-02).
+      const isAdmin = request.user?.roles.includes('admin') ?? false
       return reply.status(200).send({
         licence: licence.map(l => ({
           ...l,

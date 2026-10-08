@@ -11,7 +11,11 @@ vi.mock('../services/getById.js', () => ({ getById: vi.fn() }))
 
 const ASSET_ID = '73a385f5-728d-42a8-ab2b-1646ad103dc0'
 
-async function buildApp(user?: { email: string; role: string }) {
+async function buildApp(user?: {
+  email: string
+  role: string
+  roles?: string[]
+}) {
   const app = fastify().withTypeProvider<ZodTypeProvider>()
   app.setValidatorCompiler(validatorCompiler)
   app.setSerializerCompiler(serializerCompiler)
@@ -19,6 +23,8 @@ async function buildApp(user?: { email: string; role: string }) {
   // Stand-in for the real authenticate hook: sets request.user for the test.
   app.addHook('onRequest', async request => {
     request.user = user
+      ? { ...user, roles: user.roles ?? [user.role] }
+      : undefined
   })
   const { getAssetById } = await import('./getById.js')
   await app.register(getAssetById)
@@ -47,7 +53,14 @@ describe('GET /assetWith/:id role guard', () => {
     await app.close()
   })
 
-  it.each(['staff', 'viewer', 'hr', 'hs_officer', 'dept_manager'])(
+  it.each([
+    'staff',
+    'viewer',
+    'hr',
+    'hs_officer',
+    'dept_manager',
+    'site_supervisor',
+  ])(
     '%s gets 403 AUTHORIZATION_ERROR and the service is not called',
     async role => {
       const { getById } = await import('../services/getById.js')

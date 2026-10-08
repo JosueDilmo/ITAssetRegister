@@ -15,7 +15,8 @@
     "db:studio": "drizzle-kit studio",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "hs:smoke": "tsx --env-file=.env scripts/hs/smoke.ts"
   },
   "dependencies": {
     "@fastify/cookie": "^11.0.2",

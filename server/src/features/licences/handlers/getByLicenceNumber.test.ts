@@ -13,7 +13,11 @@ vi.mock('../services/getByLicenceNumber.js', () => ({
 
 const URL = '/licenceByNumber/LIC-0001'
 
-async function buildApp(user?: { email: string; role: string }) {
+async function buildApp(user?: {
+  email: string
+  role: string
+  roles?: string[]
+}) {
   const app = fastify().withTypeProvider<ZodTypeProvider>()
   app.setValidatorCompiler(validatorCompiler)
   app.setSerializerCompiler(serializerCompiler)
@@ -21,6 +25,8 @@ async function buildApp(user?: { email: string; role: string }) {
   // Stand-in for the real authenticate hook: sets request.user for the test.
   app.addHook('onRequest', async request => {
     request.user = user
+      ? { ...user, roles: user.roles ?? [user.role] }
+      : undefined
   })
   const { getLicenceByNumber } = await import('./getByLicenceNumber.js')
   await app.register(getLicenceByNumber)
@@ -54,7 +60,14 @@ describe('GET /licenceByNumber/:licenceNumber role guard', () => {
     await app.close()
   })
 
-  it.each(['staff', 'viewer', 'hr', 'hs_officer', 'dept_manager'])(
+  it.each([
+    'staff',
+    'viewer',
+    'hr',
+    'hs_officer',
+    'dept_manager',
+    'site_supervisor',
+  ])(
     '%s gets 403 AUTHORIZATION_ERROR and the service is not called',
     async role => {
       const { getByLicenceNumber } = await import(
